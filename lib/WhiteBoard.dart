@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'DsBridge.dart';
 import 'package:flutter/material.dart';
 
+import 'DsBridge.dart';
 import 'DsBridgeInAppWebView.dart';
 import 'DsBridgeWebView.dart';
 
@@ -14,9 +14,17 @@ class WhiteBoard extends StatelessWidget {
   final String assetFilePath;
   final ValueChanged<WhiteBoardSDK> onCreated;
 
-  static GlobalKey<DsBridgeWebViewState> webview = GlobalKey<DsBridgeWebViewState>();
+  static GlobalKey<DsBridgeWebViewState> webview =
+      GlobalKey<DsBridgeWebViewState>();
 
-  WhiteBoard({Key key, this.assetFilePath, this.appId, this.onCreated, this.backgroundColor = Colors.white, this.log = false }) : super(key: key);
+  WhiteBoard(
+      {Key key,
+      this.assetFilePath,
+      this.appId,
+      this.onCreated,
+      this.backgroundColor = Colors.white,
+      this.log = false})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -28,13 +36,11 @@ class WhiteBoard extends StatelessWidget {
       },
       onDSBridgeCreated: (DsBridge dsBridge) {
         onCreated(WhiteBoardSDK(
-          config: WhiteBoardSdkConfiguration(
-            appIdentifier: appId,
-            log: log,
-            backgroundColor: backgroundColor
-          ),
-          dsBridge: dsBridge
-        ));
+            config: WhiteBoardSdkConfiguration(
+                appIdentifier: appId,
+                log: log,
+                backgroundColor: backgroundColor),
+            dsBridge: dsBridge));
       },
     );
   }
@@ -48,9 +54,17 @@ class WhiteBoardWithInApp extends StatelessWidget {
 
   final String assetFilePath;
 
-  static GlobalKey<DsBridgeInAppWebViewState> webview = GlobalKey<DsBridgeInAppWebViewState>();
+  static GlobalKey<DsBridgeInAppWebViewState> webview =
+      GlobalKey<DsBridgeInAppWebViewState>();
 
-  WhiteBoardWithInApp({Key key, this.assetFilePath, this.appId, this.onCreated, this.backgroundColor = Colors.white, this.log = false }) : super(key: key);
+  WhiteBoardWithInApp(
+      {Key key,
+      this.assetFilePath,
+      this.appId,
+      this.onCreated,
+      this.backgroundColor = Colors.white,
+      this.log = false})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -62,29 +76,28 @@ class WhiteBoardWithInApp extends StatelessWidget {
       },
       onDSBridgeCreated: (DsBridge dsBridge) {
         onCreated(WhiteBoardSDK(
-          config: WhiteBoardSdkConfiguration(
-            appIdentifier: appId,
-            log: log,
-            backgroundColor: backgroundColor
-          ),
-          dsBridge: dsBridge
-        ));
+            config: WhiteBoardSdkConfiguration(
+                appIdentifier: appId,
+                log: log,
+                backgroundColor: backgroundColor),
+            dsBridge: dsBridge));
       },
     );
   }
 }
 
-
 class WhiteBoardSDK {
   String tag = "WhiteBoardSDK";
   final DsBridge dsBridge;
   final WhiteBoardSdkConfiguration config;
+
   WhiteBoardSDK({this.config, this.dsBridge}) {
     dsBridge.callHandler("sdk.newWhiteSdk", [config.toJson()], null);
-    if(config.backgroundColor != null) {
+    if (config.backgroundColor != null) {
       setBackgroundColor(config.backgroundColor);
     }
   }
+
   Future<WhiteBoardRoom> joinRoom(RoomParams params) {
     var completer = Completer<WhiteBoardRoom>();
     dsBridge.callHandler("sdk.joinRoom", [params.toJson()], ([returnValue]) {
@@ -170,7 +183,8 @@ class WhiteBoardDisplayer {
   }
 
   moveCamera(WhiteBoardCameraConfig config) {
-    dsBridge.callHandler("${kDisplayerNamespace}moveCamera", [config.toJson()], null);
+    dsBridge.callHandler(
+        "${kDisplayerNamespace}moveCamera", [config.toJson()], null);
   }
 
   refreshViewSize() {
@@ -178,15 +192,18 @@ class WhiteBoardDisplayer {
   }
 
   setBackgroundColor(Color color) {
-    dsBridge.callHandler("${kDisplayerNamespace}setBackgroundColor", [color.red, color.green, color.blue, color.alpha], null);
+    dsBridge.callHandler("${kDisplayerNamespace}setBackgroundColor",
+        [color.red, color.green, color.blue, color.alpha], null);
   }
 
   setDisableCameraTransform(bool disable) {
-    dsBridge.callHandler("${kDisplayerNamespace}setDisableCameraTransform", [disable], null);
+    dsBridge.callHandler(
+        "${kDisplayerNamespace}setDisableCameraTransform", [disable], null);
   }
 
   Future<bool> getDisableCameraTransform() async {
-    var value = dsBridge.callHandler("${kDisplayerNamespace}getDisableCameraTransform", [], null);
+    var value = dsBridge.callHandler(
+        "${kDisplayerNamespace}getDisableCameraTransform", [], null);
     return value == 'true';
   }
 }
@@ -200,16 +217,17 @@ class WhiteBoardMemberState {
   String currentApplianceName;
 
   WhiteBoardMemberState({
-      this.currentApplianceName,
-      this.strokeColor,
-      this.strokeWidth,
-      this.textSize,
-      this.pencilOptions,
-      this.disableBezier,
+    this.currentApplianceName,
+    this.strokeColor,
+    this.strokeWidth,
+    this.textSize,
+    this.pencilOptions,
+    this.disableBezier,
   });
 
   void fromJson(Map<String, dynamic> json) {
-    strokeColor = (json["strokeColor"] as List)?.map<int>((e) => e as int)?.toList();
+    strokeColor =
+        (json["strokeColor"] as List)?.map<int>((e) => e as int)?.toList();
     strokeWidth = json["strokeWidth"];
     textSize = json["textSize"];
     pencilOptions = PencilOptions()..fromJson(json["pencilOptions"]);
@@ -236,7 +254,6 @@ typedef void OnPlayerPhaseChanged(String phase);
 typedef void OnRoomPhaseChanged(String phase);
 typedef void OnScheduleTimeChanged(int scheduleTime);
 
-
 class WhiteBoardPlayer extends WhiteBoardDisplayer {
   final ReplayRoomParams params;
   final DsBridge dsBridge;
@@ -250,7 +267,7 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
   OnPlayerPhaseChanged onPlayerPhaseChanged;
   OnScheduleTimeChanged onScheduleTimeChanged;
 
-  WhiteBoardPlayer({ this.params, this.dsBridge }) : super(dsBridge) {
+  WhiteBoardPlayer({this.params, this.dsBridge}) : super(dsBridge) {
     dsBridge.addJavascriptObject(this.createPlayerInterface());
   }
 
@@ -261,16 +278,17 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
     interface.setMethod("onLoadFirstFrame", this._onLoadFirstFrame);
     interface.setMethod("onScheduleTimeChanged", this._onScheduleTimeChanged);
     interface.setMethod("onStoppedWithError", this._onStoppedWithError);
-    interface.setMethod("fireCatchErrorWhenAppendFrame", this._fireCatchErrorWhenAppendFrame);
+    interface.setMethod(
+        "fireCatchErrorWhenAppendFrame", this._fireCatchErrorWhenAppendFrame);
     interface.setMethod("onCatchErrorWhenRender", this._onCatchErrorWhenRender);
     return interface;
   }
 
   _onPhaseChanged(String value) {
     phase = value;
-    if(onPlayerPhaseChanged != null) {
+    if (onPlayerPhaseChanged != null) {
       onPlayerPhaseChanged(value);
-    } 
+    }
   }
 
   _onPlayerStateChanged(String value) {
@@ -283,7 +301,7 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
 
   _onScheduleTimeChanged(value) {
     currentTime = value;
-    if(onScheduleTimeChanged != null) {
+    if (onScheduleTimeChanged != null) {
       onScheduleTimeChanged(value);
     }
   }
@@ -338,7 +356,8 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
   }
 
   Future<WhiteBoardPlayerState> get playerState async {
-    var value = await dsBridge.callHandler("player.state.playerState", [], null);
+    var value =
+        await dsBridge.callHandler("player.state.playerState", [], null);
     return WhiteBoardPlayerState()..fromJson(jsonDecode(value));
   }
 
@@ -348,7 +367,8 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
   }
 
   Future<double> get playbackSpeed async {
-    var value = await dsBridge.callHandler("player.state.playbackSpeed", [], null);
+    var value =
+        await dsBridge.callHandler("player.state.playbackSpeed", [], null);
     return double.tryParse(value);
   }
 
@@ -382,7 +402,8 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
   OnRoomPhaseChanged onRoomPhaseChanged;
 
   bool disconnectedBySelf = false;
-  WhiteBoardRoom({ this.params, this.dsBridge }) : super(dsBridge) {
+
+  WhiteBoardRoom({this.params, this.dsBridge}) : super(dsBridge) {
     dsBridge.addJavascriptObject(this.createRoomInterface());
   }
 
@@ -392,14 +413,16 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     interface.setMethod("fireCanUndoStepsUpdate", this._fireCanUndoStepsUpdate);
     interface.setMethod("fireCanRedoStepsUpdate", this._fireCanRedoStepsUpdate);
     interface.setMethod("fireRoomStateChanged", this._fireRoomStateChanged);
-    interface.setMethod("fireDisconnectWithError", this._fireDisconnectWithError);
+    interface.setMethod(
+        "fireDisconnectWithError", this._fireDisconnectWithError);
     interface.setMethod("fireKickedWithReason", this._fireKickedWithReason);
-    interface.setMethod("fireCatchErrorWhenAppendFrame", this._fireCatchErrorWhenAppendFrame);
+    interface.setMethod(
+        "fireCatchErrorWhenAppendFrame", this._fireCatchErrorWhenAppendFrame);
     return interface;
   }
 
   _firePhaseChanged(String value) {
-    if(onRoomPhaseChanged != null) {
+    if (onRoomPhaseChanged != null) {
       onRoomPhaseChanged(value);
     }
   }
@@ -416,24 +439,20 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     try {
       var data = jsonDecode(value) as Map<String, dynamic>;
       state.fromJson(
-        (<String, dynamic>{})
-        ..addAll(state?.toJson())
-        ..addAll(data)
-      );
-      if(onRoomStateChanged != null) onRoomStateChanged(state);
+          (<String, dynamic>{})..addAll(state?.toJson())..addAll(data));
+      if (onRoomStateChanged != null) onRoomStateChanged(state);
     } catch (e) {
       print(e);
     }
   }
 
   _fireDisconnectWithError(value) {
-    if(onRoomDisconnected != null) onRoomDisconnected(value);
+    if (onRoomDisconnected != null) onRoomDisconnected(value);
   }
 
   _fireKickedWithReason(value) {
-    if(onRoomKicked != null) onRoomKicked(value);
+    if (onRoomKicked != null) onRoomKicked(value);
   }
-
 
   _fireCatchErrorWhenAppendFrame(value) {
     print(value);
@@ -443,9 +462,7 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     state = WhiteBoardRoomState()..fromJson(json["state"]);
   }
 
-  setGlobalState(WhiteBoardGlobalState modifyState) {
-
-  }
+  setGlobalState(WhiteBoardGlobalState modifyState) {}
 
   setMemberState(WhiteBoardMemberState modifyState) {
     dsBridge.callHandler('room.setMemberState', [modifyState.toJson()], null);
@@ -454,27 +471,25 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
   void setViewMode(WhiteBoardViewMode viewMode) {
     String viewModeString;
     switch (viewMode) {
-        case WhiteBoardViewMode.Freedom:
-            viewModeString = "Freedom";
-            break;
-        case WhiteBoardViewMode.Follower:
-            viewModeString = "Follower";
-            break;
-        case WhiteBoardViewMode.Broadcaster:
-            viewModeString = "Broadcaster";
-            break;
-        default:
-            viewModeString = "Freedom";
-            break;
+      case WhiteBoardViewMode.Freedom:
+        viewModeString = "Freedom";
+        break;
+      case WhiteBoardViewMode.Follower:
+        viewModeString = "Follower";
+        break;
+      case WhiteBoardViewMode.Broadcaster:
+        viewModeString = "Broadcaster";
+        break;
+      default:
+        viewModeString = "Freedom";
+        break;
     }
     dsBridge.callHandler("room.setViewMode", [viewModeString], null);
   }
 
   disconnect({Function callback}) {
     disconnectedBySelf = true;
-    dsBridge.callHandler("room.disconnect", [], ([value])=> {
-      callback()
-    });
+    dsBridge.callHandler("room.disconnect", [], ([value]) => {callback()});
   }
 
   set disableOperations(bool value) {
@@ -491,7 +506,7 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
   }
 
   debugInfo(Function callback) {
-    dsBridge.callHandler("room.state.debugInfo", [], ([value]){
+    dsBridge.callHandler("room.state.debugInfo", [], ([value]) {
       callback(value);
     });
   }
@@ -504,9 +519,12 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     dsBridge.callHandler("ppt.previousStep", [], null);
   }
 
-  Future<Map<String, dynamic>> putScenes(String dir, List<WhiteBoardScene> scene, int index) {
+  Future<Map<String, dynamic>> putScenes(
+      String dir, List<WhiteBoardScene> scene, int index) {
     var completer = Completer<Map<String, dynamic>>();
-    dsBridge.callHandler("room.putScenes", [dir, scene.map((e) => e.toJson()).toList(), index], ([value]){
+    dsBridge.callHandler(
+        "room.putScenes", [dir, scene.map((e) => e.toJson()).toList(), index], (
+            [value]) {
       completer.complete(jsonDecode(value));
     });
     return completer.future;
@@ -517,7 +535,7 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
   }
 
   Future<Map<String, dynamic>> setScenePath(String path) {
-     var completer = Completer<Map<String, dynamic>>();
+    var completer = Completer<Map<String, dynamic>>();
     dsBridge.callHandler("room.setScenePath", [path], ([value]) {
       completer.complete(jsonDecode(value));
     });
@@ -554,12 +572,13 @@ class WhiteBoardDisplayerState {
 }
 
 class WhiteBoardPlayerState extends WhiteBoardDisplayerState {
-
   String observerMode;
 
   void fromJson(Map<String, dynamic> json) {
     observerMode = json["observerMode"];
-    roomMembers = (json["roomMembers"] as List)?.map<WhiteBoardRoomMember>((e) => WhiteBoardRoomMember()..fromJson(e))?.toList();
+    roomMembers = (json["roomMembers"] as List)
+        ?.map<WhiteBoardRoomMember>((e) => WhiteBoardRoomMember()..fromJson(e))
+        ?.toList();
     cameraState = WhiteBoardCameraConfig()..fromJson(json["cameraState"]);
     globalState = WhiteBoardGlobalState()..fromJson(json["globalState"]);
     sceneState = WhiteBoardSceneState()..fromJson(json["sceneState"]);
@@ -580,13 +599,16 @@ class WhiteBoardRoomState extends WhiteBoardDisplayerState {
   WhiteBoardMemberState memberState;
   WhiteBoardBroadcastState broadcastState;
   num zoomScale;
-  
+
   void fromJson(Map<String, dynamic> json) {
-    if(json == null) return null;
+    if (json == null) return null;
     memberState = WhiteBoardMemberState()..fromJson(json["memberState"]);
-    broadcastState = WhiteBoardBroadcastState()..fromJson(json["broadcastState"]);
+    broadcastState = WhiteBoardBroadcastState()
+      ..fromJson(json["broadcastState"]);
     zoomScale = json["zoomScale"];
-    roomMembers = (json["roomMembers"] as List)?.map<WhiteBoardRoomMember>((e) => WhiteBoardRoomMember()..fromJson(e))?.toList();
+    roomMembers = (json["roomMembers"] as List)
+        ?.map<WhiteBoardRoomMember>((e) => WhiteBoardRoomMember()..fromJson(e))
+        ?.toList();
     cameraState = WhiteBoardCameraConfig()..fromJson(json["cameraState"]);
     globalState = WhiteBoardGlobalState()..fromJson(json["globalState"]);
     sceneState = WhiteBoardSceneState()..fromJson(json["sceneState"]);
@@ -603,12 +625,12 @@ class WhiteBoardRoomState extends WhiteBoardDisplayerState {
       "sceneState": sceneState.toJson(),
     };
   }
-
 }
 
 class WhiteBoardGlobalState {
   int currentSceneIndex;
-  WhiteBoardGlobalState({ this.currentSceneIndex });
+
+  WhiteBoardGlobalState({this.currentSceneIndex});
 
   Map<String, dynamic> toJson() {
     return {
@@ -622,58 +644,54 @@ class WhiteBoardGlobalState {
 }
 
 class WhiteBoardRoomMember {
-    int memberId;
-    WhiteBoardMemberState memberState;
-    String session;
-    WhiteBoardUserPayload payload;
+  int memberId;
+  WhiteBoardMemberState memberState;
+  String session;
+  WhiteBoardUserPayload payload;
 
-    WhiteBoardRoomMember({
-        this.memberId,
-        this.memberState,
-        this.session,
-        this.payload,
-    });
+  WhiteBoardRoomMember({
+    this.memberId,
+    this.memberState,
+    this.session,
+    this.payload,
+  });
 
-    Map<String, dynamic> toJson() {
-      return {
-        "memberId": memberId,
-        "memberState": memberState.toJson(),
-        "session": session,
-        "payload": payload.toJson()
-      };
-    }
+  Map<String, dynamic> toJson() {
+    return {
+      "memberId": memberId,
+      "memberState": memberState.toJson(),
+      "session": session,
+      "payload": payload.toJson()
+    };
+  }
 
-    void fromJson(Map<String, dynamic> json) {
-      if(json == null) return;
-      memberId = json["memberId"];
-      memberState = WhiteBoardMemberState()..fromJson(json["memberState"]);
-      session = json["session"];
-      payload = WhiteBoardUserPayload()..fromJson(json["payload"]);
-    }
+  void fromJson(Map<String, dynamic> json) {
+    if (json == null) return;
+    memberId = json["memberId"];
+    memberState = WhiteBoardMemberState()..fromJson(json["memberState"]);
+    session = json["session"];
+    payload = WhiteBoardUserPayload()..fromJson(json["payload"]);
+  }
 }
 
 class WhiteBoardUserPayload {
-    String userId;
-    String identity;
+  String userId;
+  String identity;
 
-    WhiteBoardUserPayload({
-      this.userId,
-      this.identity,
-    });
+  WhiteBoardUserPayload({
+    this.userId,
+    this.identity,
+  });
 
+  Map<String, dynamic> toJson() {
+    return {"userId": userId, "identity": identity};
+  }
 
-    Map<String, dynamic> toJson() {
-      return {
-        "userId": userId,
-        "identity": identity
-      };
-    }
-
-    void fromJson(Map<String, dynamic> json) {
-      if(json == null) return;
-      userId = json["userId"];
-      identity = json["identity"];
-    }
+  void fromJson(Map<String, dynamic> json) {
+    if (json == null) return;
+    userId = json["userId"];
+    identity = json["identity"];
+  }
 }
 
 class ApplianceName {
@@ -690,33 +708,33 @@ class ApplianceName {
 }
 
 class PencilOptions {
-    bool enableDrawPoint;
-    bool disableBezier;
-    int sparseHump;
-    int sparseWidth;
+  bool enableDrawPoint;
+  bool disableBezier;
+  int sparseHump;
+  int sparseWidth;
 
-    PencilOptions({
-        this.enableDrawPoint,
-        this.disableBezier,
-        this.sparseHump,
-        this.sparseWidth,
-    });
+  PencilOptions({
+    this.enableDrawPoint,
+    this.disableBezier,
+    this.sparseHump,
+    this.sparseWidth,
+  });
 
-    void fromJson(Map<String, dynamic> json) {
-      enableDrawPoint = json["enableDrawPoint"];
-      disableBezier = json["disableBezier"];
-      sparseHump = json["sparseHump"];
-      sparseWidth = json["sparseWidth"];
-    }
+  void fromJson(Map<String, dynamic> json) {
+    enableDrawPoint = json["enableDrawPoint"];
+    disableBezier = json["disableBezier"];
+    sparseHump = json["sparseHump"];
+    sparseWidth = json["sparseWidth"];
+  }
 
-    Map<String, dynamic> toJson() {
-      return {
-        "enableDrawPoint": enableDrawPoint,
-        "disableBezier": disableBezier,
-        "sparseHump": sparseHump,
-        "sparseWidth": sparseWidth
-      };
-    }
+  Map<String, dynamic> toJson() {
+    return {
+      "enableDrawPoint": enableDrawPoint,
+      "disableBezier": disableBezier,
+      "sparseHump": sparseHump,
+      "sparseWidth": sparseWidth
+    };
+  }
 }
 
 class WhiteBoardBroadcastState {
@@ -738,7 +756,7 @@ class WhiteBoardSceneState {
   String scenePath;
   int index;
 
-  Map<String ,dynamic> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       "index": index,
       "scenePath": scenePath,
@@ -746,10 +764,12 @@ class WhiteBoardSceneState {
     };
   }
 
-  void fromJson(Map<String ,dynamic> json) {
+  void fromJson(Map<String, dynamic> json) {
     index = json["index"];
     scenePath = json["scenePath"];
-    scenes = (json["scenes"] as List)?.map<WhiteBoardScene>((e) => WhiteBoardScene()..fromJson(e))?.toList();
+    scenes = (json["scenes"] as List)
+        ?.map<WhiteBoardScene>((e) => WhiteBoardScene()..fromJson(e))
+        ?.toList();
   }
 }
 
@@ -821,7 +841,8 @@ class WhiteBoardSdkConfiguration {
   final bool log;
   final Color backgroundColor;
 
-  WhiteBoardSdkConfiguration({this.appIdentifier, this.log, this.backgroundColor});
+  WhiteBoardSdkConfiguration(
+      {this.appIdentifier, this.log, this.backgroundColor});
 
   toJson() {
     return {
@@ -857,13 +878,19 @@ class ReplayRoomParams extends RoomParams {
   final int beginTimestamp;
   final int duration;
 
-  ReplayRoomParams({this.room, this.roomToken, this.mediaURL, this.beginTimestamp, this.duration});
+  ReplayRoomParams(
+      {this.room,
+      this.roomToken,
+      this.mediaURL,
+      this.beginTimestamp,
+      this.duration});
 
   @override
   Map<String, dynamic> toJson() {
     return {
       "room": room,
       "roomToken": roomToken,
+
       /// 此处mediaURL不传入SDK，会有问题
       // "mediaURL": mediaURL,
       "beginTimestamp": beginTimestamp,
@@ -876,14 +903,10 @@ class WhiteBoardCameraConfig {
   num centerX;
   num centerY;
   num scale;
-  String animationMode; 
+  String animationMode;
 
-  WhiteBoardCameraConfig({
-    this.centerX = 0,
-    this.centerY = 0,
-    this.scale,
-    this.animationMode
-  });
+  WhiteBoardCameraConfig(
+      {this.centerX = 0, this.centerY = 0, this.scale, this.animationMode});
 
   Map<String, dynamic> toJson() {
     return {
@@ -894,7 +917,7 @@ class WhiteBoardCameraConfig {
     };
   }
 
-  void fromJson(Map<String ,dynamic> json) {
+  void fromJson(Map<String, dynamic> json) {
     centerX = json["centerX"];
     centerY = json["centerY"];
     scale = json["scale"];
@@ -917,7 +940,7 @@ class ReplayTimeInfo {
     };
   }
 
-  void fromJson(Map<String ,dynamic> json) {
+  void fromJson(Map<String, dynamic> json) {
     scheduleTime = json["scheduleTime"];
     timeDuration = json["timeDuration"];
     framesCount = json["framesCount"];
