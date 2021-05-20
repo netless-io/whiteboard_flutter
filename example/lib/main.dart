@@ -1,7 +1,7 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_whiteboard_sdk/flutter_whiteboard_sdk.dart';
+
+import 'operating_view.dart';
 
 void main() {
   runApp(MyApp());
@@ -53,13 +53,26 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  
   WhiteBoardSDK sdk;
+  WhiteBoardRoom room;
   List<WhiteBoardScene> scenes;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
   static const String ROOM_UUID = "2e2762f05c5911eb894d4bad573d796b";
-  static const String ROOM_TOKEN = "NETLESSROOM_YWs9M2R5WmdQcFlLcFlTdlQ1ZjRkOFBiNjNnY1RoZ3BDSDlwQXk3Jm5vbmNlPTE2MTEyODIzNjY1MjUwMCZyb2xlPTAmc2lnPTVhZDY1NDkwNGUyMDE5MjRkNDRiYzBhMDUxYWNkNjc0ZDdkNzY4NGNhNTQzZWQ0YTIyMzA2N2U1MDQ2NmMyNWImdXVpZD0yZTI3NjJmMDVjNTkxMWViODk0ZDRiYWQ1NzNkNzk2Yg";
+  static const String ROOM_TOKEN =
+      "NETLESSROOM_YWs9M2R5WmdQcFlLcFlTdlQ1ZjRkOFBiNjNnY1RoZ3BDSDlwQXk3Jm5vbmNlPTE2MTEyODIzNjY1MjUwMCZyb2xlPTAmc2lnPTVhZDY1NDkwNGUyMDE5MjRkNDRiYzBhMDUxYWNkNjc0ZDdkNzY4NGNhNTQzZWQ0YTIyMzA2N2U1MDQ2NmMyNWImdXVpZD0yZTI3NjJmMDVjNTkxMWViODk0ZDRiYWQ1NzNkNzk2Yg";
+
+  OnCanRedoStepsUpdate _onCanRedoStepsUpdate = (stepNum) {
+    print('can redo step : $stepNum');
+  };
+
+  OnCanUndoStepsUpdate _onCanUndoStepsUpdate = (stepNum) {
+    print('can undo step : $stepNum');
+  };
+
+  OnRoomStateChanged _onRoomStateChanged = (newState) {
+    print('can redo step : ${newState.toJson()}');
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -75,16 +88,30 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: WhiteBoardWithInApp(
-          appId: APP_ID,
-          log: true,
-          backgroundColor: Color(0xFFF9F4E7),
-          assetFilePath: "assets/whiteboardBridge/index.html",
-          onCreated: (_sdk) async {
-            sdk = _sdk;
-            sdk.joinRoom(JoinRoomParams(ROOM_UUID, ROOM_TOKEN));
-          },
-        ), // This trailing comma makes auto-formatting nicer for build methods.
+      body: Stack(
+        children: [
+          WhiteBoardWithInApp(
+            appId: APP_ID,
+            log: true,
+            backgroundColor: Color(0xFFF9F4E7),
+            assetFilePath: "assets/whiteboardBridge/index.html",
+            onCreated: (_sdk) async {
+              var _room = await _sdk.joinRoom(
+                  params: JoinRoomParams(ROOM_UUID, ROOM_TOKEN),
+                  onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
+                  onCanUndoStepsUpdate: _onCanUndoStepsUpdate,
+                  onRoomStateChanged: _onRoomStateChanged);
+              _room.disableSerialization(false);
+
+              setState(() {
+                sdk = _sdk;
+                room = _room;
+              });
+            },
+          ),
+          OperatingView(sdk: sdk, room: room),
+        ],
+      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
