@@ -55,7 +55,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   WhiteBoardSDK sdk;
   WhiteBoardRoom room;
-  List<WhiteBoardScene> scenes;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
   static const String ROOM_UUID = "2e2762f05c5911eb894d4bad573d796b";

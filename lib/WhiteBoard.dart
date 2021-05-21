@@ -127,17 +127,34 @@ class WhiteBoardSDK {
     return completer.future;
   }
 
-  Future<WhiteBoardPlayer> replayRoom(ReplayRoomParams params) {
+  Future<WhiteBoardPlayer> replayRoom({
+    @required ReplayRoomParams params,
+    OnPlayerStateChanged onPlayerStateChanged,
+    OnPlayerPhaseChanged onPlayerPhaseChanged,
+    OnLoadFirstFrame onLoadFirstFrame,
+    OnSliceChanged onSliceChanged,
+    OnScheduleTimeChanged onScheduleTimeChanged,
+    OnPlaybackError onPlaybackError,
+  }) {
     var completer = Completer<WhiteBoardPlayer>();
     dsBridge.callHandler("sdk.replayRoom", [params.toJson()], ([returnValue]) {
-      var room = WhiteBoardPlayer(dsBridge: dsBridge, params: params);
+      var replayRoom = WhiteBoardPlayer(
+        dsBridge: dsBridge,
+        params: params,
+        onPlayerPhaseChanged: onPlayerPhaseChanged,
+        onPlayerStateChanged: onPlayerStateChanged,
+        onLoadFirstFrame: onLoadFirstFrame,
+        onSliceChanged: onSliceChanged,
+        onScheduleTimeChanged: onScheduleTimeChanged,
+        onPlaybackError: onPlaybackError,
+      );
       try {
-        room.initTimeInfoWithReplyRoom(jsonDecode(returnValue));
-        completer.complete(room);
+        replayRoom.initTimeInfoWithReplayRoom(jsonDecode(returnValue));
+        completer.complete(replayRoom);
       } catch (e) {
         completer.completeError(e);
       }
-      return room;
+      return replayRoom;
     });
     return completer.future;
   }
@@ -251,6 +268,7 @@ class WhiteBoardDisplayer {
     return completer.future;
   }
 
+  // TODO Test
   Future<Map<String, List<WhiteBoardScene>>> getEntireScenes(String path) {
     var completer = Completer<Map<String, List<WhiteBoardScene>>>();
 
@@ -336,13 +354,26 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
   String tag = "WhiteBoardPlayer";
 
   ReplayTimeInfo replayTimeInfo = ReplayTimeInfo();
-  String phase = WhiteBoardPlayerPhase.Buffering;
+  String phase = WhiteBoardPlayerPhase.WaitingFirstFrame;
   int currentTime = 0;
 
   OnPlayerPhaseChanged onPlayerPhaseChanged;
   OnScheduleTimeChanged onScheduleTimeChanged;
+  OnPlayerStateChanged onPlayerStateChanged;
+  OnLoadFirstFrame onLoadFirstFrame;
+  OnSliceChanged onSliceChanged;
+  OnPlaybackError onPlaybackError;
 
-  WhiteBoardPlayer({this.params, this.dsBridge}) : super(dsBridge) {
+  WhiteBoardPlayer(
+      {this.params,
+      this.dsBridge,
+      this.onPlayerPhaseChanged,
+      this.onPlayerStateChanged,
+      this.onLoadFirstFrame,
+      this.onScheduleTimeChanged,
+      this.onSliceChanged,
+      this.onPlaybackError})
+      : super(dsBridge) {
     dsBridge.addJavascriptObject(this.createPlayerInterface());
   }
 
@@ -355,6 +386,9 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
     interface.setMethod("onStoppedWithError", this._onStoppedWithError);
     interface.setMethod("fireCatchErrorWhenAppendFrame", this._fireCatchErrorWhenAppendFrame);
     interface.setMethod("onCatchErrorWhenRender", this._onCatchErrorWhenRender);
+    interface.setMethod("fireMagixEvent", this._fireMagixEvent);
+    interface.setMethod("fireHighFrequencyEvent", this._fireHighFrequencyEvent);
+    interface.setMethod("onSliceChanged", this._onSliceChanged);
     return interface;
   }
 
@@ -367,85 +401,116 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
 
   _onPlayerStateChanged(String value) {
     print(value);
+    if (onPlayerStateChanged != null) {
+      onPlayerStateChanged(WhiteBoardPlayerState()..fromJson(jsonDecode(value)));
+    }
   }
 
   _onLoadFirstFrame(value) {
     print(value);
+    if (onPlaybackError != null) {
+      onPlaybackError(value);
+    }
   }
 
   _onScheduleTimeChanged(value) {
     currentTime = value;
     if (onScheduleTimeChanged != null) {
-      onScheduleTimeChanged(value);
+      onScheduleTimeChanged(int.parse(value));
     }
   }
 
   _onStoppedWithError(value) {
     print(value);
+    if (onPlaybackError != null) {
+      onPlaybackError(value);
+    }
   }
 
   _fireCatchErrorWhenAppendFrame(value) {
     print(value);
+    if (onPlaybackError != null) {
+      onPlaybackError(value);
+    }
   }
 
   _onCatchErrorWhenRender(value) {
     print(value);
+    if (onPlaybackError != null) {
+      onPlaybackError(value);
+    }
   }
 
-  initTimeInfoWithReplyRoom(Map<String, dynamic> json) {
+  _fireMagixEvent(value) {
+    print(value);
+  }
+
+  _fireHighFrequencyEvent(value) {
+    print(value);
+  }
+
+  _onSliceChanged(value) {
+    print(value);
+    if (onSliceChanged != null) {
+      onSliceChanged(value);
+    }
+  }
+
+  initTimeInfoWithReplayRoom(Map<String, dynamic> json) {
     replayTimeInfo = ReplayTimeInfo()..fromJson(json["timeInfo"]);
   }
 
   play() {
-    dsBridge.callHandler("player.play", [], null);
+    dsBridge.callHandler("player.play");
   }
 
   stop() {
-    dsBridge.callHandler("player.stop", [], null);
+    dsBridge.callHandler("player.stop");
   }
 
   pause() {
-    dsBridge.callHandler("player.pause", [], null);
+    dsBridge.callHandler("player.pause");
   }
 
   seekToScheduleTime(double beginTime) {
     currentTime = beginTime.toInt();
-    dsBridge.callHandler("player.seekToScheduleTime", [beginTime], null);
+    dsBridge.callHandler("player.seekToScheduleTime", [beginTime]);
   }
 
+  /// 参数限定 PlayerObserverMode
   setObserverMode(String observerMode) {
-    dsBridge.callHandler("player.setObserverMode", [observerMode], null);
+    dsBridge.callHandler("player.setObserverMode", [observerMode]);
   }
 
   setPlaybackSpeed(double rate) {
-    dsBridge.callHandler("player.setPlaybackSpeed", [rate], null);
+    dsBridge.callHandler("player.setPlaybackSpeed", [rate]);
+  }
+
+  Future<double> get playbackSpeed async {
+    var value = await dsBridge.callHandler("player.state.playbackSpeed");
+    return double.tryParse(value);
   }
 
   Future<String> get roomUUID {
-    return dsBridge.callHandler("player.state.roomUUID", [], null);
+    return dsBridge.callHandler("player.state.roomUUID");
   }
 
   Future<String> getPhase() {
-    return dsBridge.callHandler("player.state.phase", [], null);
+    return dsBridge.callHandler("player.state.phase");
   }
 
   Future<WhiteBoardPlayerState> get playerState async {
-    var value = await dsBridge.callHandler("player.state.playerState", [], null);
+    var value = await dsBridge.callHandler("player.state.playerState");
     return WhiteBoardPlayerState()..fromJson(jsonDecode(value));
   }
 
   Future<bool> get isPlayable async {
-    var value = await dsBridge.callHandler("player.state.isPlayable", [], null);
+    var value = await dsBridge.callHandler("player.state.isPlayable");
     return value == 'true';
   }
 
-  Future<double> get playbackSpeed async {
-    var value = await dsBridge.callHandler("player.state.playbackSpeed", [], null);
-    return double.tryParse(value);
-  }
-
   Future<ReplayTimeInfo> get timeInfo async {
-    var value = await dsBridge.callHandler("player.state.timeInfo", [], null);
+    var value = await dsBridge.callHandler("player.state.timeInfo");
     return ReplayTimeInfo()..fromJson(jsonDecode(value));
   }
 }
@@ -985,9 +1050,7 @@ class WhiteBoardDisplayerState {
   }
 
   parseGlobalState(Map<String, dynamic> state) {
-    return globalStateParser != null
-        ? globalStateParser(state)
-        : WhiteBoardGlobalState();
+    return globalStateParser != null ? globalStateParser(state) : WhiteBoardGlobalState();
   }
 }
 
@@ -1378,8 +1441,21 @@ class ReplayRoomParams extends RoomParams {
   final String mediaURL;
   final int beginTimestamp;
   final int duration;
+  CameraBound cameraBound;
+  String region;
+  String slice;
 
-  ReplayRoomParams({this.room, this.roomToken, this.mediaURL, this.beginTimestamp, this.duration});
+  /// 回调播放进度的频率 默认500ms
+  int step = 500;
+
+  ReplayRoomParams(
+      {this.room,
+      this.roomToken,
+      this.mediaURL,
+      this.beginTimestamp,
+      this.duration,
+      this.region,
+      this.step});
 
   @override
   Map<String, dynamic> toJson() {
@@ -1391,7 +1467,10 @@ class ReplayRoomParams extends RoomParams {
       // "mediaURL": mediaURL,
       "beginTimestamp": beginTimestamp,
       "duration": duration,
-    };
+      if (cameraBound != null) "cameraBound": cameraBound.toJson(),
+      "region": region,
+      "slice": slice,
+    }..removeWhere((key, value) => value == null);
   }
 }
 
@@ -1617,4 +1696,22 @@ class WhiteBoardPoint {
     x = jsonMap["x"];
     y = jsonMap["y"];
   }
+}
+
+/// 白板回放的查看模式。
+class PlayerObserverMode {
+  /// （默认）跟随模式。
+  /// 在跟随模式下，用户观看白板回放时的视角跟随规则如下：
+  /// - 如果录制的实时房间中有主播，则跟随主播的视角。
+  /// - 如果录制的实时房间中没有主播，即跟随用户 ID 最小的具有读写权限用户（即房间内的第一个互动模式的用户）的视角。
+  /// - 如果录制的实时房间中既没有主播，也没有读写权限的用户，则以白板初始化时的视角（中心点在世界坐标系的原点，缩放比例为 1.0）观看回放。
+  ///
+  /// @note
+  /// 在跟随模式下，如果用户通过触屏手势调整了视角，则会自动切换到自由模式。
+  static const directory = "directory";
+
+  /// 自由模式。
+  ///
+  /// 在自由模式下，用户观看回放时可以自由调整视角。
+  static const freedom = "freedom";
 }
