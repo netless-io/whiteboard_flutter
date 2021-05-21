@@ -103,30 +103,30 @@ class OperatingViewState extends State<OperatingView> {
 
   OperatingViewState() {
     allOpList = [
-      OpListItem("重连", Category.Misc, () {
+      OpListItem("重连", Category.Misc, () async {
+        room.disconnect();
+      }),
+      OpListItem("清屏（保留PPT）", Category.Misc, () {
+        room.cleanScene(true);
+      }),
+      OpListItem("主播模式", Category.Interaction, () {
         room.setViewMode(WhiteBoardViewMode.Broadcaster);
       }),
-      OpListItem("主播模式", Category.State, () {
-        room.setViewMode(WhiteBoardViewMode.Broadcaster);
-      }),
-      OpListItem("自由模式", Category.State, () {
+      OpListItem("自由模式", Category.Interaction, () {
         room.setViewMode(WhiteBoardViewMode.Freedom);
       }),
-      OpListItem("跟随模式", Category.State, () {
+      OpListItem("跟随模式", Category.Interaction, () {
         room.setViewMode(WhiteBoardViewMode.Follower);
       }),
-      OpListItem("获取视角状态", Category.State, () async {
+      OpListItem("获取视角状态", Category.Interaction, () async {
         var state = await room.getBroadcastState();
         showHint("ViewMode ${state.mode}");
       }),
-      OpListItem("铺满PPT", Category.Image, () {
-        room.scalePptToFit(AnimationMode.Continuous);
-      }),
-      OpListItem("移动视角", Category.State, () {
+      OpListItem("移动视角", Category.Interaction, () {
         var config = WhiteBoardCameraConfig(centerX: 100);
         room.moveCamera(config);
       }),
-      OpListItem("调整视野", Category.State, () {
+      OpListItem("调整视野", Category.Interaction, () {
         var config = RectangleConfig(1000, 1000, 0, 0);
         room.moveCameraToContainer(config);
       }),
@@ -145,33 +145,58 @@ class OperatingViewState extends State<OperatingView> {
       OpListItem("粘贴", Category.Interaction, () {
         room.paste();
       }),
-      OpListItem("清屏（保留PPT）", Category.Interaction, () {
-        room.cleanScene(true);
+      OpListItem("铺满PPT", Category.Image, () {
+        room.scalePptToFit(AnimationMode.Continuous);
       }),
-      OpListItem("插入新页面", Category.Image, () {
-        var config = WhiteBoardCameraConfig(centerX: 100);
-        room.moveCamera(config);
+      OpListItem("插入新页面", Category.Image, () async {
+        var sceneState = await room.getSceneState();
+        var dir = sceneState.scenePath.substring(0, sceneState.scenePath.lastIndexOf('/'));
+
+        room.putScenes(dir, [WhiteBoardScene(name: "page1")], 0);
+        room.setScenePath(dir + "/page1");
       }),
-      OpListItem("插入新PPT", Category.Image, () {
-        var config = WhiteBoardCameraConfig(centerX: 100);
-        room.moveCamera(config);
+      OpListItem("插入新PPT", Category.Image, () async {
+        var sceneState = await room.getSceneState();
+        var dir = sceneState.scenePath.substring(0, sceneState.scenePath.lastIndexOf('/'));
+
+        var ppt = WhiteBoardPpt(
+            src:
+            "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/image/alin-rusu-1239275-unsplash_opt.jpg",
+            width: 600,
+            height: 600);
+        room.putScenes(dir, [WhiteBoardScene(name: "page2", ppt: ppt)], 0);
+        room.setScenePath(dir + "/page2");
       }),
       OpListItem("插入图片", Category.Image, () {
-        var config = WhiteBoardCameraConfig(centerX: 100);
-        room.moveCamera(config);
+        var image = ImageInformation(centerX: 0, centerY: 0, width: 100, height: 200);
+        room.insertImageByUrl(
+            image, "https://white-pan.oss-cn-shanghai.aliyuncs.com/40/image/mask.jpg");
       }),
       OpListItem("获取Scene状态", Category.State, () {
-        var config = WhiteBoardCameraConfig(centerX: 100);
-        room.moveCamera(config);
+        room.getSceneState().then((value) => print("getSceneState Result ${value.toJson()}"));
       }),
       OpListItem("获取Room连接状态", Category.State, () {
-        var config = WhiteBoardCameraConfig(centerX: 100);
-        room.moveCamera(config);
+        room.getRoomPhase().then((value) => print("getRoomPhase reuslt ${value}"));
       }),
       OpListItem("获取Room教具状态", Category.State, () async {
-        room.getMemberState().then((value) => print(value.toJson()));
+        room.getMemberState().then((value) => print("member state ${value.toJson()}"));
       }),
-      OpListItem("获取Room状态", Category.State, () {}),
+      OpListItem("获取Room状态", Category.State, () {
+        room.getRoomState().then((value) => print("room state ${value.toJson()}"));
+      }),
+      OpListItem("自定义状态", Category.State, () {
+        room.setGlobalState(GlobalDataFoo(a: "change_aaa", b: "change_bbb", c: 321));
+        room
+            .getGlobalState((jsonMap) =>
+        GlobalDataFoo()
+          ..fromJson(jsonMap))
+            .then((value) => print(value.toJson()));
+      }),
+      OpListItem("房间成员", Category.State, () {
+        room
+            .getRoomMembers()
+            .then((value) => print("RoomMembers: ${value.map((e) => e.toJson()).join(';;;;')}"));
+      }),
       OpListItem("只读切换", Category.Interaction, () {
         room.setWritable(!room.getWritable());
       }),
@@ -199,10 +224,7 @@ class OperatingViewState extends State<OperatingView> {
             currentApplianceName: ApplianceName.shape, shapeType: ShapeType.pentagram);
         room.setMemberState(state);
       }),
-      OpListItem("缩放", Category.Interaction, () {
-        var config = WhiteBoardCameraConfig(centerX: 100);
-        room.moveCamera(config);
-      }),
+      OpListItem("缩放", Category.Interaction, () {}),
     ];
     filterOptList = allOpList;
   }
@@ -216,34 +238,69 @@ class OperatingViewState extends State<OperatingView> {
   Widget _buildOpListItem(BuildContext context, int index) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: SizedBox(
-          width: 100.0,
-          child: ElevatedButton(
-              child: Text("${filterOptList[index].text}"),
-              onPressed: filterOptList[index].handler)),
+      child: ElevatedButton(
+          child: Text("${filterOptList[index].text}", softWrap: true),
+          onPressed: filterOptList[index].handler),
     );
   }
 
   Widget _buildCategoryListItem(BuildContext context, int index) {
     return Padding(
         padding: const EdgeInsets.all(8.0),
-        child: SizedBox(
-          width: 100.0,
-          child: ElevatedButton(
-              child: Text("${categoryList[index].toString().split('.').last}"),
-              onPressed: () {
-                setState(() {
-                  if (categoryList[index] == Category.All)
-                    filterOptList = allOpList;
-                  else
-                    filterOptList =
-                        allOpList.where((item) => item.category == categoryList[index]).toList();
-                });
-              }),
-        ));
+        child: ElevatedButton(
+            child: Text(_getFilterDisplay(categoryList[index]), softWrap: true),
+            onPressed: () {
+              setState(() {
+                if (categoryList[index] == Category.All)
+                  filterOptList = allOpList;
+                else
+                  filterOptList =
+                      allOpList.where((item) => item.category == categoryList[index]).toList();
+              });
+            }));
   }
 
   void showHint(String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
+
+  String _getFilterDisplay(Category category) {
+    switch (category) {
+      case Category.All:
+        return "全部";
+      case Category.Image:
+        return "图片及PPT";
+      case Category.Interaction:
+        return "交互操作";
+      case Category.State:
+        return "状态信息";
+      case Category.Misc:
+        return "其它";
+      default:
+        return "Unknown";
+    }
+  }
+}
+
+class GlobalDataFoo implements WhiteBoardGlobalState {
+  String a = "aaaa";
+  String b = "bbb";
+  int c = 123;
+
+  GlobalDataFoo({this.a, this.b, this.c});
+
+  @override
+  void fromJson(Map<String, dynamic> json) {
+    a = json["a"];
+    b = json["b"];
+    c = json["c"];
+  }
+
+  @override
+  Map<String, dynamic> toJson() =>
+      {
+        "a": a,
+        "b": b,
+        "c": c,
+      };
 }

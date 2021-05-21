@@ -52,7 +52,7 @@ class WhiteBoardWithInApp extends StatelessWidget {
 
   final String assetFilePath;
 
-  static GlobalKey<DsBridgeInAppWebViewState> webview = GlobalKey<DsBridgeInAppWebViewState>();
+  static GlobalKey<DsBridgeInAppWebViewState> webView = GlobalKey<DsBridgeInAppWebViewState>();
 
   WhiteBoardWithInApp(
       {Key key,
@@ -66,7 +66,7 @@ class WhiteBoardWithInApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DsBridgeInAppWebView(
-      key: webview,
+      key: webView,
       url: "",
       onWebViewCreated: (controller) {
         controller.loadFile(assetFilePath: assetFilePath);
@@ -117,7 +117,7 @@ class WhiteBoardSDK {
           onCanRedoStepsUpdate: onCanRedoStepsUpdate,
           onRoomError: onRoomError);
       try {
-        room.initStateWithJoinRoom(jsonDecode(value));
+        room._initStateWithJoinRoom(jsonDecode(value));
         completer.complete(room);
       } catch (e) {
         completer.completeError(e);
@@ -628,15 +628,15 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     return disconnectedBySelf;
   }
 
-  initStateWithJoinRoom(Map<String, dynamic> json) {
+  _initStateWithJoinRoom(Map<String, dynamic> json) {
     state = WhiteBoardRoomState()..fromJson(json["state"]);
   }
 
-  setGlobalState(dynamic modifyState) {
-    dsBridge.callHandler("room.setGlobalState", [jsonEncode(modifyState)]);
+  setGlobalState(WhiteBoardGlobalState modifyState) {
+    dsBridge.callHandler("room.setGlobalState", [modifyState.toJson()]);
   }
 
-  Future<T> getGlobalState<T>(GlobalStateParser<T> parser) {
+  Future<T> getGlobalState<T extends WhiteBoardGlobalState>(GlobalStateParser<T> parser) {
     var completer = Completer<T>();
     dsBridge.callHandler("room.getGlobalState", [], ([value]) {
       completer.complete(parser(jsonDecode(value)));
@@ -644,21 +644,21 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     return completer.future;
   }
 
-  setMemberState(WhiteBoardMemberState modifyState) {
-    dsBridge.callHandler('room.setMemberState', [modifyState.toJson()], null);
+  setMemberState(WhiteBoardMemberState state) {
+    dsBridge.callHandler('room.setMemberState', [state.toJson()]);
   }
 
   Future<WhiteBoardMemberState> getMemberState() {
     var completer = Completer<WhiteBoardMemberState>();
     dsBridge.callHandler("room.getMemberState", [], ([value]) {
-      completer.complete(jsonDecode(value));
+      completer.complete(WhiteBoardMemberState()..fromJson(jsonDecode(value)));
     });
     return completer.future;
   }
 
   Future<List<WhiteBoardRoomMember>> getRoomMembers() {
     var completer = Completer<List<WhiteBoardRoomMember>>();
-    dsBridge.callHandler("room.getMemberState", [], ([value]) {
+    dsBridge.callHandler("room.getRoomMembers", [], ([value]) {
       var members = (json.decode(value) as List)
           ?.map((jsonMap) => WhiteBoardRoomMember.fromJson(jsonMap))
           ?.toList();
@@ -725,7 +725,7 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
   Future<WhiteBoardRoomState> getRoomState() {
     var completer = Completer<WhiteBoardRoomState>();
     dsBridge.callHandler("room.state.getRoomState", [], ([value]) {
-      var data = WhiteBoardRoomState()..fromJson(jsonDecode(value));
+      var data = WhiteBoardRoomState()..fromJson(value);
       completer.complete(data);
     });
     return completer.future;
@@ -941,10 +941,9 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
   // 有SDK生成uuid并插入图片
   void insertImageByUrl(ImageInformation imageInfo, String url) {
     var uuid = _asUuidV4();
-    dsBridge.callHandler("room.completeImageUpload", [uuid, url]);
-
     imageInfo.uuid = uuid;
     dsBridge.callHandler("room.insertImage", [imageInfo.toJson()]);
+    dsBridge.callHandler("room.completeImageUpload", [uuid, url]);
   }
 
   String _asUuidV4() {
@@ -1039,7 +1038,7 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
 }
 
 class WhiteBoardDisplayerState {
-  var globalState;
+  WhiteBoardGlobalState globalState;
   var globalStateParser;
   WhiteBoardSceneState sceneState;
   WhiteBoardCameraConfig cameraState;
@@ -1050,7 +1049,7 @@ class WhiteBoardDisplayerState {
   }
 
   parseGlobalState(Map<String, dynamic> state) {
-    return globalStateParser != null ? globalStateParser(state) : WhiteBoardGlobalState();
+    return globalStateParser != null ? globalStateParser(state) : null;
   }
 }
 
@@ -1103,7 +1102,7 @@ class WhiteBoardRoomState extends WhiteBoardDisplayerState {
       "zoomScale": zoomScale,
       "roomMembers": roomMembers.map((e) => e.toJson()).toList(),
       "cameraState": cameraState.toJson(),
-      "globalState": globalState.toJson(),
+      if (globalState != null) "globalState": globalState.toJson(),
       "sceneState": sceneState.toJson(),
     };
   }
@@ -1111,14 +1110,10 @@ class WhiteBoardRoomState extends WhiteBoardDisplayerState {
 
 typedef T GlobalStateParser<T>(Map<String, dynamic> jsonMap);
 
-class WhiteBoardGlobalState {
-  WhiteBoardGlobalState();
+abstract class WhiteBoardGlobalState {
+  Map<String, dynamic> toJson();
 
-  Map<String, dynamic> toJson() {
-    return {};
-  }
-
-  WhiteBoardGlobalState.fromJson(Map<String, dynamic> json);
+  void fromJson(Map<String, dynamic> json);
 }
 
 class WhiteBoardRoomMember {
@@ -1303,6 +1298,8 @@ class WhiteBoardScene {
   String name;
   WhiteBoardPpt ppt;
 
+  WhiteBoardScene({this.name, this.ppt});
+
   void fromJson(Map<String, dynamic> json) {
     name = json["name"];
     ppt = json["ppt"] != null ? (WhiteBoardPpt.fromJson(json["ppt"])) : null;
@@ -1311,7 +1308,7 @@ class WhiteBoardScene {
   Map<String, dynamic> toJson() {
     return {
       "name": name,
-      "ppt": ppt.toJson(),
+      if (ppt != null) "ppt": ppt.toJson(),
     };
   }
 }
@@ -1321,6 +1318,8 @@ class WhiteBoardPpt {
   int width;
   int height;
   String previewURL;
+
+  WhiteBoardPpt({this.src, this.width, this.height, this.previewURL});
 
   WhiteBoardPpt.fromJson(Map<String, dynamic> json) {
     src = json["src"];
@@ -1672,7 +1671,7 @@ class ImageInformation {
   /// 设置锁定图片。
   bool locked;
 
-  ImageInformation(this.uuid, this.centerX, this.centerY, this.width, this.height, this.locked);
+  ImageInformation({this.uuid, this.centerX, this.centerY, this.width, this.height, this.locked});
 
   Map<String, dynamic> toJson() {
     return {
