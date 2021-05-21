@@ -127,8 +127,8 @@ class WhiteBoardSDK {
     return completer.future;
   }
 
-  Future<WhiteBoardPlayer> replayRoom({
-    @required ReplayRoomParams params,
+  Future<WhiteBoardPlayer> replayRoom(
+    ReplayRoomParams params, {
     OnPlayerStateChanged onPlayerStateChanged,
     OnPlayerPhaseChanged onPlayerPhaseChanged,
     OnLoadFirstFrame onLoadFirstFrame,
@@ -416,7 +416,7 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
   _onScheduleTimeChanged(value) {
     currentTime = value;
     if (onScheduleTimeChanged != null) {
-      onScheduleTimeChanged(int.parse(value));
+      onScheduleTimeChanged(value);
     }
   }
 

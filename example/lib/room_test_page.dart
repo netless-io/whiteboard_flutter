@@ -5,6 +5,64 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_whiteboard_sdk/flutter_whiteboard_sdk.dart';
 
+class RoomTestPage extends StatefulWidget {
+  RoomTestPage({Key key}) : super(key: key);
+
+  @override
+  _RoomTestPageSate createState() => _RoomTestPageSate();
+}
+
+class _RoomTestPageSate extends State<RoomTestPage> {
+  WhiteBoardSDK sdk;
+  WhiteBoardRoom room;
+
+  static const String APP_ID = '283/VGiScM9Wiw2HJg';
+  static const String ROOM_UUID = "2e2762f05c5911eb894d4bad573d796b";
+  static const String ROOM_TOKEN =
+      "NETLESSROOM_YWs9M2R5WmdQcFlLcFlTdlQ1ZjRkOFBiNjNnY1RoZ3BDSDlwQXk3Jm5vbmNlPTE2MTEyODIzNjY1MjUwMCZyb2xlPTAmc2lnPTVhZDY1NDkwNGUyMDE5MjRkNDRiYzBhMDUxYWNkNjc0ZDdkNzY4NGNhNTQzZWQ0YTIyMzA2N2U1MDQ2NmMyNWImdXVpZD0yZTI3NjJmMDVjNTkxMWViODk0ZDRiYWQ1NzNkNzk2Yg";
+
+  OnCanRedoStepsUpdate _onCanRedoStepsUpdate = (stepNum) {
+    print('can redo step : $stepNum');
+  };
+
+  OnCanUndoStepsUpdate _onCanUndoStepsUpdate = (stepNum) {
+    print('can undo step : $stepNum');
+  };
+
+  OnRoomStateChanged _onRoomStateChanged = (newState) {
+    print('can redo step : ${newState.toJson()}');
+  };
+
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        WhiteBoardWithInApp(
+          appId: APP_ID,
+          log: true,
+          backgroundColor: Color(0xFFF9F4E7),
+          assetFilePath: "assets/whiteboardBridge/index.html",
+          onCreated: (_sdk) async {
+            var _room = await _sdk.joinRoom(
+                params: JoinRoomParams(ROOM_UUID, ROOM_TOKEN),
+                onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
+                onCanUndoStepsUpdate: _onCanUndoStepsUpdate,
+                onRoomStateChanged: _onRoomStateChanged);
+            _room.disableSerialization(false);
+
+            setState(() {
+              sdk = _sdk;
+              room = _room;
+            });
+          },
+        ),
+        OperatingView(sdk: sdk, room: room),
+      ],
+    );
+  }
+}
+
 class OperatingView extends StatefulWidget {
   WhiteBoardSDK sdk;
   WhiteBoardRoom room;
@@ -84,7 +142,7 @@ class OperatingViewState extends State<OperatingView> {
         width: double.infinity,
         height: 60,
         child: ListView.builder(
-          itemCount: categoryList.length,
+          itemCount: categorys.length,
           scrollDirection: Axis.horizontal,
           //列表项构造器
           itemBuilder: (BuildContext context, int index) {
@@ -97,7 +155,7 @@ class OperatingViewState extends State<OperatingView> {
 
   var allOpList = <OpListItem>[];
   var filterOptList = <OpListItem>[];
-  var categoryList = Category.values;
+  var categorys = Category.values;
 
   WhiteBoardRoom get room => widget.room;
 
@@ -161,7 +219,7 @@ class OperatingViewState extends State<OperatingView> {
 
         var ppt = WhiteBoardPpt(
             src:
-            "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/image/alin-rusu-1239275-unsplash_opt.jpg",
+                "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/image/alin-rusu-1239275-unsplash_opt.jpg",
             width: 600,
             height: 600);
         room.putScenes(dir, [WhiteBoardScene(name: "page2", ppt: ppt)], 0);
@@ -187,9 +245,7 @@ class OperatingViewState extends State<OperatingView> {
       OpListItem("自定义状态", Category.State, () {
         room.setGlobalState(GlobalDataFoo(a: "change_aaa", b: "change_bbb", c: 321));
         room
-            .getGlobalState((jsonMap) =>
-        GlobalDataFoo()
-          ..fromJson(jsonMap))
+            .getGlobalState((jsonMap) => GlobalDataFoo()..fromJson(jsonMap))
             .then((value) => print(value.toJson()));
       }),
       OpListItem("房间成员", Category.State, () {
@@ -248,14 +304,14 @@ class OperatingViewState extends State<OperatingView> {
     return Padding(
         padding: const EdgeInsets.all(8.0),
         child: ElevatedButton(
-            child: Text(_getFilterDisplay(categoryList[index]), softWrap: true),
+            child: Text(_getFilterDisplay(categorys[index]), softWrap: true),
             onPressed: () {
               setState(() {
-                if (categoryList[index] == Category.All)
+                if (categorys[index] == Category.All)
                   filterOptList = allOpList;
                 else
                   filterOptList =
-                      allOpList.where((item) => item.category == categoryList[index]).toList();
+                      allOpList.where((item) => item.category == categorys[index]).toList();
               });
             }));
   }
@@ -297,8 +353,7 @@ class GlobalDataFoo implements WhiteBoardGlobalState {
   }
 
   @override
-  Map<String, dynamic> toJson() =>
-      {
+  Map<String, dynamic> toJson() => {
         "a": a,
         "b": b,
         "c": c,
