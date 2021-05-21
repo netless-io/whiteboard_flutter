@@ -743,13 +743,15 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     return completer.future;
   }
 
-  Future<Map> disconnect() {
+  Future<bool> disconnect() {
     disconnectedBySelf = true;
-    var completer = Completer<Map>();
+    var completer = Completer<bool>();
     dsBridge.callHandler('room.disconnect', [], ([value]) {
-      // TODO Parse Data
-      var data = jsonDecode(value);
-      completer.complete(data);
+      if (value == null) {
+        completer.complete(true);
+      } else {
+        completer.completeError(value);
+      }
     });
     return completer.future;
   }

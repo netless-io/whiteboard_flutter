@@ -30,8 +30,16 @@ class _RoomTestPageSate extends State<RoomTestPage> {
   };
 
   OnRoomStateChanged _onRoomStateChanged = (newState) {
-    print('can redo step : ${newState.toJson()}');
+    print('room state change : ${newState.toJson()}');
   };
+
+  Future<WhiteBoardRoom> _joinRoomAgain() async {
+    return await sdk.joinRoom(
+        params: JoinRoomParams(ROOM_UUID, ROOM_TOKEN),
+        onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
+        onCanUndoStepsUpdate: _onCanUndoStepsUpdate,
+        onRoomStateChanged: _onRoomStateChanged);
+  }
 
   // This widget is the root of your application.
   @override
@@ -57,7 +65,7 @@ class _RoomTestPageSate extends State<RoomTestPage> {
             });
           },
         ),
-        OperatingView(sdk: sdk, room: room),
+        OperatingView(sdk: sdk, room: room, joinRoomAgain: _joinRoomAgain),
       ],
     );
   }
@@ -66,9 +74,9 @@ class _RoomTestPageSate extends State<RoomTestPage> {
 class OperatingView extends StatefulWidget {
   WhiteBoardSDK sdk;
   WhiteBoardRoom room;
-  WhiteBoardPlayer player;
+  Function joinRoomAgain;
 
-  OperatingView({Key key, this.sdk, this.room, this.player}) : super(key: key);
+  OperatingView({Key key, this.sdk, this.room, this.joinRoomAgain}) : super(key: key);
 
   @override
   State<OperatingView> createState() {
@@ -162,7 +170,11 @@ class OperatingViewState extends State<OperatingView> {
   OperatingViewState() {
     allOpList = [
       OpListItem("重连", Category.Misc, () async {
-        room.disconnect();
+        room.disconnect().then((value) {
+          Future.delayed(Duration(seconds: 3)).then((value) => widget.joinRoomAgain());
+        }).catchError((o) {
+          print("disconnect error");
+        });
       }),
       OpListItem("清屏（保留PPT）", Category.Misc, () {
         room.cleanScene(true);
