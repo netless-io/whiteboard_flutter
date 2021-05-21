@@ -7,7 +7,6 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'DsBridge.dart';
 
 class DsBridgeInApp extends DsBridge {
-
   static bool isDebug = false;
 
   InAppWebViewController _controller;
@@ -17,11 +16,12 @@ class DsBridgeInApp extends DsBridge {
   void initWithInAppWebViewController(InAppWebViewController controller) {
     this.addJavascriptInterface(InnerJavascriptInterface());
     _controller = controller;
-    _controller.addJavaScriptHandler(handlerName: BRIDGE_NAME, callback: (args) {
-       var res = jsonDecode(args[0]);
-        if(javascriptInterface != null)
-          javascriptInterface.call(res["method"], res["args"]); 
-    });
+    _controller.addJavaScriptHandler(
+        handlerName: BRIDGE_NAME,
+        callback: (args) {
+          var res = jsonDecode(args[0]);
+          if (javascriptInterface != null) javascriptInterface.call(res["method"], res["args"]);
+        });
   }
 
   DsBridgeInApp() {
@@ -33,22 +33,19 @@ class DsBridgeInApp extends DsBridge {
   @override
   FutureOr<String> evaluateJavascript(String javascript) {
     try {
-      if(_controller == null) {
+      if (_controller == null) {
         return null;
       }
       return _controller.evaluateJavascript(source: javascript).then<String>((value) {
         return value as String;
       });
-    }
-    on MissingPluginException catch(e) {
+    } on MissingPluginException catch (e) {
       print(e);
       return null;
-    }
-    on Error catch(e) {
-       print(e);
-       return null;
-    }
-    catch (e) {
+    } on Error catch (e) {
+      print(e);
+      return null;
+    } catch (e) {
       print(e);
       return null;
     }

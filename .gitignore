@@ -13,7 +13,11 @@
 *.iml
 *.ipr
 *.iws
-.idea/
+.idea/**
+# Keep the code styles.
+!/.idea/codeStyles
+!.idea/codeStyles/Project.xml
+!.idea/codeStyles/codeStyleConfig.xml
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
@@ -72,3 +76,15 @@ build/
 !**/ios/**/default.mode2v3
 !**/ios/**/default.pbxuser
 !**/ios/**/default.perspectivev3
+
+# Flutter
+pubspec.lock
+Podfile.lock
+Pods/
+.symlinks/
+**/Flutter/App.framework/
+**/Flutter/ephemeral/
+**/Flutter/Flutter.podspec
+**/Flutter/Flutter.framework/
+**/Flutter/Generated.xcconfig
+**/Flutter/flutter_assets/
