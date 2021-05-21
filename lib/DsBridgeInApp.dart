@@ -20,8 +20,7 @@ class DsBridgeInApp extends DsBridge {
         handlerName: BRIDGE_NAME,
         callback: (args) {
           var res = jsonDecode(args[0]);
-          if (javascriptInterface != null)
-            javascriptInterface.call(res["method"], res["args"]);
+          if (javascriptInterface != null) javascriptInterface.call(res["method"], res["args"]);
         });
   }
 
@@ -37,9 +36,7 @@ class DsBridgeInApp extends DsBridge {
       if (_controller == null) {
         return null;
       }
-      return _controller
-          .evaluateJavascript(source: javascript)
-          .then<String>((value) {
+      return _controller.evaluateJavascript(source: javascript).then<String>((value) {
         return value as String;
       });
     } on MissingPluginException catch (e) {

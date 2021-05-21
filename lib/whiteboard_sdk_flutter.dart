@@ -1,4 +1,4 @@
-library flutter_whiteboard_sdk;
+library whiteboard_sdk_flutter;
 
 export 'DsBridge.dart';
 export 'DsBridgeInApp.dart';

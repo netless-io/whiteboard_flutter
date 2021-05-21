@@ -32,7 +32,7 @@ class WhiteBoard extends StatelessWidget {
       key: webView,
       url: "",
       onWebViewCreated: (controller) {
-        controller.loadAssetHtmlFile(assetFilePath);
+        controller.loadUrl(assetFilePath);
       },
       onDSBridgeCreated: (DsBridge dsBridge) {
         onCreated(WhiteBoardSDK(

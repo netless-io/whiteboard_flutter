@@ -88,13 +88,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_whiteboard_sdk:
-    dependency: "direct main"
-    description:
-      path: ".."
-      relative: true
-    source: path
-    version: "0.0.1"
   matcher:
     dependency: transitive
     description:
@@ -194,12 +187,17 @@ packages:
   webview_flutter:
     dependency: transitive
     description:
-      path: "."
-      ref: a747cd4
-      resolved-ref: a747cd4901050853024071b93ad23064dcb788dc
-      url: "https://gitee.com/liuhong1happy/webview_flutter"
-    source: git
-    version: "1.0.7"
+      name: webview_flutter
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.7"
+  whiteboard_sdk_flutter:
+    dependency: "direct main"
+    description:
+      path: ".."
+      relative: true
+    source: path
+    version: "0.1.0"
 sdks:
   dart: ">=2.12.0 <3.0.0"
   flutter: ">=1.22.0"

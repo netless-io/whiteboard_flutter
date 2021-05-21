@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_whiteboard_sdk/flutter_whiteboard_sdk.dart';
+import 'package:whiteboard_sdk_flutter/whiteboard_sdk_flutter.dart';
 
 class RoomTestPage extends StatefulWidget {
   RoomTestPage({Key key}) : super(key: key);
@@ -246,7 +246,7 @@ class OperatingViewState extends State<OperatingView> {
         room.getSceneState().then((value) => print("getSceneState Result ${value.toJson()}"));
       }),
       OpListItem("获取Room连接状态", Category.State, () {
-        room.getRoomPhase().then((value) => print("getRoomPhase reuslt ${value}"));
+        room.getRoomPhase().then((value) => print("getRoomPhase result $value"));
       }),
       OpListItem("获取Room教具状态", Category.State, () async {
         room.getMemberState().then((value) => print("member state ${value.toJson()}"));

@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_whiteboard_sdk/flutter_whiteboard_sdk.dart';
+import 'package:whiteboard_sdk_flutter/whiteboard_sdk_flutter.dart';
 
 class PlaybackTestPage extends StatefulWidget {
   PlaybackTestPage({Key key}) : super(key: key);
@@ -82,7 +82,7 @@ class _PlaybackTestPageSate extends State<PlaybackTestPage> {
       }),
       OpListItem("播放速度设置", Category.All, () {
         player.setPlaybackSpeed(2.0);
-        player.playbackSpeed.then((value) => print("playbackSpeed ${value}"));
+        player.playbackSpeed.then((value) => print("playbackSpeed $value"));
       }),
     ];
   }
