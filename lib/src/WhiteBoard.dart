@@ -9,22 +9,25 @@ import 'DsBridgeInAppWebView.dart';
 import 'DsBridgeWebView.dart';
 
 class WhiteBoard extends StatelessWidget {
-  final String appId;
-  final bool log;
-  final Color backgroundColor;
   final String assetFilePath;
   final ValueChanged<WhiteBoardSDK> onCreated;
+  final WhiteBoardSdkConfiguration configuration;
 
   static GlobalKey<DsBridgeWebViewState> webView = GlobalKey<DsBridgeWebViewState>();
 
-  WhiteBoard(
-      {Key key,
-      this.assetFilePath,
-      this.appId,
-      this.onCreated,
-      this.backgroundColor = Colors.white,
-      this.log = false})
-      : super(key: key);
+  WhiteBoard({
+    Key key,
+    this.assetFilePath,
+    this.onCreated,
+    this.configuration,
+  }) : super(key: key);
+
+  WhiteBoard.withConfiguration({
+    Key key,
+    this.assetFilePath,
+    this.onCreated,
+    this.configuration,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -35,33 +38,26 @@ class WhiteBoard extends StatelessWidget {
         controller.loadUrl(assetFilePath);
       },
       onDSBridgeCreated: (DsBridge dsBridge) {
-        onCreated(WhiteBoardSDK(
-            config: WhiteBoardSdkConfiguration(
-                appIdentifier: appId, log: log, backgroundColor: backgroundColor),
-            dsBridge: dsBridge));
+        onCreated(WhiteBoardSDK(config: configuration, dsBridge: dsBridge));
       },
     );
   }
 }
 
 class WhiteBoardWithInApp extends StatelessWidget {
-  final String appId;
-  final bool log;
-  final Color backgroundColor;
   final ValueChanged<WhiteBoardSDK> onCreated;
 
   final String assetFilePath;
+  final WhiteBoardSdkConfiguration configuration;
 
   static GlobalKey<DsBridgeInAppWebViewState> webView = GlobalKey<DsBridgeInAppWebViewState>();
 
-  WhiteBoardWithInApp(
-      {Key key,
-      this.assetFilePath,
-      this.appId,
-      this.onCreated,
-      this.backgroundColor = Colors.white,
-      this.log = false})
-      : super(key: key);
+  WhiteBoardWithInApp({
+    Key key,
+    this.assetFilePath,
+    this.onCreated,
+    this.configuration,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -72,10 +68,7 @@ class WhiteBoardWithInApp extends StatelessWidget {
         controller.loadFile(assetFilePath: assetFilePath);
       },
       onDSBridgeCreated: (DsBridge dsBridge) {
-        onCreated(WhiteBoardSDK(
-            config: WhiteBoardSdkConfiguration(
-                appIdentifier: appId, log: log, backgroundColor: backgroundColor),
-            dsBridge: dsBridge));
+        onCreated(WhiteBoardSDK(config: configuration, dsBridge: dsBridge));
       },
     );
   }
@@ -93,7 +86,7 @@ class WhiteBoardSDK {
     }
   }
 
-  // TODO 应该有更优雅的处理 Callback 方式
+  // TODO Bad Smell Code
   Future<WhiteBoardRoom> joinRoom({
     @required RoomParams params,
     OnRoomStateChanged onRoomStateChanged,
@@ -1347,16 +1340,63 @@ class AnimationMode {
 
 class WhiteBoardSdkConfiguration {
   final String appIdentifier;
-  final bool log;
+  final String region;
+  final String deviceType;
+  final String renderEngine;
   final Color backgroundColor;
+  final bool log;
+  final bool enableInterrupterAPI;
+  final bool preloadDynamicPPT;
+  final bool routeBackup;
+  final bool userCursor;
+  final bool onlyCallbackRemoteStateModify;
+  final bool disableDeviceInputs;
+  final bool enableIFramePlugin;
+  final bool enableRtcIntercept;
+  final bool enableImgErrorCallback;
 
-  WhiteBoardSdkConfiguration({this.appIdentifier, this.log, this.backgroundColor});
+  PptParams pptParams = PptParams();
+  Map<String, String> fonts = {};
 
-  toJson() {
+  WhiteBoardSdkConfiguration({
+    this.appIdentifier,
+    this.log,
+    this.backgroundColor,
+    this.region,
+    this.deviceType,
+    this.renderEngine = RenderEngineType.canvas,
+    this.enableInterrupterAPI = false,
+    this.preloadDynamicPPT = false,
+    this.routeBackup = false,
+    this.userCursor = false,
+    this.onlyCallbackRemoteStateModify = false,
+    this.disableDeviceInputs = false,
+    this.enableIFramePlugin = false,
+    this.enableRtcIntercept = false,
+    this.enableImgErrorCallback = false,
+    this.pptParams,
+    this.fonts,
+  });
+
+  Map<String, dynamic> toJson() {
     return {
       "appIdentifier": appIdentifier,
+      "region": region,
+      "deviceType": deviceType,
+      "renderEngine": renderEngine,
+      "enableInterrupterAPI": enableInterrupterAPI,
+      "preloadDynamicPPT": preloadDynamicPPT,
+      "routeBackup": routeBackup,
+      "userCursor": userCursor,
+      "onlyCallbackRemoteStateModify": onlyCallbackRemoteStateModify,
+      "disableDeviceInputs": disableDeviceInputs,
+      "enableIFramePlugin": enableIFramePlugin,
+      "enableRtcIntercept": enableRtcIntercept,
+      "enableImgErrorCallback": enableImgErrorCallback,
+      "pptParams": pptParams,
+      "fonts": fonts,
       "log": log,
-    };
+    }..removeWhere((key, value) => value == null);
   }
 }
 
@@ -1715,4 +1755,34 @@ class PlayerObserverMode {
   ///
   /// 在自由模式下，用户观看回放时可以自由调整视角。
   static const freedom = "freedom";
+}
+
+class RenderEngineType {
+  /// SVG 渲染模式。
+  static const svg = "svg";
+
+  /// Canvas 渲染模式。
+  static const canvas = "canvas";
+}
+
+class PptParams {
+  /// 更改动态 ppt 请求时的请求协议，可以将 https://www.exmaple.com/1.pptx 更改成 scheme://www.example.com/1.pptx
+  String scheme;
+
+  /// 开启/关闭动态 PPT 服务端排版功能
+  bool useServerWrap;
+
+  PptParams({this.scheme, this.useServerWrap = true});
+
+  Map<String, dynamic> toJson() {
+    return {
+      "scheme": scheme,
+      "useServerWrap": useServerWrap,
+    }..removeWhere((key, value) => value == null);
+  }
+}
+
+class DeviceType {
+  static const desktop = "desktop";
+  static const touch = "touch";
 }

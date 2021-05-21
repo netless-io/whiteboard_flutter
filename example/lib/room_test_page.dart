@@ -47,9 +47,6 @@ class _RoomTestPageSate extends State<RoomTestPage> {
     return Stack(
       children: [
         WhiteBoardWithInApp(
-          appId: APP_ID,
-          log: true,
-          backgroundColor: Color(0xFFF9F4E7),
           assetFilePath: "assets/whiteboardBridge/index.html",
           onCreated: (_sdk) async {
             var _room = await _sdk.joinRoom(
@@ -64,6 +61,11 @@ class _RoomTestPageSate extends State<RoomTestPage> {
               room = _room;
             });
           },
+          configuration: WhiteBoardSdkConfiguration(
+            appIdentifier: APP_ID,
+            log: true,
+            backgroundColor: Color(0xFFF9F4E7),
+          ),
         ),
         OperatingView(sdk: sdk, room: room, joinRoomAgain: _joinRoomAgain),
       ],

@@ -25,9 +25,6 @@ class _PlaybackTestPageSate extends State<PlaybackTestPage> {
     return Stack(
       children: [
         WhiteBoardWithInApp(
-          appId: APP_ID,
-          log: true,
-          backgroundColor: Color(0xFFF9F4E7),
           assetFilePath: "assets/whiteboardBridge/index.html",
           onCreated: (_sdk) async {
             var _player = await _sdk.replayRoom(
@@ -41,6 +38,11 @@ class _PlaybackTestPageSate extends State<PlaybackTestPage> {
               player = _player;
             });
           },
+          configuration: WhiteBoardSdkConfiguration(
+            appIdentifier: APP_ID,
+            log: true,
+            backgroundColor: Color(0xFFF9F4E7),
+          ),
         ),
         Column(children: [
           _buildOperatingArea(),
