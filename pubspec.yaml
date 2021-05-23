@@ -10,7 +10,10 @@ environment:
 
 dependencies:
   flutter_inappwebview: ^4.0.0+4
-  webview_flutter: ^2.0.7
+  webview_flutter:
+    git:
+      url: https://gitee.com/liuhong1happy/webview_flutter
+      ref: a747cd4
   
   flutter:
     sdk: flutter

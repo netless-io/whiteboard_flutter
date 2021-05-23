@@ -11,8 +11,12 @@ class DsBridgeWebView extends StatefulWidget {
   final ValueChanged<DsBridge> onDSBridgeCreated;
   final WebViewCreatedCallback onWebViewCreated;
 
-  DsBridgeWebView({Key key, this.url, this.onDSBridgeCreated, this.onWebViewCreated})
-      : super(key: key);
+  DsBridgeWebView({
+    Key key,
+    this.url,
+    this.onDSBridgeCreated,
+    this.onWebViewCreated,
+  }) : super(key: key);
 
   @override
   DsBridgeWebViewState createState() => DsBridgeWebViewState();
