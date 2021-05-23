@@ -22,20 +22,13 @@ class WhiteBoard extends StatelessWidget {
     this.configuration,
   }) : super(key: key);
 
-  WhiteBoard.withConfiguration({
-    Key key,
-    this.assetFilePath,
-    this.onCreated,
-    this.configuration,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return DsBridgeWebView(
       key: webView,
       url: "",
       onWebViewCreated: (controller) {
-        controller.loadUrl(assetFilePath);
+        controller.loadAssetHtmlFile(assetFilePath);
       },
       onDSBridgeCreated: (DsBridge dsBridge) {
         onCreated(WhiteBoardSDK(config: configuration, dsBridge: dsBridge));
