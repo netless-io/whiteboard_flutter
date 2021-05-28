@@ -35,7 +35,7 @@ class _RoomTestPageSate extends State<RoomTestPage> {
 
   Future<WhiteBoardRoom> _joinRoomAgain() async {
     return await sdk.joinRoom(
-        params: JoinRoomParams(ROOM_UUID, ROOM_TOKEN),
+        params: JoinRoomParams(uuid: ROOM_UUID, roomToken: ROOM_TOKEN),
         onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
         onCanUndoStepsUpdate: _onCanUndoStepsUpdate,
         onRoomStateChanged: _onRoomStateChanged);
@@ -50,7 +50,7 @@ class _RoomTestPageSate extends State<RoomTestPage> {
           assetFilePath: "assets/whiteboardBridge/index.html",
           onCreated: (_sdk) async {
             var _room = await _sdk.joinRoom(
-                params: JoinRoomParams(ROOM_UUID, ROOM_TOKEN),
+                params: JoinRoomParams(uuid: ROOM_UUID, roomToken: ROOM_TOKEN),
                 onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
                 onCanUndoStepsUpdate: _onCanUndoStepsUpdate,
                 onRoomStateChanged: _onRoomStateChanged);

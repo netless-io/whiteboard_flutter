@@ -1433,9 +1433,9 @@ class JoinRoomParams extends RoomParams {
   /// 用户配置
   dynamic userPayload;
 
-  JoinRoomParams(
+  JoinRoomParams({
     this.uuid,
-    this.roomToken, {
+    this.roomToken,
     this.region,
     this.cameraBound,
     this.timeout,
