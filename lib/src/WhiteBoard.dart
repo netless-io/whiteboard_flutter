@@ -60,10 +60,41 @@ class WhiteBoardWithInApp extends StatelessWidget {
       onWebViewCreated: (controller) {
         controller.loadFile(assetFilePath: assetFilePath);
       },
-      onDSBridgeCreated: (DsBridge dsBridge) {
+      onDSBridgeCreated: (DsBridge dsBridge) async {
+        dsBridge.addJavascriptObject(this.createSDKInterface());
         onCreated(WhiteBoardSDK(config: configuration, dsBridge: dsBridge));
       },
     );
+  }
+
+  JavaScriptNamespaceInterface createSDKInterface() {
+    var interface = JavaScriptNamespaceInterface("sdk");
+    interface.setMethod("onPPTMediaPlay", this._onPPTMediaPlay);
+    interface.setMethod("onPPTMediaPause", this._onPPTMediaPause);
+    interface.setMethod('throwError', this._onThrowMessage);
+    interface.setMethod('postMessage', this._onPostMessage);
+    interface.setMethod('logger', this._onLogger);
+    return interface;
+  }
+
+  _onPPTMediaPlay(value) {
+    print(value);
+  }
+
+  _onPPTMediaPause(value) {
+    print(value);
+  }
+
+  _onThrowMessage(value) {
+    print(value);
+  }
+
+  _onPostMessage(value) {
+    print(value);
+  }
+
+  _onLogger(value) {
+    print(value);
   }
 }
 
@@ -166,34 +197,7 @@ class WhiteBoardDisplayer {
 
   final DsBridge dsBridge;
 
-  WhiteBoardDisplayer(this.dsBridge) {
-    dsBridge.addJavascriptObject(this.createSDKInterface());
-  }
-
-  JavaScriptNamespaceInterface createSDKInterface() {
-    var interface = JavaScriptNamespaceInterface("sdk");
-    interface.setMethod("onPPTMediaPlay", this._onPPTMediaPlay);
-    interface.setMethod("onPPTMediaPause", this._onPPTMediaPause);
-    interface.setMethod('throwError', this._onThrowMessage);
-    interface.setMethod('postMessage', this._onPostMessage);
-    return interface;
-  }
-
-  _onPPTMediaPlay(value) {
-    print(value);
-  }
-
-  _onPPTMediaPause(value) {
-    print(value);
-  }
-
-  _onThrowMessage(value) {
-    print(value);
-  }
-
-  _onPostMessage(value) {
-    print(value);
-  }
+  WhiteBoardDisplayer(this.dsBridge);
 
   scalePptToFit(String mode) {
     dsBridge.callHandler("${kDisplayerNamespace}scalePptToFit", [mode]);

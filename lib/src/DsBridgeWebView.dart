@@ -27,6 +27,18 @@ class DsBridgeWebViewState extends State<DsBridgeWebView> {
   WebViewController _controller;
   InnerJavascriptInterface innerJavascriptInterface;
 
+  static const _compatDsScript = """
+      if (window.__dsbridge) {
+          window._dsbridge = {}
+          window._dsbridge.call = function (method, arg) {
+              console.log(`call flutter webview \${method} \${arg}`);
+              window.__dsbridge.postMessage(JSON.stringify({ "method": method, "args": arg }))
+              return '{}';
+          }
+          console.log("wrapper flutter webview success");
+      }
+  """;
+
   @override
   void initState() {
     if (Platform.isAndroid) {
@@ -60,9 +72,10 @@ class DsBridgeWebViewState extends State<DsBridgeWebView> {
         onPageStarted: (String url) {
           print('Page started loading: $url');
         },
-        onPageFinished: (String url) {
+        onPageFinished: (String url) async {
           if (url != "" && url != "about:blank") {
             dsBridge.initWithWebViewController(_controller);
+            await _controller.evaluateJavascript(_compatDsScript);
             widget.onDSBridgeCreated(dsBridge);
             print('Page finished loading: $url');
           }

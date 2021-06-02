@@ -25,6 +25,22 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
   InAppWebViewController _controller;
   InnerJavascriptInterface innerJavascriptInterface;
 
+  static const _compatDsScript = """
+      function isPromise(value) {
+          return Boolean(value && typeof value.then === 'function');
+      }
+      if (window.flutter_inappwebview) {
+          window._dsbridge = {}
+          window._dsbridge.call = function (method, arg) {
+              console.log(`call flutter inappwebview \${method} \${arg}`);
+              var ret = window.flutter_inappwebview.callHandler("__dsbridge", JSON.stringify({ "method": method, "args": arg }));
+              console.log(`native call return \${isPromise(ret)}`);
+              return '{}';
+          }
+          console.log("wrapper flutter_inappwebview success");
+      }
+  """;
+
   @override
   Widget build(BuildContext context) {
     return Builder(builder: (_) {
@@ -50,9 +66,10 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
         onLoadStart: (InAppWebViewController controller, String url) {
           print('Page started loading: $url');
         },
-        onLoadStop: (InAppWebViewController controller, String url) {
+        onLoadStop: (InAppWebViewController controller, String url) async {
           if (url != "" && url != "about:blank") {
             dsBridge.initWithInAppWebViewController(_controller);
+            await _controller.evaluateJavascript(source: _compatDsScript);
             widget.onDSBridgeCreated(dsBridge);
             print('Page finished loading: $url');
           }
