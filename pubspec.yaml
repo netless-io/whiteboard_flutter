@@ -1,7 +1,6 @@
 name: whiteboard_sdk_flutter
 description: A Flutter wrapper for netless whiteboard sdk
 version: 0.1.0
-author: netless-io
 homepage: https://github.com/netless-io/Whiteboard-Flutter
 
 environment:
@@ -9,12 +8,13 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
-  flutter_inappwebview: ^4.0.0+4
+  flutter_inappwebview: ^5.3.2
   webview_flutter:
     git:
       url: https://gitee.com/liuhong1happy/webview_flutter
       ref: a747cd4
-  
+
+
   flutter:
     sdk: flutter
 

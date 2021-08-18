@@ -45,28 +45,29 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
   Widget build(BuildContext context) {
     return Builder(builder: (_) {
       return InAppWebView(
-        initialUrl: widget.url,
+        initialFile: widget.url,
         onWebViewCreated: (InAppWebViewController webViewController) async {
           _controller = webViewController;
-          _controller.setOptions(
-              options: InAppWebViewGroupOptions(
-                  crossPlatform: InAppWebViewOptions(
-                      mediaPlaybackRequiresUserGesture: false,
-                      javaScriptEnabled: true,
-                      userAgent:
-                          "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 DsBridge/1.0.0"),
-                  ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true)));
+          _controller.setOptions(options: InAppWebViewGroupOptions(
+            crossPlatform: InAppWebViewOptions(
+                mediaPlaybackRequiresUserGesture: false,
+                javaScriptEnabled: true,
+                userAgent:
+                    "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 DsBridge/1.0.0"),
+            ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true),
+            android: AndroidInAppWebViewOptions(useHybridComposition: true),
+          ));
           widget.onWebViewCreated(_controller);
         },
-        onLoadError: (InAppWebViewController controller, String url, int code, String message) {
+        onLoadError: (InAppWebViewController controller, Uri url, int code, String message) {
           print(message);
         },
         onLoadHttpError:
-            (InAppWebViewController controller, String url, int statusCode, String description) {},
-        onLoadStart: (InAppWebViewController controller, String url) {
+            (InAppWebViewController controller, Uri url, int statusCode, String description) {},
+        onLoadStart: (InAppWebViewController controller, Uri url) {
           print('Page started loading: $url');
         },
-        onLoadStop: (InAppWebViewController controller, String url) async {
+        onLoadStop: (InAppWebViewController controller, Uri url) async {
           if (url != "" && url != "about:blank") {
             dsBridge.initWithInAppWebViewController(_controller);
             await _controller.evaluateJavascript(source: _compatDsScript);
