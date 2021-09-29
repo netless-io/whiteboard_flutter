@@ -17,9 +17,9 @@ class _RoomTestPageSate extends State<RoomTestPage> {
   WhiteBoardRoom room;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
-  static const String ROOM_UUID = "2e2762f05c5911eb894d4bad573d796b";
+  static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
   static const String ROOM_TOKEN =
-      "NETLESSROOM_YWs9M2R5WmdQcFlLcFlTdlQ1ZjRkOFBiNjNnY1RoZ3BDSDlwQXk3Jm5vbmNlPTE2MTEyODIzNjY1MjUwMCZyb2xlPTAmc2lnPTVhZDY1NDkwNGUyMDE5MjRkNDRiYzBhMDUxYWNkNjc0ZDdkNzY4NGNhNTQzZWQ0YTIyMzA2N2U1MDQ2NmMyNWImdXVpZD0yZTI3NjJmMDVjNTkxMWViODk0ZDRiYWQ1NzNkNzk2Yg";
+      "NETLESSROOM_YWs9eTBJOWsxeC1IVVo4VGh0NyZub25jZT0xNjI5MjU3OTQyNTM2MDAmcm9sZT0wJnNpZz1lZDdjOGJiY2M4YzVjZjQ5NDU5NmIzZGJiYzQzNDczNDJmN2NjYTAxMThlMTMyOWVlZGRmMjljNjE1NzQ5ZWFkJnV1aWQ9ZDQxODQ3OTBmZmQ1MTFlYmI5ZWJiZjdhOGYxZDc3YmQ";
 
   OnCanRedoStepsUpdate _onCanRedoStepsUpdate = (stepNum) {
     print('can redo step : $stepNum');
@@ -35,7 +35,7 @@ class _RoomTestPageSate extends State<RoomTestPage> {
 
   Future<WhiteBoardRoom> _joinRoomAgain() async {
     return await sdk.joinRoom(
-        params: JoinRoomParams(uuid: ROOM_UUID, roomToken: ROOM_TOKEN),
+        params: JoinRoomParams(uuid: ROOM_UUID, roomToken: ROOM_TOKEN, isWritable: false),
         onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
         onCanUndoStepsUpdate: _onCanUndoStepsUpdate,
         onRoomStateChanged: _onRoomStateChanged);
@@ -47,10 +47,9 @@ class _RoomTestPageSate extends State<RoomTestPage> {
     return Stack(
       children: [
         WhiteBoardWithInApp(
-          assetFilePath: "assets/whiteboardBridge/index.html",
           onCreated: (_sdk) async {
             var _room = await _sdk.joinRoom(
-                params: JoinRoomParams(uuid: ROOM_UUID, roomToken: ROOM_TOKEN),
+                params: JoinRoomParams(uuid: ROOM_UUID, roomToken: ROOM_TOKEN, isWritable: true),
                 onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
                 onCanUndoStepsUpdate: _onCanUndoStepsUpdate,
                 onRoomStateChanged: _onRoomStateChanged);
@@ -178,6 +177,10 @@ class OperatingViewState extends State<OperatingView> {
           print("disconnect error");
         });
       }),
+      OpListItem("区域设置", Category.Misc, () {
+        room.setCameraBound(CameraBound(width: 1000, height: 1000, minScale: 0.5, maxScale: 1.5));
+        room.cleanScene(true);
+      }),
       OpListItem("清屏（保留PPT）", Category.Misc, () {
         room.cleanScene(true);
       }),
@@ -234,8 +237,8 @@ class OperatingViewState extends State<OperatingView> {
         var ppt = WhiteBoardPpt(
             src:
                 "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/image/alin-rusu-1239275-unsplash_opt.jpg",
-            width: 600,
-            height: 600);
+            width: 360,
+            height: 360);
         room.putScenes(dir, [WhiteBoardScene(name: "page2", ppt: ppt)], 0);
         room.setScenePath(dir + "/page2");
       }),
@@ -268,7 +271,9 @@ class OperatingViewState extends State<OperatingView> {
             .then((value) => print("RoomMembers: ${value.map((e) => e.toJson()).join(';;;;')}"));
       }),
       OpListItem("只读切换", Category.Interaction, () {
-        room.setWritable(!room.getWritable());
+        room.setWritable(!room.getWritable()).then((writable) => {
+              if (writable) {room.disableSerialization(false)}
+            });
       }),
       OpListItem("铅笔工具", Category.Interaction, () {
         var state = WhiteBoardMemberState(currentApplianceName: ApplianceName.pencil);
@@ -287,6 +292,10 @@ class OperatingViewState extends State<OperatingView> {
       }),
       OpListItem("移动工具", Category.Interaction, () {
         var state = WhiteBoardMemberState(currentApplianceName: ApplianceName.hand);
+        room.setMemberState(state);
+      }),
+      OpListItem("文本工具", Category.Interaction, () {
+        var state = WhiteBoardMemberState(currentApplianceName: ApplianceName.text);
         room.setMemberState(state);
       }),
       OpListItem("形状工具", Category.Interaction, () {

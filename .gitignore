@@ -15,9 +15,9 @@
 *.iws
 .idea/**
 # Keep the code styles.
-!/.idea/codeStyles
-!.idea/codeStyles/Project.xml
-!.idea/codeStyles/codeStyleConfig.xml
+# !/.idea/codeStyles
+# !.idea/codeStyles/Project.xml
+# !.idea/codeStyles/codeStyleConfig.xml
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
@@ -79,7 +79,7 @@ build/
 
 # Flutter
 pubspec.lock
-Podfile.lock
+# Podfile.lock
 Pods/
 .symlinks/
 **/Flutter/App.framework/

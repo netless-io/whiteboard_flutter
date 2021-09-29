@@ -15,9 +15,9 @@ class _PlaybackTestPageSate extends State<PlaybackTestPage> {
   WhiteBoardPlayer player;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
-  static const String ROOM_UUID = "2e2762f05c5911eb894d4bad573d796b";
+  static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
   static const String ROOM_TOKEN =
-      "NETLESSROOM_YWs9M2R5WmdQcFlLcFlTdlQ1ZjRkOFBiNjNnY1RoZ3BDSDlwQXk3Jm5vbmNlPTE2MTEyODIzNjY1MjUwMCZyb2xlPTAmc2lnPTVhZDY1NDkwNGUyMDE5MjRkNDRiYzBhMDUxYWNkNjc0ZDdkNzY4NGNhNTQzZWQ0YTIyMzA2N2U1MDQ2NmMyNWImdXVpZD0yZTI3NjJmMDVjNTkxMWViODk0ZDRiYWQ1NzNkNzk2Yg";
+      "NETLESSROOM_YWs9eTBJOWsxeC1IVVo4VGh0NyZub25jZT0xNjI5MjU3OTQyNTM2MDAmcm9sZT0wJnNpZz1lZDdjOGJiY2M4YzVjZjQ5NDU5NmIzZGJiYzQzNDczNDJmN2NjYTAxMThlMTMyOWVlZGRmMjljNjE1NzQ5ZWFkJnV1aWQ9ZDQxODQ3OTBmZmQ1MTFlYmI5ZWJiZjdhOGYxZDc3YmQ";
 
   // This widget is the root of your application.
   @override
@@ -25,7 +25,6 @@ class _PlaybackTestPageSate extends State<PlaybackTestPage> {
     return Stack(
       children: [
         WhiteBoardWithInApp(
-          assetFilePath: "assets/whiteboardBridge/index.html",
           onCreated: (_sdk) async {
             var _player = await _sdk.replayRoom(
                 ReplayRoomParams(room: ROOM_UUID, roomToken: ROOM_TOKEN),

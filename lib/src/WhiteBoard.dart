@@ -6,48 +6,17 @@ import 'package:flutter/material.dart';
 
 import 'DsBridge.dart';
 import 'DsBridgeInAppWebView.dart';
-import 'DsBridgeWebView.dart';
-
-class WhiteBoard extends StatelessWidget {
-  final String assetFilePath;
-  final ValueChanged<WhiteBoardSDK> onCreated;
-  final WhiteBoardSdkConfiguration configuration;
-
-  static GlobalKey<DsBridgeWebViewState> webView = GlobalKey<DsBridgeWebViewState>();
-
-  WhiteBoard({
-    Key key,
-    this.assetFilePath,
-    this.onCreated,
-    this.configuration,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return DsBridgeWebView(
-      key: webView,
-      url: "",
-      onWebViewCreated: (controller) {
-        controller.loadAssetHtmlFile(assetFilePath);
-      },
-      onDSBridgeCreated: (DsBridge dsBridge) {
-        onCreated(WhiteBoardSDK(config: configuration, dsBridge: dsBridge));
-      },
-    );
-  }
-}
 
 class WhiteBoardWithInApp extends StatelessWidget {
   final ValueChanged<WhiteBoardSDK> onCreated;
 
-  final String assetFilePath;
+  // final String assetFilePath;
   final WhiteBoardSdkConfiguration configuration;
 
   static GlobalKey<DsBridgeInAppWebViewState> webView = GlobalKey<DsBridgeInAppWebViewState>();
 
   WhiteBoardWithInApp({
     Key key,
-    this.assetFilePath,
     this.onCreated,
     this.configuration,
   }) : super(key: key);
@@ -58,7 +27,7 @@ class WhiteBoardWithInApp extends StatelessWidget {
       key: webView,
       url: "",
       onWebViewCreated: (controller) {
-        controller.loadFile(assetFilePath: assetFilePath);
+        controller.loadFile(assetFilePath: "packages/whiteboard_sdk_flutter/assets/whiteboardBridge/index.html");
       },
       onDSBridgeCreated: (DsBridge dsBridge) async {
         dsBridge.addJavascriptObject(this.createSDKInterface());
