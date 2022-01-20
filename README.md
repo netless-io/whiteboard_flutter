@@ -1,6 +1,6 @@
-# Netless WhiteBoard SDK
+# Agora Whiteboard SDK
 
-A Flutter Plugin for Netless WhiteBoard SDK
+A Flutter Plugin for Agora Whiteboard SDK
 
 ## Getting Started
 [历史原因](History.md)，当前SDK中存在两个 WebView 实现方式，建议使用 `WhiteBoardWithInApp` 接入
