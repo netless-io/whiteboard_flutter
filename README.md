@@ -1,20 +1,96 @@
 # Agora Whiteboard SDK
 
-A Flutter Plugin for Agora Whiteboard SDK
+A Flutter Plugin of Agora Whiteboard SDK
 
-## Getting Started
-[历史原因](History.md)，当前SDK中存在两个 WebView 实现方式，建议使用 `WhiteBoardWithInApp` 接入
+## Installation
+Add whiteboard_sdk_flutter to your pubspec:
 
-## TODO LIST
-* 修正项目说明文档
-* 确认是否需要兼容 WebView 实现
-    * 迁移 webview_flutter 依赖
-* 调整 JSBridge 代码
-* 添加项目脚本，便于 SDK 升级
-* 处理发布至 flutter pub
-
-## Command
-```shell script
-flutter pub get
-flutter run
+```yaml
+dependencies:
+  whiteboard_sdk_flutter: 0.1.2 # or the latest version on Pub
 ```
+
+### Android
+
+Configure your app to use the `INTERNET` permission in the manifest file located
+in `<project root>/android/app/src/main/AndroidManifest.xml`:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET"/>
+```
+
+## Sample Usage
+
+### Live Room
+1. Init whiteboard using `WhiteSdkOptions`, `WhiteSdk` can be fetch on `onSdkCreated`
+2. call `WhiteSdk.joinRoom` using `RoomOptions` to fetch a `WhiteRoom`
+3. `WhiteRoom` is a controller to `Live Whiteboard`
+
+```dart
+Widget build(BuildContext context) {
+    return new WhiteboardView(
+        options: WhiteOptions(
+            appIdentifier: APP_ID,
+            log: true,
+            backgroundColor: Color(0xFFF9F4E7),
+        ),
+        onSdkCreated: (sdk) async {
+            // use sdk to join room
+            var room = await sdk.joinRoom(
+                options: RoomOptions(
+                    uuid: ROOM_UUID,
+                    roomToken: ROOM_TOKEN,
+                    isWritable: true,
+                ),
+            );
+
+            setState(() {
+                whiteSdk = sdk;
+                whiteRoom = room;
+            });
+        },
+    )
+}
+```
+
+### Replay
+1. Init whiteboard using `WhiteSdkOptions`, `WhiteSdk` can be fetch on `onSdkCreated`
+2. call `WhiteSdk.joinReplay` using `ReplayOptions` to fetch `WhiteReplay`
+3. `WhiteReplay` is a controller to `Record Whitebarod`
+
+```
+Widget build(BuildContext context) {
+    return new WhiteboardView(
+        options: WhiteOptions(
+            appIdentifier: APP_ID,
+            log: true,
+            backgroundColor: Color(0xFFF9F4E7),
+        ),
+        onSdkCreated: (whiteSdk) async {
+            // use sdk to join replay
+            var replay = await sdk.joinReplay(
+              options: ReplayOptions(room: ROOM_UUID, roomToken: ROOM_TOKEN),
+              onPlayerStateChanged: _onPlayerStateChanged,
+              onPlayerPhaseChanged: _onPlayerPhaseChanged,
+              onScheduleTimeChanged: _onScheduleTimeChanged,
+            );
+
+            setState(() {
+              whiteSdk = sdk;
+              whiteReplay = replay;
+            });
+          },
+    )
+}
+```
+### Example
+See the `example/` folder for a working example app.
+
+Common apis can be found in the `examples/`
+[Room](https://github.com/netless-io/Whiteboard-Flutter/tree/main/example/lib/room_test_page.dart)
+
+[Replay](https://github.com/netless-io/Whiteboard-Flutter/tree/main/example/lib/replay_test_page.dart)
+
+
+## Contributor
+Thanks To [liuhong1happy](https://gitee.com/liuhong1happy/flutter_netless_whiteboard) for the first version of flutter whiteboard.
