@@ -7,19 +7,19 @@ import 'package:flutter/material.dart';
 import 'DsBridge.dart';
 import 'DsBridgeInAppWebView.dart';
 
-class WhiteBoardWithInApp extends StatelessWidget {
-  final ValueChanged<WhiteBoardSDK> onCreated;
-
-  // final String assetFilePath;
-  final WhiteBoardSdkConfiguration configuration;
+class WhiteboardView extends StatelessWidget {
+  final WhiteOptions options;
+  final SdkCreatedCallback onSdkCreated;
+  final SdkOnLoggerCallback onLogger;
 
   static GlobalKey<DsBridgeInAppWebViewState> webView =
       GlobalKey<DsBridgeInAppWebViewState>();
 
-  WhiteBoardWithInApp({
+  WhiteboardView({
     Key key,
-    this.onCreated,
-    this.configuration,
+    this.options,
+    this.onSdkCreated,
+    this.onLogger,
   }) : super(key: key);
 
   @override
@@ -34,7 +34,7 @@ class WhiteBoardWithInApp extends StatelessWidget {
       },
       onDSBridgeCreated: (DsBridge dsBridge) async {
         dsBridge.addJavascriptObject(this.createSDKInterface());
-        onCreated(WhiteBoardSDK(config: configuration, dsBridge: dsBridge));
+        onSdkCreated(WhiteSdk(options: options, dsBridge: dsBridge));
       },
     );
   }
@@ -67,73 +67,31 @@ class WhiteBoardWithInApp extends StatelessWidget {
 
   _onLogger(value) {
     print(value);
+    if (onLogger != null) _onLogger(value);
   }
 }
 
-class WhiteBoardSDK {
-  String tag = "WhiteBoardSDK";
+class WhiteSdk {
+  static String tag = "WhiteSdk";
   final DsBridge dsBridge;
-  final WhiteBoardSdkConfiguration config;
+  final WhiteOptions options;
 
-  WhiteBoardSDK({this.config, this.dsBridge}) {
-    dsBridge.callHandler("sdk.newWhiteSdk", [config.toJson()], null);
-    if (config.backgroundColor != null) {
-      setBackgroundColor(config.backgroundColor);
-    }
-  }
-
-  // TODO Bad Smell Code
-  Future<WhiteBoardRoom> joinRoom({
-    @required RoomParams params,
-    OnRoomStateChanged onRoomStateChanged,
-    OnRoomPhaseChanged onRoomPhaseChanged,
-    OnRoomDisconnected onRoomDisconnected,
-    OnRoomKicked onRoomKicked,
-    OnCanUndoStepsUpdate onCanUndoStepsUpdate,
-    OnCanRedoStepsUpdate onCanRedoStepsUpdate,
-    OnRoomError onRoomError,
-  }) {
-    var completer = Completer<WhiteBoardRoom>();
-    dsBridge.callHandler("sdk.joinRoom", [params.toJson()], ([value]) {
-      var room = WhiteBoardRoom(
-          dsBridge: dsBridge,
-          params: params,
-          onRoomStateChanged: onRoomStateChanged,
-          onRoomPhaseChanged: onRoomPhaseChanged,
-          onRoomDisconnected: onRoomDisconnected,
-          onRoomKicked: onRoomKicked,
-          onCanUndoStepsUpdate: onCanUndoStepsUpdate,
-          onCanRedoStepsUpdate: onCanRedoStepsUpdate,
-          onRoomError: onRoomError);
-      try {
-        room._initStateWithJoinRoom(jsonDecode(value));
-        completer.complete(room);
-      } catch (e) {
-        completer.completeError(e);
-      }
-      return room;
-    });
-    return completer.future;
-  }
-
-  Future<WhiteBoardPlayer> replayRoom(
-    ReplayRoomParams params, {
+  Future<WhiteReplay> joinReplay({
+    @required ReplayOptions options,
     OnPlayerStateChanged onPlayerStateChanged,
     OnPlayerPhaseChanged onPlayerPhaseChanged,
     OnLoadFirstFrame onLoadFirstFrame,
-    OnSliceChanged onSliceChanged,
     OnScheduleTimeChanged onScheduleTimeChanged,
     OnPlaybackError onPlaybackError,
   }) {
-    var completer = Completer<WhiteBoardPlayer>();
-    dsBridge.callHandler("sdk.replayRoom", [params.toJson()], ([returnValue]) {
-      var replayRoom = WhiteBoardPlayer(
+    var completer = Completer<WhiteReplay>();
+    dsBridge.callHandler("sdk.replayRoom", [options.toJson()], ([returnValue]) {
+      var replayRoom = WhiteReplay(
         dsBridge: dsBridge,
-        params: params,
+        params: options,
         onPlayerPhaseChanged: onPlayerPhaseChanged,
         onPlayerStateChanged: onPlayerStateChanged,
         onLoadFirstFrame: onLoadFirstFrame,
-        onSliceChanged: onSliceChanged,
         onScheduleTimeChanged: onScheduleTimeChanged,
         onPlaybackError: onPlaybackError,
       );
@@ -144,6 +102,46 @@ class WhiteBoardSDK {
         completer.completeError(e);
       }
       return replayRoom;
+    });
+    return completer.future;
+  }
+
+  WhiteSdk({this.options, this.dsBridge}) {
+    dsBridge.callHandler("sdk.newWhiteSdk", [options.toJson()], null);
+    if (options.backgroundColor != null) {
+      setBackgroundColor(options.backgroundColor);
+    }
+  }
+
+  Future<WhiteRoom> joinRoom({
+    @required RoomOptions options,
+    OnRoomStateChanged onRoomStateChanged,
+    OnRoomPhaseChanged onRoomPhaseChanged,
+    OnRoomDisconnected onRoomDisconnected,
+    OnRoomKicked onRoomKicked,
+    OnCanUndoStepsUpdate onCanUndoStepsUpdate,
+    OnCanRedoStepsUpdate onCanRedoStepsUpdate,
+    OnRoomError onRoomError,
+  }) {
+    var completer = Completer<WhiteRoom>();
+    dsBridge.callHandler("sdk.joinRoom", [options.toJson()], ([value]) {
+      var room = WhiteRoom(
+        dsBridge: dsBridge,
+        options: options,
+        onRoomStateChanged: onRoomStateChanged,
+        onRoomPhaseChanged: onRoomPhaseChanged,
+        onRoomDisconnected: onRoomDisconnected,
+        onRoomKicked: onRoomKicked,
+        onCanUndoStepsUpdate: onCanUndoStepsUpdate,
+        onCanRedoStepsUpdate: onCanRedoStepsUpdate,
+        onRoomError: onRoomError,
+      );
+      try {
+        room._initStateWithJoinRoom(jsonDecode(value));
+        completer.complete(room);
+      } catch (e) {
+        completer.completeError(e);
+      }
     });
     return completer.future;
   }
@@ -161,68 +159,66 @@ class WhiteBoardSDK {
   }
 }
 
-class WhiteBoardDisplayer {
-  static const kDisplayerNamespace = "displayer.";
-  static const kAsyncDisplayerNamespace = "displayerAsync.";
-
-  String tag = "WhiteBoardDisplayer";
+class WhiteDisplayer {
+  String tag = "WhiteDisplayer";
 
   final DsBridge dsBridge;
 
-  WhiteBoardDisplayer(this.dsBridge);
+  WhiteDisplayer(this.dsBridge);
 
   scalePptToFit(String mode) {
-    dsBridge.callHandler("${kDisplayerNamespace}scalePptToFit", [mode]);
+    dsBridge.callHandler("displayer.scalePptToFit", [mode]);
   }
 
   scaleIframeToFit() {
-    dsBridge.callHandler("${kDisplayerNamespace}scaleIframeToFit");
+    dsBridge.callHandler("displayer.scaleIframeToFit");
   }
 
   postIframeMessage(dynamic object) {
-    dsBridge
-        .callHandler("${kDisplayerNamespace}postMessage", [jsonEncode(object)]);
+    dsBridge.callHandler("displayer.postMessage", [jsonEncode(object)]);
   }
 
-  moveCamera(WhiteBoardCameraConfig config) {
-    dsBridge.callHandler("${kDisplayerNamespace}moveCamera", [config.toJson()]);
+  moveCamera(CameraConfig config) {
+    dsBridge.callHandler("displayer.moveCamera", [config.toJson()]);
   }
 
   moveCameraToContainer(RectangleConfig config) {
-    dsBridge.callHandler(
-        "${kDisplayerNamespace}moveCameraToContain", [config.toJson()]);
+    dsBridge.callHandler("displayer.moveCameraToContain", [config.toJson()]);
   }
 
   refreshViewSize() {
-    dsBridge.callHandler("${kDisplayerNamespace}refreshViewSize");
+    dsBridge.callHandler("displayer.refreshViewSize");
   }
 
   setBackgroundColor(Color color) {
-    dsBridge.callHandler("${kDisplayerNamespace}setBackgroundColor",
-        [color.red, color.green, color.blue, color.alpha], null);
+    dsBridge.callHandler(
+      "displayer.setBackgroundColor",
+      [color.red, color.green, color.blue, color.alpha],
+      null,
+    );
   }
 
   setDisableCameraTransform(bool disable) {
-    dsBridge.callHandler(
-        "${kDisplayerNamespace}setDisableCameraTransform", [disable]);
+    dsBridge.callHandler("displayer.setDisableCameraTransform", [disable]);
   }
 
   Future<bool> getDisableCameraTransform() async {
     var value = dsBridge.callHandler(
-        "${kDisplayerNamespace}getDisableCameraTransform", [], null);
+      "displayer.getDisableCameraTransform",
+      [],
+      null,
+    );
     return value == 'true';
   }
 
   void setCameraBound(CameraBound cameraBound) {
-    dsBridge.callHandler(
-        "${kDisplayerNamespace}setCameraBound", [cameraBound.toJson()]);
+    dsBridge.callHandler("displayer.setCameraBound", [cameraBound.toJson()]);
   }
 
   /// 转换白板上点的坐标。
   Future<WhiteBoardPoint> convertToPointInWorld(num x, num y) {
     var completer = Completer<WhiteBoardPoint>();
-    dsBridge.callHandler("${kDisplayerNamespace}convertToPointInWorld", [x, y],
-        ([value]) {
+    dsBridge.callHandler("displayer.convertToPointInWorld", [x, y], ([value]) {
       completer.complete(WhiteBoardPoint.fromJson(jsonDecode(value)));
     });
     return completer.future;
@@ -230,24 +226,20 @@ class WhiteBoardDisplayer {
 
   Future<String> getScenePathType(String path) {
     var completer = Completer<String>();
-    dsBridge.callHandler("${kDisplayerNamespace}convertToPointInWorld", [path],
-        ([value]) {
+    dsBridge.callHandler("displayer.convertToPointInWorld", [path], ([value]) {
       completer.complete(value);
     });
     return completer.future;
   }
 
-  // TODO Test
-  Future<Map<String, List<WhiteBoardScene>>> getEntireScenes(String path) {
-    var completer = Completer<Map<String, List<WhiteBoardScene>>>();
+  Future<Map<String, List<Scene>>> getEntireScenes(String path) {
+    var completer = Completer<Map<String, List<Scene>>>();
 
-    dsBridge.callHandler("${kDisplayerNamespace}entireScenes", [path], (
-        [value]) {
+    dsBridge.callHandler("displayer.entireScenes", [path], ([value]) {
       var data = (jsonDecode(value) as Map)?.map((k, v) {
-            var convert = (v as List)
-                ?.map((e) => WhiteBoardScene()..fromJson(e))
-                ?.toList();
-            return MapEntry<String, List<WhiteBoardScene>>(k, convert);
+            var convert =
+                (v as List)?.map((e) => Scene()..fromJson(e))?.toList();
+            return MapEntry<String, List<Scene>>(k, convert);
           }) ??
           {};
       completer.complete(data);
@@ -256,14 +248,14 @@ class WhiteBoardDisplayer {
   }
 }
 
-class WhiteBoardMemberState {
+class MemberState {
   List<int> strokeColor;
   num strokeWidth;
   num textSize;
   String currentApplianceName;
   String shapeType;
 
-  WhiteBoardMemberState({
+  MemberState({
     String currentApplianceName,
     String shapeType,
     List<int> strokeColor,
@@ -303,8 +295,12 @@ class WhiteBoardMemberState {
   }
 }
 
+// Sdk Callback
+typedef SdkCreatedCallback = void Function(WhiteSdk whiteSdk);
+typedef SdkOnLoggerCallback = void Function(dynamic value);
+
 /// Room Callbacks
-typedef OnRoomStateChanged = void Function(WhiteBoardRoomState newState);
+typedef OnRoomStateChanged = void Function(RoomState newState);
 typedef OnRoomPhaseChanged = void Function(String phase);
 typedef OnRoomDisconnected = void Function(String error);
 typedef OnRoomKicked = void Function(String reason);
@@ -314,14 +310,14 @@ typedef OnRoomError = void Function(String error);
 
 /// Playback Callbacks
 typedef OnPlayerPhaseChanged = void Function(String phase);
-typedef OnPlayerStateChanged = void Function(WhiteBoardPlayerState playerState);
+typedef OnPlayerStateChanged = void Function(ReplayState playerState);
 typedef OnLoadFirstFrame = void Function();
 typedef OnSliceChanged = void Function(String slice);
 typedef OnScheduleTimeChanged = void Function(int scheduleTime);
 typedef OnPlaybackError = void Function(String error);
 
-class WhiteBoardPlayer extends WhiteBoardDisplayer {
-  final ReplayRoomParams params;
+class WhiteReplay extends WhiteDisplayer {
+  final ReplayOptions params;
   final DsBridge dsBridge;
 
   String tag = "WhiteBoardPlayer";
@@ -334,19 +330,17 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
   OnScheduleTimeChanged onScheduleTimeChanged;
   OnPlayerStateChanged onPlayerStateChanged;
   OnLoadFirstFrame onLoadFirstFrame;
-  OnSliceChanged onSliceChanged;
   OnPlaybackError onPlaybackError;
 
-  WhiteBoardPlayer(
-      {this.params,
-      this.dsBridge,
-      this.onPlayerPhaseChanged,
-      this.onPlayerStateChanged,
-      this.onLoadFirstFrame,
-      this.onScheduleTimeChanged,
-      this.onSliceChanged,
-      this.onPlaybackError})
-      : super(dsBridge) {
+  WhiteReplay({
+    this.params,
+    this.dsBridge,
+    this.onPlayerPhaseChanged,
+    this.onPlayerStateChanged,
+    this.onLoadFirstFrame,
+    this.onScheduleTimeChanged,
+    this.onPlaybackError,
+  }) : super(dsBridge) {
     dsBridge.addJavascriptObject(this.createPlayerInterface());
   }
 
@@ -358,7 +352,9 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
     interface.setMethod("onScheduleTimeChanged", this._onScheduleTimeChanged);
     interface.setMethod("onStoppedWithError", this._onStoppedWithError);
     interface.setMethod(
-        "fireCatchErrorWhenAppendFrame", this._fireCatchErrorWhenAppendFrame);
+      "fireCatchErrorWhenAppendFrame",
+      this._fireCatchErrorWhenAppendFrame,
+    );
     interface.setMethod("onCatchErrorWhenRender", this._onCatchErrorWhenRender);
     interface.setMethod("fireMagixEvent", this._fireMagixEvent);
     interface.setMethod("fireHighFrequencyEvent", this._fireHighFrequencyEvent);
@@ -377,7 +373,7 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
     print(value);
     if (onPlayerStateChanged != null) {
       onPlayerStateChanged(
-          WhiteBoardPlayerState()..fromJson(jsonDecode(value)));
+          ReplayState()..fromJson(jsonDecode(value)));
     }
   }
 
@@ -426,9 +422,6 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
 
   _onSliceChanged(value) {
     print(value);
-    if (onSliceChanged != null) {
-      onSliceChanged(value);
-    }
   }
 
   initTimeInfoWithReplayRoom(Map<String, dynamic> json) {
@@ -474,9 +467,9 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
     return dsBridge.callHandler("player.state.phase");
   }
 
-  Future<WhiteBoardPlayerState> get playerState async {
+  Future<ReplayState> get playerState async {
     var value = await dsBridge.callHandler("player.state.playerState");
-    return WhiteBoardPlayerState()..fromJson(jsonDecode(value));
+    return ReplayState()..fromJson(jsonDecode(value));
   }
 
   Future<bool> get isPlayable async {
@@ -499,15 +492,15 @@ class WhiteBoardPlayerPhase {
   static const Buffering = "buffering";
 }
 
-class WhiteBoardRoom extends WhiteBoardDisplayer {
-  final JoinRoomParams params;
+class WhiteRoom extends WhiteDisplayer {
+  final RoomOptions options;
   final DsBridge dsBridge;
 
-  String tag = "WhiteBoardRoom";
+  String tag = "WhiteRoom";
 
   // TODO 状态增量同步处理
-  WhiteBoardRoomState state = WhiteBoardRoomState();
-  WhiteBoardRoomPhase phase = WhiteBoardRoomPhase();
+  RoomState state = RoomState();
+  RoomPhase phase = RoomPhase();
 
   OnRoomStateChanged onRoomStateChanged;
   OnRoomPhaseChanged onRoomPhaseChanged;
@@ -522,17 +515,17 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
   bool disconnectedBySelf = false;
   bool writable = false;
 
-  WhiteBoardRoom(
-      {@required this.params,
-      @required this.dsBridge,
-      this.onRoomStateChanged,
-      this.onRoomPhaseChanged,
-      this.onRoomDisconnected,
-      this.onRoomKicked,
-      this.onCanUndoStepsUpdate,
-      this.onCanRedoStepsUpdate,
-      this.onRoomError})
-      : super(dsBridge) {
+  WhiteRoom({
+    @required this.options,
+    @required this.dsBridge,
+    this.onRoomStateChanged,
+    this.onRoomPhaseChanged,
+    this.onRoomDisconnected,
+    this.onRoomKicked,
+    this.onCanUndoStepsUpdate,
+    this.onCanRedoStepsUpdate,
+    this.onRoomError,
+  }) : super(dsBridge) {
     dsBridge.addJavascriptObject(this.createRoomInterface());
   }
 
@@ -543,10 +536,14 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     interface.setMethod("fireCanRedoStepsUpdate", this._fireCanRedoStepsUpdate);
     interface.setMethod("fireRoomStateChanged", this._fireRoomStateChanged);
     interface.setMethod(
-        "fireDisconnectWithError", this._fireDisconnectWithError);
+      "fireDisconnectWithError",
+      this._fireDisconnectWithError,
+    );
     interface.setMethod("fireKickedWithReason", this._fireKickedWithReason);
     interface.setMethod(
-        "fireCatchErrorWhenAppendFrame", this._fireCatchErrorWhenAppendFrame);
+      "fireCatchErrorWhenAppendFrame",
+      this._fireCatchErrorWhenAppendFrame,
+    );
     interface.setMethod("fireMagixEvent", this._fireMagixEvent);
     interface.setMethod("fireHighFrequencyEvent", this._fireHighFrequencyEvent);
     return interface;
@@ -608,14 +605,14 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
   }
 
   _initStateWithJoinRoom(Map<String, dynamic> json) {
-    state = WhiteBoardRoomState()..fromJson(json["state"]);
+    state = RoomState()..fromJson(json["state"]);
   }
 
-  setGlobalState(WhiteBoardGlobalState modifyState) {
+  setGlobalState(GlobalState modifyState) {
     dsBridge.callHandler("room.setGlobalState", [modifyState.toJson()]);
   }
 
-  Future<T> getGlobalState<T extends WhiteBoardGlobalState>(
+  Future<T> getGlobalState<T extends GlobalState>(
       GlobalStateParser<T> parser) {
     var completer = Completer<T>();
     dsBridge.callHandler("room.getGlobalState", [], ([value]) {
@@ -624,43 +621,43 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     return completer.future;
   }
 
-  setMemberState(WhiteBoardMemberState state) {
+  setMemberState(MemberState state) {
     dsBridge.callHandler('room.setMemberState', [state.toJson()]);
   }
 
-  Future<WhiteBoardMemberState> getMemberState() {
-    var completer = Completer<WhiteBoardMemberState>();
+  Future<MemberState> getMemberState() {
+    var completer = Completer<MemberState>();
     dsBridge.callHandler("room.getMemberState", [], ([value]) {
-      completer.complete(WhiteBoardMemberState()..fromJson(jsonDecode(value)));
+      completer.complete(MemberState()..fromJson(jsonDecode(value)));
     });
     return completer.future;
   }
 
-  Future<List<WhiteBoardRoomMember>> getRoomMembers() {
-    var completer = Completer<List<WhiteBoardRoomMember>>();
+  Future<List<RoomMember>> getRoomMembers() {
+    var completer = Completer<List<RoomMember>>();
     dsBridge.callHandler("room.getRoomMembers", [], ([value]) {
       var members = (json.decode(value) as List)
-          ?.map((jsonMap) => WhiteBoardRoomMember.fromJson(jsonMap))
+          ?.map((jsonMap) => RoomMember.fromJson(jsonMap))
           ?.toList();
       completer.complete(members);
     });
     return completer.future;
   }
 
-  void setViewMode(WhiteBoardViewMode viewMode) {
+  void setViewMode(ViewMode viewMode) {
     dsBridge.callHandler("room.setViewMode", [viewModeToJson(viewMode)]);
   }
 
-  String viewModeToJson(WhiteBoardViewMode viewMode) {
+  String viewModeToJson(ViewMode viewMode) {
     var viewModeString;
     switch (viewMode) {
-      case WhiteBoardViewMode.Freedom:
+      case ViewMode.Freedom:
         viewModeString = "Freedom";
         break;
-      case WhiteBoardViewMode.Follower:
+      case ViewMode.Follower:
         viewModeString = "Follower";
         break;
-      case WhiteBoardViewMode.Broadcaster:
+      case ViewMode.Broadcaster:
         viewModeString = "Broadcaster";
         break;
       default:
@@ -670,42 +667,42 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     return viewModeString;
   }
 
-  WhiteBoardViewMode viewModeFromJson(String json) {
-    WhiteBoardViewMode viewMode;
+  ViewMode viewModeFromJson(String json) {
+    ViewMode viewMode;
     switch (json) {
       case "freedom":
-        viewMode = WhiteBoardViewMode.Freedom;
+        viewMode = ViewMode.Freedom;
         break;
       case "follower":
-        viewMode = WhiteBoardViewMode.Follower;
+        viewMode = ViewMode.Follower;
         break;
       case "broadcaster":
-        viewMode = WhiteBoardViewMode.Broadcaster;
+        viewMode = ViewMode.Broadcaster;
         break;
       default:
-        viewMode = WhiteBoardViewMode.Freedom;
+        viewMode = ViewMode.Freedom;
         break;
     }
     return viewMode;
   }
 
-  Future<WhiteBoardBroadcastState> getBroadcastState() {
-    var completer = Completer<WhiteBoardBroadcastState>();
+  Future<BroadcastState> getBroadcastState() {
+    var completer = Completer<BroadcastState>();
     dsBridge.callHandler('room.getBroadcastState', [], ([value]) {
-      var data = WhiteBoardBroadcastState.fromJson(jsonDecode(value));
+      var data = BroadcastState.fromJson(jsonDecode(value));
       completer.complete(data);
     });
     return completer.future;
   }
 
-  WhiteBoardRoomState getRoomStateNative() {
+  RoomState getRoomStateNative() {
     return state;
   }
 
-  Future<WhiteBoardRoomState> getRoomState() {
-    var completer = Completer<WhiteBoardRoomState>();
+  Future<RoomState> getRoomState() {
+    var completer = Completer<RoomState>();
     dsBridge.callHandler("room.state.getRoomState", [], ([value]) {
-      var data = WhiteBoardRoomState()..fromJson(value);
+      var data = RoomState()..fromJson(value);
       completer.complete(data);
     });
     return completer.future;
@@ -800,7 +797,7 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
   }
 
   Future<Map<String, dynamic>> putScenes(
-      String dir, List<WhiteBoardScene> scene, int index) {
+      String dir, List<Scene> scene, int index) {
     var completer = Completer<Map<String, dynamic>>();
     dsBridge.callHandler(
         "room.putScenes", [dir, scene.map((e) => e.toJson()).toList(), index], (
@@ -888,11 +885,11 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     dsBridge.callHandler("room.removeScenes", [dirOrPath]);
   }
 
-  Future<List<WhiteBoardScene>> getScenes() {
-    var completer = Completer<List<WhiteBoardScene>>();
+  Future<List<Scene>> getScenes() {
+    var completer = Completer<List<Scene>>();
     dsBridge.callHandler("room.getSceneState", [], ([value]) {
       var data = (jsonDecode(value) as List)
-          ?.map((itemMap) => WhiteBoardScene()..fromJson(itemMap))
+          ?.map((itemMap) => Scene()..fromJson(itemMap))
           ?.toList();
       completer.complete(data);
     });
@@ -924,20 +921,19 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
 
   // 有SDK生成uuid并插入图片
   void insertImageByUrl(ImageInformation imageInfo, String url) {
-    var uuid = _asUuidV4();
+    var uuid = genUuidV4();
     imageInfo.uuid = uuid;
     dsBridge.callHandler("room.insertImage", [imageInfo.toJson()]);
     dsBridge.callHandler("room.completeImageUpload", [uuid, url]);
   }
 
-  String _asUuidV4() {
+  String genUuidV4() {
     Random random = new Random();
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
         .runes
         .map((e) {
           var r = random.nextInt(15);
           String c = String.fromCharCode(e);
-          // return String.fromCharCode(e) == 'x';
           return c == 'x'
               ? r.toRadixString(16)
               : (c == 'y' ? (r & 0x3 | 0x8).toRadixString(16) : c);
@@ -1021,12 +1017,12 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
   }
 }
 
-class WhiteBoardDisplayerState {
-  WhiteBoardGlobalState globalState;
+class DisplayerState {
+  GlobalState globalState;
   var globalStateParser;
   WhiteBoardSceneState sceneState;
-  WhiteBoardCameraConfig cameraState;
-  List<WhiteBoardRoomMember> roomMembers;
+  CameraConfig cameraState;
+  List<RoomMember> roomMembers;
 
   void setCustomGlobalStateParser<T>(GlobalStateParser<T> parser) {
     this.globalStateParser = parser;
@@ -1037,15 +1033,15 @@ class WhiteBoardDisplayerState {
   }
 }
 
-class WhiteBoardPlayerState extends WhiteBoardDisplayerState {
+class ReplayState extends DisplayerState {
   String observerMode;
 
   void fromJson(Map<String, dynamic> json) {
     observerMode = json["observerMode"];
     roomMembers = (json["roomMembers"] as List)
-        ?.map<WhiteBoardRoomMember>((e) => WhiteBoardRoomMember.fromJson(e))
+        ?.map<RoomMember>((e) => RoomMember.fromJson(e))
         ?.toList();
-    cameraState = WhiteBoardCameraConfig()..fromJson(json["cameraState"]);
+    cameraState = CameraConfig()..fromJson(json["cameraState"]);
     globalState = parseGlobalState(json['globalState']);
     sceneState = WhiteBoardSceneState()..fromJson(json["sceneState"]);
   }
@@ -1061,21 +1057,21 @@ class WhiteBoardPlayerState extends WhiteBoardDisplayerState {
   }
 }
 
-class WhiteBoardRoomState extends WhiteBoardDisplayerState {
-  WhiteBoardMemberState memberState;
-  WhiteBoardBroadcastState broadcastState;
+class RoomState extends DisplayerState {
+  MemberState memberState;
+  BroadcastState broadcastState;
   num zoomScale;
 
   void fromJson(Map<String, dynamic> json) {
     if (json == null) return null;
-    memberState = WhiteBoardMemberState()..fromJson(json["memberState"]);
-    broadcastState = WhiteBoardBroadcastState.fromJson(json["broadcastState"]);
+    memberState = MemberState()..fromJson(json["memberState"]);
+    broadcastState = BroadcastState.fromJson(json["broadcastState"]);
     zoomScale = json["zoomScale"];
     roomMembers = (json["roomMembers"] as List)
-        ?.map<WhiteBoardRoomMember>(
-            (jsonMap) => WhiteBoardRoomMember.fromJson(jsonMap))
+        ?.map<RoomMember>(
+            (jsonMap) => RoomMember.fromJson(jsonMap))
         ?.toList();
-    cameraState = WhiteBoardCameraConfig()..fromJson(json["cameraState"]);
+    cameraState = CameraConfig()..fromJson(json["cameraState"]);
     globalState = parseGlobalState(json["globalState"]);
     sceneState = WhiteBoardSceneState()..fromJson(json["sceneState"]);
   }
@@ -1095,19 +1091,19 @@ class WhiteBoardRoomState extends WhiteBoardDisplayerState {
 
 typedef T GlobalStateParser<T>(Map<String, dynamic> jsonMap);
 
-abstract class WhiteBoardGlobalState {
+abstract class GlobalState {
   Map<String, dynamic> toJson();
 
   void fromJson(Map<String, dynamic> json);
 }
 
-class WhiteBoardRoomMember {
+class RoomMember {
   int memberId;
-  WhiteBoardMemberState memberState;
+  MemberState memberState;
   String session;
   dynamic payload;
 
-  WhiteBoardRoomMember({
+  RoomMember({
     this.memberId,
     this.memberState,
     this.session,
@@ -1123,19 +1119,19 @@ class WhiteBoardRoomMember {
     };
   }
 
-  WhiteBoardRoomMember.fromJson(Map<String, dynamic> json) {
+  RoomMember.fromJson(Map<String, dynamic> json) {
     memberId = json["memberId"];
-    memberState = WhiteBoardMemberState()..fromJson(json["memberState"]);
+    memberState = MemberState()..fromJson(json["memberState"]);
     session = json["session"];
     payload = json["payload"];
   }
 }
 
-class WhiteBoardUserPayload {
+class UserPayload {
   String userId;
   String identity;
 
-  WhiteBoardUserPayload({
+  UserPayload({
     this.userId,
     this.identity,
   });
@@ -1189,16 +1185,16 @@ class ApplianceName {
   static const shape = "shape";
 }
 
-class WhiteBoardBroadcastState {
+class BroadcastState {
   String mode;
   int broadcasterId;
-  WhiteBoardRoomMember broadcasterInformation;
+  RoomMember broadcasterInformation;
 
-  WhiteBoardBroadcastState.fromJson(Map<String, dynamic> json) {
+  BroadcastState.fromJson(Map<String, dynamic> json) {
     mode = json["mode"];
     broadcasterId = json["broadcasterId"];
     broadcasterInformation = json["broadcasterInformation"] != null
-        ? WhiteBoardRoomMember.fromJson(json["broadcasterInformation"])
+        ? RoomMember.fromJson(json["broadcasterInformation"])
         : null;
   }
 
@@ -1218,7 +1214,7 @@ class ScenePathType {
 }
 
 class WhiteBoardSceneState {
-  List<WhiteBoardScene> scenes;
+  List<Scene> scenes;
   String scenePath;
   int index;
 
@@ -1234,12 +1230,12 @@ class WhiteBoardSceneState {
     index = json["index"];
     scenePath = json["scenePath"];
     scenes = (json["scenes"] as List)
-        ?.map<WhiteBoardScene>((e) => WhiteBoardScene()..fromJson(e))
+        ?.map<Scene>((e) => Scene()..fromJson(e))
         ?.toList();
   }
 }
 
-class WhiteBoardRoomPhase {
+class RoomPhase {
   /// 连接中。
   static const String connecting = "connecting";
 
@@ -1255,7 +1251,7 @@ class WhiteBoardRoomPhase {
   /// 已经断开连接。
   static const String disconnected = "disconnected";
 
-  String value = WhiteBoardRoomPhase.disconnected;
+  String value = RoomPhase.disconnected;
 }
 
 class ShapeType {
@@ -1273,17 +1269,17 @@ class ShapeType {
 }
 
 // TODO 历史遗留问题，正反序列化处理区别
-enum WhiteBoardViewMode {
+enum ViewMode {
   Freedom,
   Follower,
   Broadcaster,
 }
 
-class WhiteBoardScene {
+class Scene {
   String name;
   WhiteBoardPpt ppt;
 
-  WhiteBoardScene({this.name, this.ppt});
+  Scene({this.name, this.ppt});
 
   void fromJson(Map<String, dynamic> json) {
     name = json["name"];
@@ -1328,7 +1324,7 @@ class AnimationMode {
   static const Immediately = "immediately";
 }
 
-class WhiteBoardSdkConfiguration {
+class WhiteOptions {
   final String appIdentifier;
   final String region;
   final String deviceType;
@@ -1346,9 +1342,10 @@ class WhiteBoardSdkConfiguration {
   final bool enableImgErrorCallback;
 
   PptParams pptParams = PptParams();
+
   Map<String, String> fonts = {};
 
-  WhiteBoardSdkConfiguration({
+  WhiteOptions({
     this.appIdentifier,
     this.log,
     this.backgroundColor,
@@ -1390,11 +1387,11 @@ class WhiteBoardSdkConfiguration {
   }
 }
 
-abstract class RoomParams {
+abstract class DisplayOptions {
   Map<String, dynamic> toJson();
 }
 
-class JoinRoomParams extends RoomParams {
+class RoomOptions extends DisplayOptions {
   final String uuid;
   final String roomToken;
 
@@ -1430,7 +1427,7 @@ class JoinRoomParams extends RoomParams {
   /// 用户配置
   dynamic userPayload;
 
-  JoinRoomParams({
+  RoomOptions({
     this.uuid,
     this.roomToken,
     this.region,
@@ -1466,7 +1463,7 @@ class JoinRoomParams extends RoomParams {
   }
 }
 
-class ReplayRoomParams extends RoomParams {
+class ReplayOptions extends DisplayOptions {
   final String room;
   final String roomToken;
   final String mediaURL;
@@ -1479,7 +1476,7 @@ class ReplayRoomParams extends RoomParams {
   /// 回调播放进度的频率 默认500ms
   int step = 500;
 
-  ReplayRoomParams(
+  ReplayOptions(
       {this.room,
       this.roomToken,
       this.mediaURL,
@@ -1505,13 +1502,13 @@ class ReplayRoomParams extends RoomParams {
   }
 }
 
-class WhiteBoardCameraConfig {
+class CameraConfig {
   num centerX;
   num centerY;
   num scale;
   String animationMode;
 
-  WhiteBoardCameraConfig(
+  CameraConfig(
       {this.centerX = 0, this.centerY = 0, this.scale, this.animationMode});
 
   Map<String, dynamic> toJson() {

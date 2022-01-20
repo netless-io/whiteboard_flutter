@@ -70,7 +70,8 @@ class DsBridge {
         name: BRIDGE_NAME,
         onMessageReceived: (JavascriptMessage message) {
           var res = jsonDecode(message.message);
-          if (javascriptInterface != null) javascriptInterface.call(res["method"], res["args"]);
+          if (javascriptInterface != null)
+            javascriptInterface.call(res["method"], res["args"]);
         });
     return _javascriptChannel;
   }
@@ -108,7 +109,8 @@ class DsBridge {
     return evaluateJavascript("window._handleMessageFromNative($info)");
   }
 
-  FutureOr<String> callHandler(String method, [List<dynamic> args = const [], Function handler]) {
+  FutureOr<String> callHandler(String method,
+      [List<dynamic> args = const [], Function handler]) {
     CallInfo callInfo = new CallInfo(method, ++callID, args);
     if (handler != null) {
       handlerMap[callInfo.callbackId] = handler;
@@ -122,7 +124,8 @@ class DsBridge {
     }
   }
 
-  void hasJavascriptMethod(String handlerName, OnReturnValue<bool> existCallback) {
+  void hasJavascriptMethod(
+      String handlerName, OnReturnValue<bool> existCallback) {
     callHandler("_hasJavascriptMethod", [handlerName], existCallback);
   }
 
@@ -131,7 +134,8 @@ class DsBridge {
       interface.namespace = BRIDGE_NAME;
     }
     if (interface != null) {
-      javascriptInterface?.javaScriptNamespaceInterfaces[interface.namespace] = interface;
+      javascriptInterface?.javaScriptNamespaceInterfaces[interface.namespace] =
+          interface;
     }
   }
 
@@ -139,7 +143,8 @@ class DsBridge {
     if (namespace == null) {
       namespace = "";
     }
-    javascriptInterface.javaScriptNamespaceInterfaces.removeWhere((key, value) => key == namespace);
+    javascriptInterface.javaScriptNamespaceInterfaces
+        .removeWhere((key, value) => key == namespace);
   }
 }
 
