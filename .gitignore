@@ -14,6 +14,7 @@
 *.ipr
 *.iws
 .idea/**
+**/.idea
 # Keep the code styles.
 # !/.idea/codeStyles
 # !.idea/codeStyles/Project.xml

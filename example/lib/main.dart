@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:whitebaord/playback_test_page.dart';
 
+import 'replay_test_page.dart';
 import 'room_test_page.dart';
 
 void main() {
@@ -8,16 +8,15 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Whiteboard',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'WhiteSDK Demo'),
+      home: MyHomePage(title: 'White Example'),
     );
   }
 }
@@ -37,14 +36,15 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.title),
-        ),
-        body: testPage == null
-            ? _buildPickView()
-            : testPage == "room"
-                ? RoomTestPage()
-                : PlaybackTestPage());
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: testPage == null
+          ? _buildPickView()
+          : testPage == "room"
+              ? RoomTestPage()
+              : ReplayTestPage(),
+    );
   }
 
   Widget _buildPickView() {
@@ -54,14 +54,18 @@ class _MyHomePageState extends State<MyHomePage> {
         SizedBox(
             width: 200,
             height: 50,
-            child:
-                ElevatedButton(onPressed: _onPressRoom, child: Text("房间测试"))),
+            child: ElevatedButton(
+              onPressed: _onPressRoom,
+              child: Text("Room"),
+            )),
         SizedBox(height: 40),
         SizedBox(
             width: 200,
             height: 50,
             child: ElevatedButton(
-                onPressed: _onPressPlayback, child: Text("回放测试"))),
+              onPressed: _onPressReplay,
+              child: Text("Replay"),
+            )),
         Expanded(flex: 1, child: Container()),
       ],
     );
@@ -71,7 +75,7 @@ class _MyHomePageState extends State<MyHomePage> {
         testPage = "room";
       });
 
-  void _onPressPlayback() => setState(() {
-        testPage = "playback";
+  void _onPressReplay() => setState(() {
+        testPage = "replay";
       });
 }
