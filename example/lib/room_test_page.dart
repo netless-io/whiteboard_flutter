@@ -1,8 +1,6 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:whiteboard_sdk_flutter/whiteboard_sdk_flutter.dart';
 
 class RoomTestPage extends StatefulWidget {
@@ -13,8 +11,8 @@ class RoomTestPage extends StatefulWidget {
 }
 
 class _RoomTestPageSate extends State<RoomTestPage> {
-  WhiteBoardSDK sdk;
-  WhiteBoardRoom room;
+  WhiteSdk sdk;
+  WhiteRoom room;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
   static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
@@ -33,9 +31,13 @@ class _RoomTestPageSate extends State<RoomTestPage> {
     print('room state change : ${newState.toJson()}');
   };
 
-  Future<WhiteBoardRoom> _joinRoomAgain() async {
+  Future<WhiteRoom> _joinRoomAgain() async {
     return await sdk.joinRoom(
-        params: JoinRoomParams(uuid: ROOM_UUID, roomToken: ROOM_TOKEN, isWritable: false),
+        options: RoomOptions(
+          uuid: ROOM_UUID,
+          roomToken: ROOM_TOKEN,
+          isWritable: false,
+        ),
         onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
         onCanUndoStepsUpdate: _onCanUndoStepsUpdate,
         onRoomStateChanged: _onRoomStateChanged);
@@ -46,10 +48,14 @@ class _RoomTestPageSate extends State<RoomTestPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        WhiteBoardWithInApp(
-          onCreated: (_sdk) async {
+        WhiteboardView(
+          onSdkCreated: (_sdk) async {
             var _room = await _sdk.joinRoom(
-                params: JoinRoomParams(uuid: ROOM_UUID, roomToken: ROOM_TOKEN, isWritable: true),
+                options: RoomOptions(
+                  uuid: ROOM_UUID,
+                  roomToken: ROOM_TOKEN,
+                  isWritable: true,
+                ),
                 onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
                 onCanUndoStepsUpdate: _onCanUndoStepsUpdate,
                 onRoomStateChanged: _onRoomStateChanged);
@@ -60,7 +66,7 @@ class _RoomTestPageSate extends State<RoomTestPage> {
               room = _room;
             });
           },
-          configuration: WhiteBoardSdkConfiguration(
+          options: WhiteOptions(
             appIdentifier: APP_ID,
             log: true,
             backgroundColor: Color(0xFFF9F4E7),
@@ -73,11 +79,12 @@ class _RoomTestPageSate extends State<RoomTestPage> {
 }
 
 class OperatingView extends StatefulWidget {
-  WhiteBoardSDK sdk;
-  WhiteBoardRoom room;
+  WhiteSdk sdk;
+  WhiteRoom room;
   Function joinRoomAgain;
 
-  OperatingView({Key key, this.sdk, this.room, this.joinRoomAgain}) : super(key: key);
+  OperatingView({Key key, this.sdk, this.room, this.joinRoomAgain})
+      : super(key: key);
 
   @override
   State<OperatingView> createState() {
@@ -96,8 +103,8 @@ class OpListItem {
 }
 
 enum Category {
-  /// 全部
-  All,
+  /// 教具类
+  Appliance,
 
   /// PPT及图片类
   Image,
@@ -110,6 +117,9 @@ enum Category {
 
   /// 其它
   Misc,
+
+  /// 全部
+  All,
 }
 
 class OperatingViewState extends State<OperatingView> {
@@ -151,7 +161,7 @@ class OperatingViewState extends State<OperatingView> {
         width: double.infinity,
         height: 60,
         child: ListView.builder(
-          itemCount: categorys.length,
+          itemCount: categories.length,
           scrollDirection: Axis.horizontal,
           //列表项构造器
           itemBuilder: (BuildContext context, int index) {
@@ -164,41 +174,43 @@ class OperatingViewState extends State<OperatingView> {
 
   var allOpList = <OpListItem>[];
   var filterOptList = <OpListItem>[];
-  var categorys = Category.values;
+  var categories = Category.values;
 
-  WhiteBoardRoom get room => widget.room;
+  WhiteRoom get room => widget.room;
 
   OperatingViewState() {
     allOpList = [
       OpListItem("重连", Category.Misc, () async {
         room.disconnect().then((value) {
-          Future.delayed(Duration(seconds: 3)).then((value) => widget.joinRoomAgain());
+          Future.delayed(Duration(seconds: 3))
+              .then((value) => widget.joinRoomAgain());
         }).catchError((o) {
           print("disconnect error");
         });
       }),
       OpListItem("区域设置", Category.Misc, () {
-        room.setCameraBound(CameraBound(width: 1000, height: 1000, minScale: 0.5, maxScale: 1.5));
+        room.setCameraBound(CameraBound(
+            width: 1000, height: 1000, minScale: 0.5, maxScale: 1.5));
         room.cleanScene(true);
       }),
-      OpListItem("清屏（保留PPT）", Category.Misc, () {
+      OpListItem("清屏（保留PPT）", Category.Appliance, () {
         room.cleanScene(true);
       }),
       OpListItem("主播模式", Category.Interaction, () {
-        room.setViewMode(WhiteBoardViewMode.Broadcaster);
+        room.setViewMode(ViewMode.Broadcaster);
       }),
       OpListItem("自由模式", Category.Interaction, () {
-        room.setViewMode(WhiteBoardViewMode.Freedom);
+        room.setViewMode(ViewMode.Freedom);
       }),
       OpListItem("跟随模式", Category.Interaction, () {
-        room.setViewMode(WhiteBoardViewMode.Follower);
+        room.setViewMode(ViewMode.Follower);
       }),
       OpListItem("获取视角状态", Category.Interaction, () async {
         var state = await room.getBroadcastState();
         showHint("ViewMode ${state.mode}");
       }),
       OpListItem("移动视角", Category.Interaction, () {
-        var config = WhiteBoardCameraConfig(centerX: 100);
+        var config = CameraConfig(centerX: 100);
         room.moveCamera(config);
       }),
       OpListItem("调整视野", Category.Interaction, () {
@@ -225,87 +237,101 @@ class OperatingViewState extends State<OperatingView> {
       }),
       OpListItem("插入新页面", Category.Image, () async {
         var sceneState = await room.getSceneState();
-        var dir = sceneState.scenePath.substring(0, sceneState.scenePath.lastIndexOf('/'));
+        var dir = sceneState.scenePath
+            .substring(0, sceneState.scenePath.lastIndexOf('/'));
 
-        room.putScenes(dir, [WhiteBoardScene(name: "page1")], 0);
+        room.putScenes(dir, [Scene(name: "page1")], 0);
         room.setScenePath(dir + "/page1");
       }),
       OpListItem("插入新PPT", Category.Image, () async {
         var sceneState = await room.getSceneState();
-        var dir = sceneState.scenePath.substring(0, sceneState.scenePath.lastIndexOf('/'));
+        var dir = sceneState.scenePath
+            .substring(0, sceneState.scenePath.lastIndexOf('/'));
 
         var ppt = WhiteBoardPpt(
             src:
                 "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/image/alin-rusu-1239275-unsplash_opt.jpg",
             width: 360,
             height: 360);
-        room.putScenes(dir, [WhiteBoardScene(name: "page2", ppt: ppt)], 0);
+        room.putScenes(dir, [Scene(name: "page2", ppt: ppt)], 0);
         room.setScenePath(dir + "/page2");
       }),
       OpListItem("插入图片", Category.Image, () {
-        var image = ImageInformation(centerX: 0, centerY: 0, width: 100, height: 200);
-        room.insertImageByUrl(
-            image, "https://white-pan.oss-cn-shanghai.aliyuncs.com/40/image/mask.jpg");
+        var image =
+            ImageInformation(centerX: 0, centerY: 0, width: 100, height: 200);
+        room.insertImageByUrl(image,
+            "https://white-pan.oss-cn-shanghai.aliyuncs.com/40/image/mask.jpg");
       }),
       OpListItem("获取Scene状态", Category.State, () {
-        room.getSceneState().then((value) => print("getSceneState Result ${value.toJson()}"));
+        room
+            .getSceneState()
+            .then((value) => print("getSceneState Result ${value.toJson()}"));
       }),
       OpListItem("获取Room连接状态", Category.State, () {
-        room.getRoomPhase().then((value) => print("getRoomPhase result $value"));
+        room
+            .getRoomPhase()
+            .then((value) => print("getRoomPhase result $value"));
       }),
       OpListItem("获取Room教具状态", Category.State, () async {
-        room.getMemberState().then((value) => print("member state ${value.toJson()}"));
+        room
+            .getMemberState()
+            .then((value) => print("member state ${value.toJson()}"));
       }),
       OpListItem("获取Room状态", Category.State, () {
-        room.getRoomState().then((value) => print("room state ${value.toJson()}"));
+        room
+            .getRoomState()
+            .then((value) => print("room state ${value.toJson()}"));
       }),
       OpListItem("自定义状态", Category.State, () {
-        room.setGlobalState(GlobalDataFoo(a: "change_aaa", b: "change_bbb", c: 321));
+        room.setGlobalState(
+            GlobalDataFoo(a: "change_aaa", b: "change_bbb", c: 321));
         room
             .getGlobalState((jsonMap) => GlobalDataFoo()..fromJson(jsonMap))
             .then((value) => print(value.toJson()));
       }),
       OpListItem("房间成员", Category.State, () {
-        room
-            .getRoomMembers()
-            .then((value) => print("RoomMembers: ${value.map((e) => e.toJson()).join(';;;;')}"));
+        room.getRoomMembers().then((value) =>
+            print("RoomMembers: ${value.map((e) => e.toJson()).join(';;;;')}"));
       }),
-      OpListItem("只读切换", Category.Interaction, () {
+      OpListItem("只读切换", Category.Misc, () {
         room.setWritable(!room.getWritable()).then((writable) => {
               if (writable) {room.disableSerialization(false)}
             });
       }),
-      OpListItem("铅笔工具", Category.Interaction, () {
-        var state = WhiteBoardMemberState(currentApplianceName: ApplianceName.pencil);
+      OpListItem("铅笔工具", Category.Appliance, () {
+        var state = MemberState(currentApplianceName: ApplianceName.pencil);
         room.setMemberState(state);
       }),
-      OpListItem("选取工具", Category.Interaction, () {
-        var state = WhiteBoardMemberState(currentApplianceName: ApplianceName.selector);
+      OpListItem("选取工具", Category.Appliance, () {
+        var state = MemberState(currentApplianceName: ApplianceName.selector);
         room.setMemberState(state);
       }),
-      OpListItem("删除选中", Category.Interaction, () {
+      OpListItem("删除选中", Category.Appliance, () {
         room.delete();
       }),
-      OpListItem("矩形工具", Category.Interaction, () {
-        var state = WhiteBoardMemberState(currentApplianceName: ApplianceName.rectangle);
+      OpListItem("矩形工具", Category.Appliance, () {
+        var state = MemberState(currentApplianceName: ApplianceName.rectangle);
         room.setMemberState(state);
       }),
-      OpListItem("移动工具", Category.Interaction, () {
-        var state = WhiteBoardMemberState(currentApplianceName: ApplianceName.hand);
+      OpListItem("移动工具", Category.Appliance, () {
+        var state = MemberState(currentApplianceName: ApplianceName.hand);
         room.setMemberState(state);
       }),
-      OpListItem("文本工具", Category.Interaction, () {
-        var state = WhiteBoardMemberState(currentApplianceName: ApplianceName.text);
+      OpListItem("文本工具", Category.Appliance, () {
+        var state = MemberState(currentApplianceName: ApplianceName.text);
         room.setMemberState(state);
       }),
-      OpListItem("形状工具", Category.Interaction, () {
-        var state = WhiteBoardMemberState(
-            currentApplianceName: ApplianceName.shape, shapeType: ShapeType.pentagram);
+      OpListItem("形状工具", Category.Appliance, () {
+        var state = MemberState(
+          currentApplianceName: ApplianceName.shape,
+          shapeType: ShapeType.pentagram,
+        );
         room.setMemberState(state);
       }),
-      OpListItem("缩放", Category.Interaction, () {}),
+      OpListItem("缩放", Category.Appliance, () {}),
     ];
-    filterOptList = allOpList;
+    filterOptList =
+        allOpList.where((elem) => elem.category == Category.Appliance).toList();
   }
 
   int _random() {
@@ -327,14 +353,15 @@ class OperatingViewState extends State<OperatingView> {
     return Padding(
         padding: const EdgeInsets.all(8.0),
         child: ElevatedButton(
-            child: Text(_getFilterDisplay(categorys[index]), softWrap: true),
+            child: Text(_getFilterDisplay(categories[index]), softWrap: true),
             onPressed: () {
               setState(() {
-                if (categorys[index] == Category.All)
+                if (categories[index] == Category.All)
                   filterOptList = allOpList;
                 else
-                  filterOptList =
-                      allOpList.where((item) => item.category == categorys[index]).toList();
+                  filterOptList = allOpList
+                      .where((item) => item.category == categories[index])
+                      .toList();
               });
             }));
   }
@@ -345,8 +372,8 @@ class OperatingViewState extends State<OperatingView> {
 
   String _getFilterDisplay(Category category) {
     switch (category) {
-      case Category.All:
-        return "全部";
+      case Category.Appliance:
+        return "教具";
       case Category.Image:
         return "图片及PPT";
       case Category.Interaction:
@@ -355,13 +382,15 @@ class OperatingViewState extends State<OperatingView> {
         return "状态信息";
       case Category.Misc:
         return "其它";
+      case Category.All:
+        return "全部";
       default:
         return "Unknown";
     }
   }
 }
 
-class GlobalDataFoo implements WhiteBoardGlobalState {
+class GlobalDataFoo implements GlobalState {
   String a = "aaaa";
   String b = "bbb";
   int c = 123;

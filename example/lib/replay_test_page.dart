@@ -1,18 +1,16 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:whiteboard_sdk_flutter/whiteboard_sdk_flutter.dart';
 
-class PlaybackTestPage extends StatefulWidget {
-  PlaybackTestPage({Key key}) : super(key: key);
+class ReplayTestPage extends StatefulWidget {
+  ReplayTestPage({Key key}) : super(key: key);
 
   @override
-  _PlaybackTestPageSate createState() => _PlaybackTestPageSate();
+  _ReplayTestPageSate createState() => _ReplayTestPageSate();
 }
 
-class _PlaybackTestPageSate extends State<PlaybackTestPage> {
-  WhiteBoardSDK sdk;
-  WhiteBoardPlayer player;
+class _ReplayTestPageSate extends State<ReplayTestPage> {
+  WhiteSdk sdk;
+  WhiteReplay replay;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
   static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
@@ -24,20 +22,21 @@ class _PlaybackTestPageSate extends State<PlaybackTestPage> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        WhiteBoardWithInApp(
-          onCreated: (_sdk) async {
-            var _player = await _sdk.replayRoom(
-                ReplayRoomParams(room: ROOM_UUID, roomToken: ROOM_TOKEN),
-                onPlayerStateChanged: _onPlayerStateChanged,
-                onPlayerPhaseChanged: _onPlayerPhaseChanged,
-                onScheduleTimeChanged: _onScheduleTimeChanged);
+        WhiteboardView(
+          onSdkCreated: (whiteSdk) async {
+            var replay = await whiteSdk.joinReplay(
+              options: ReplayOptions(room: ROOM_UUID, roomToken: ROOM_TOKEN),
+              onPlayerStateChanged: _onPlayerStateChanged,
+              onPlayerPhaseChanged: _onPlayerPhaseChanged,
+              onScheduleTimeChanged: _onScheduleTimeChanged,
+            );
 
             setState(() {
-              sdk = _sdk;
-              player = _player;
+              sdk = whiteSdk;
+              replay = replay;
             });
           },
-          configuration: WhiteBoardSdkConfiguration(
+          options: WhiteOptions(
             appIdentifier: APP_ID,
             log: true,
             backgroundColor: Color(0xFFF9F4E7),
@@ -60,7 +59,7 @@ class _PlaybackTestPageSate extends State<PlaybackTestPage> {
     print("_onScheduleTimeChanged $scheduleTime");
   }
 
-  void _onPlayerStateChanged(WhiteBoardPlayerState state) {
+  void _onPlayerStateChanged(ReplayState state) {
     print("_onScheduleTimeChanged ${state.toJson()}");
   }
 
@@ -70,20 +69,20 @@ class _PlaybackTestPageSate extends State<PlaybackTestPage> {
 
   var allOpList = <OpListItem>[];
 
-  _PlaybackTestPageSate() {
+  _ReplayTestPageSate() {
     allOpList = [
       OpListItem("开始", Category.All, () async {
-        player.play();
+        replay.play();
       }),
       OpListItem("暂停）", Category.All, () {
-        player.pause();
+        replay.pause();
       }),
       OpListItem("停止）", Category.All, () {
-        player.stop();
+        replay.stop();
       }),
       OpListItem("播放速度设置", Category.All, () {
-        player.setPlaybackSpeed(2.0);
-        player.playbackSpeed.then((value) => print("playbackSpeed $value"));
+        replay.setPlaybackSpeed(2.0);
+        replay.playbackSpeed.then((value) => print("playbackSpeed $value"));
       }),
     ];
   }
