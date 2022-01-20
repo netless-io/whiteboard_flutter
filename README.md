@@ -25,7 +25,7 @@ in: </br>
 ### Live Room
 1. Init whiteboard using `WhiteSdkOptions`, `WhiteSdk` can be fetch on `onSdkCreated`
 2. call `WhiteSdk.joinRoom` using `RoomOptions` to fetch a `WhiteRoom`
-3. `WhiteRoom` is a controller to `Live Whiteboard`
+3. `WhiteRoom` is a controller to Live-Whiteboard
 
 ```dart
 Widget build(BuildContext context) {
@@ -57,7 +57,7 @@ Widget build(BuildContext context) {
 ### Replay
 1. Init whiteboard using `WhiteSdkOptions`, `WhiteSdk` can be fetch on `onSdkCreated`
 2. call `WhiteSdk.joinReplay` using `ReplayOptions` to fetch `WhiteReplay`
-3. `WhiteReplay` is a controller to `Record Whitebarod`
+3. `WhiteReplay` is a controller to Record-Whitebarod
 
 ```
 Widget build(BuildContext context) {
@@ -88,7 +88,9 @@ Widget build(BuildContext context) {
 See the `example/` folder for a working example app. </br>
 
 Common apis can be found in the `examples/` </br>
+
 [Room](https://github.com/netless-io/Whiteboard-Flutter/tree/main/example/lib/room_test_page.dart) </br>
+
 [Replay](https://github.com/netless-io/Whiteboard-Flutter/tree/main/example/lib/replay_test_page.dart)
 
 
