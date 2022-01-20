@@ -12,7 +12,7 @@ class JavaScriptNamespaceInterface {
   String namespace = "";
   Map<String, Function> methods = Map<String, Function>();
 
-  Function getMethod(String method) {
+  Function? getMethod(String method) {
     return methods[method];
   }
 
@@ -23,9 +23,10 @@ class JavaScriptNamespaceInterface {
 
 class DsBridge {
   int callID = 0;
+  
   Map<int, OnReturnValue> handlerMap = Map<int, OnReturnValue>();
-  List<CallInfo> callInfoList;
-  InnerJavascriptInterface javascriptInterface;
+  List<CallInfo>? callInfoList;
+  late InnerJavascriptInterface javascriptInterface;
 
   static const String BRIDGE_NAME = "__dsbridge";
   static bool isDebug = false;
@@ -46,7 +47,7 @@ class DsBridge {
     dsb.setMethod("returnValue", (Map<String, dynamic> jsonObject) {
       int id = jsonObject["id"];
       bool isCompleted = jsonObject["complete"];
-      OnReturnValue handler = handlerMap[id];
+      OnReturnValue? handler = handlerMap[id];
       var data;
       if (jsonObject.containsKey("data")) {
         data = jsonObject["data"];
@@ -61,19 +62,20 @@ class DsBridge {
     addJavascriptObject(dsb);
   }
 
-  WebViewController _controller;
-  JavascriptChannel _javascriptChannel;
+  WebViewController? _controller;
+  JavascriptChannel? _javascriptChannel;
 
   JavascriptChannel get javascriptChannel {
-    if (_javascriptChannel != null) return _javascriptChannel;
+    if (_javascriptChannel != null) return _javascriptChannel!;
     _javascriptChannel = JavascriptChannel(
-        name: BRIDGE_NAME,
-        onMessageReceived: (JavascriptMessage message) {
-          var res = jsonDecode(message.message);
-          if (javascriptInterface != null)
-            javascriptInterface.call(res["method"], res["args"]);
-        });
-    return _javascriptChannel;
+      name: BRIDGE_NAME,
+      onMessageReceived: (JavascriptMessage message) {
+        var res = jsonDecode(message.message);
+        if (javascriptInterface != null)
+          javascriptInterface.call(res["method"], res["args"]);
+      },
+    );
+    return _javascriptChannel!;
   }
 
   void initWithWebViewController(WebViewController controller) {
@@ -87,12 +89,12 @@ class DsBridge {
     InnerJavascriptInterface.isDebug = isDebug;
   }
 
-  FutureOr<String> evaluateJavascript(String javascript) {
+  FutureOr<String?> evaluateJavascript(String javascript) {
     try {
       if (_controller == null) {
         return null;
       }
-      return _controller.evaluateJavascript(javascript);
+      return _controller!.evaluateJavascript(javascript);
     } on MissingPluginException catch (e) {
       print(e);
       return null;
@@ -105,27 +107,26 @@ class DsBridge {
     }
   }
 
-  FutureOr<String> dispatchJavascriptCall(CallInfo info) {
+  FutureOr<String?> dispatchJavascriptCall(CallInfo info) {
     return evaluateJavascript("window._handleMessageFromNative($info)");
   }
 
-  FutureOr<String> callHandler(String method,
-      [List<dynamic> args = const [], Function handler]) {
+  FutureOr<String?> callHandler(String method,
+      [List<dynamic> args = const [], OnReturnValue? handler]) {
     CallInfo callInfo = new CallInfo(method, ++callID, args);
     if (handler != null) {
       handlerMap[callInfo.callbackId] = handler;
     }
     if (callInfoList != null) {
       /// TODO: 开启线程处理，预留
-      callInfoList.add(callInfo);
+      callInfoList!.add(callInfo);
       return null;
     } else {
       return dispatchJavascriptCall(callInfo);
     }
   }
 
-  void hasJavascriptMethod(
-      String handlerName, OnReturnValue<bool> existCallback) {
+  void hasJavascriptMethod(String handlerName, OnReturnValue existCallback) {
     callHandler("_hasJavascriptMethod", [handlerName], existCallback);
   }
 
@@ -134,7 +135,7 @@ class DsBridge {
       interface.namespace = BRIDGE_NAME;
     }
     if (interface != null) {
-      javascriptInterface?.javaScriptNamespaceInterfaces[interface.namespace] =
+      javascriptInterface.javaScriptNamespaceInterfaces[interface.namespace] =
           interface;
     }
   }
@@ -170,11 +171,10 @@ typedef void EvaluateJavascript(String javascript);
 
 class InnerJavascriptInterface {
   static bool isDebug = false;
-  static EvaluateJavascript evaluateJavascript;
-  static ParseNamespace parseNamespace;
+  static late EvaluateJavascript evaluateJavascript;
+  static late ParseNamespace parseNamespace;
 
-  Map<String, JavaScriptNamespaceInterface> javaScriptNamespaceInterfaces =
-      <String, JavaScriptNamespaceInterface>{};
+  Map<String, JavaScriptNamespaceInterface> javaScriptNamespaceInterfaces = {};
 
   void _printDebugInfo(String error) {
     if (isDebug) {
@@ -197,7 +197,7 @@ class InnerJavascriptInterface {
     }
     var arg;
     var method = jsb.getMethod(methodName);
-    String callback;
+    late String callback;
     try {
       var args = jsonDecode(argStr);
       if (args["_dscbstub"] != null) {

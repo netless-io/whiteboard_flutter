@@ -9,7 +9,7 @@ import 'DsBridge.dart';
 class DsBridgeInApp extends DsBridge {
   static bool isDebug = false;
 
-  InAppWebViewController _controller;
+  late InAppWebViewController _controller;
 
   static const String BRIDGE_NAME = "__dsbridge";
 
@@ -17,11 +17,12 @@ class DsBridgeInApp extends DsBridge {
     this.addJavascriptInterface(InnerJavascriptInterface());
     _controller = controller;
     _controller.addJavaScriptHandler(
-        handlerName: BRIDGE_NAME,
-        callback: (args) {
-          var res = jsonDecode(args[0]);
-          if (javascriptInterface != null) javascriptInterface.call(res["method"], res["args"]);
-        });
+      handlerName: BRIDGE_NAME,
+      callback: (args) {
+        var res = jsonDecode(args[0]);
+        javascriptInterface.call(res["method"], res["args"]);
+      },
+    );
   }
 
   DsBridgeInApp() {
@@ -31,12 +32,14 @@ class DsBridgeInApp extends DsBridge {
   }
 
   @override
-  FutureOr<String> evaluateJavascript(String javascript) {
+  FutureOr<String?> evaluateJavascript(String javascript) {
     try {
       if (_controller == null) {
         return null;
       }
-      return _controller.evaluateJavascript(source: javascript).then<String>((value) {
+      return _controller
+          .evaluateJavascript(source: javascript)
+          .then<String>((value) {
         return value as String;
       });
     } on MissingPluginException catch (e) {

@@ -36,7 +36,7 @@ class _RoomTestPageSate extends State<RoomTestPage> {
         options: RoomOptions(
           uuid: ROOM_UUID,
           roomToken: ROOM_TOKEN,
-          isWritable: false,
+          isWritable: true,
         ),
         onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
         onCanUndoStepsUpdate: _onCanUndoStepsUpdate,
@@ -181,7 +181,7 @@ class OperatingViewState extends State<OperatingView> {
     allOpList = [
       OpListItem("Reconnect", Category.Misc, () async {
         room.disconnect().then((value) {
-          Future.delayed(Duration(seconds: 3))
+          Future.delayed(Duration(seconds: 2))
               .then((value) => widget.joinRoomAgain());
         }).catchError((o) {
           print("disconnect error");
@@ -248,10 +248,11 @@ class OperatingViewState extends State<OperatingView> {
             .substring(0, sceneState.scenePath.lastIndexOf('/'));
 
         var ppt = WhiteBoardPpt(
-            src:
-                "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/image/alin-rusu-1239275-unsplash_opt.jpg",
-            width: 360,
-            height: 360);
+          src:
+              "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/image/alin-rusu-1239275-unsplash_opt.jpg",
+          width: 360,
+          height: 360,
+        );
         room.putScenes(dir, [Scene(name: "page2", ppt: ppt)], 0);
         room.setScenePath(dir + "/page2");
       }),

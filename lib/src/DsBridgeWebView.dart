@@ -9,12 +9,12 @@ import 'DsBridge.dart';
 class DsBridgeWebView extends StatefulWidget {
   final String url;
   final ValueChanged<DsBridge> onDSBridgeCreated;
-  final WebViewCreatedCallback onWebViewCreated;
+  final WebViewCreatedCallback? onWebViewCreated;
 
   DsBridgeWebView({
-    Key key,
-    this.url,
-    this.onDSBridgeCreated,
+    Key? key,
+    required this.url,
+    required this.onDSBridgeCreated,
     this.onWebViewCreated,
   }) : super(key: key);
 
@@ -24,8 +24,8 @@ class DsBridgeWebView extends StatefulWidget {
 
 class DsBridgeWebViewState extends State<DsBridgeWebView> {
   DsBridge dsBridge = DsBridge();
-  WebViewController _controller;
-  InnerJavascriptInterface innerJavascriptInterface;
+  late WebViewController _controller;
+  InnerJavascriptInterface? innerJavascriptInterface;
 
   static const _compatDsScript = """
       if (window.__dsbridge) {
@@ -60,7 +60,7 @@ class DsBridgeWebViewState extends State<DsBridgeWebView> {
             "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 DsBridge/1.0.0",
         onWebViewCreated: (WebViewController webViewController) async {
           _controller = webViewController;
-          widget.onWebViewCreated(_controller);
+          widget.onWebViewCreated?.call(_controller);
         },
         navigationDelegate: (NavigationRequest request) {
           print('allowing navigation to $request');
@@ -72,16 +72,18 @@ class DsBridgeWebViewState extends State<DsBridgeWebView> {
         onPageStarted: (String url) {
           print('Page started loading: $url');
         },
-        onPageFinished: (String url) async {
-          if (url != "" && url != "about:blank") {
-            dsBridge.initWithWebViewController(_controller);
-            await _controller.evaluateJavascript(_compatDsScript);
-            widget.onDSBridgeCreated(dsBridge);
-            print('Page finished loading: $url');
-          }
-        },
+        onPageFinished: _onPageFinished,
         gestureNavigationEnabled: true,
       );
     });
+  }
+
+  void _onPageFinished(String url) async {
+    if (url != "" && url != "about:blank") {
+      dsBridge.initWithWebViewController(_controller);
+      await _controller.runJavascriptReturningResult(_compatDsScript);
+      widget.onDSBridgeCreated(dsBridge);
+      print('Page finished loading: $url');
+    }
   }
 }
