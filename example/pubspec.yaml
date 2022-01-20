@@ -12,9 +12,9 @@ dependencies:
   flutter:
     sdk: flutter
   # When depending on this package from a real application you should use:
-  # whiteboard_sdk_flutter: ^0.1.2
-  whiteboard_sdk_flutter:
-    path: ../
+  whiteboard_sdk_flutter: ^0.1.3
+  # whiteboard_sdk_flutter:
+  #   path: ../
 
   cupertino_icons: ^1.0.0
 

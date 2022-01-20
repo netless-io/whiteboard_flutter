@@ -11,8 +11,8 @@ class RoomTestPage extends StatefulWidget {
 }
 
 class _RoomTestPageSate extends State<RoomTestPage> {
-  WhiteSdk sdk;
-  WhiteRoom room;
+  WhiteSdk whiteSdk;
+  WhiteRoom whiteRoom;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
   static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
@@ -32,7 +32,7 @@ class _RoomTestPageSate extends State<RoomTestPage> {
   };
 
   Future<WhiteRoom> _joinRoomAgain() async {
-    return await sdk.joinRoom(
+    return await whiteSdk.joinRoom(
         options: RoomOptions(
           uuid: ROOM_UUID,
           roomToken: ROOM_TOKEN,
@@ -49,30 +49,29 @@ class _RoomTestPageSate extends State<RoomTestPage> {
     return Stack(
       children: [
         WhiteboardView(
-          onSdkCreated: (_sdk) async {
-            var _room = await _sdk.joinRoom(
-                options: RoomOptions(
-                  uuid: ROOM_UUID,
-                  roomToken: ROOM_TOKEN,
-                  isWritable: true,
-                ),
-                onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
-                onCanUndoStepsUpdate: _onCanUndoStepsUpdate,
-                onRoomStateChanged: _onRoomStateChanged);
-            _room.disableSerialization(false);
-
-            setState(() {
-              sdk = _sdk;
-              room = _room;
-            });
-          },
           options: WhiteOptions(
             appIdentifier: APP_ID,
             log: true,
             backgroundColor: Color(0xFFF9F4E7),
           ),
+          onSdkCreated: (sdk) async {
+            // use sdk to join room
+            var room = await sdk.joinRoom(
+                options: RoomOptions(
+              uuid: ROOM_UUID,
+              roomToken: ROOM_TOKEN,
+              isWritable: true,
+            ));
+            room.disableSerialization(false);
+
+            setState(() {
+              whiteSdk = sdk;
+              whiteRoom = room;
+            });
+          },
         ),
-        OperatingView(sdk: sdk, room: room, joinRoomAgain: _joinRoomAgain),
+        OperatingView(
+            sdk: whiteSdk, room: whiteRoom, joinRoomAgain: _joinRoomAgain),
       ],
     );
   }
@@ -180,7 +179,7 @@ class OperatingViewState extends State<OperatingView> {
 
   OperatingViewState() {
     allOpList = [
-      OpListItem("重连", Category.Misc, () async {
+      OpListItem("Reconnect", Category.Misc, () async {
         room.disconnect().then((value) {
           Future.delayed(Duration(seconds: 3))
               .then((value) => widget.joinRoomAgain());
@@ -188,54 +187,54 @@ class OperatingViewState extends State<OperatingView> {
           print("disconnect error");
         });
       }),
-      OpListItem("区域设置", Category.Misc, () {
+      OpListItem("Camera Bound", Category.Misc, () {
         room.setCameraBound(CameraBound(
             width: 1000, height: 1000, minScale: 0.5, maxScale: 1.5));
         room.cleanScene(true);
       }),
-      OpListItem("清屏（保留PPT）", Category.Appliance, () {
+      OpListItem("Clean Scene", Category.Appliance, () {
         room.cleanScene(true);
       }),
-      OpListItem("主播模式", Category.Interaction, () {
+      OpListItem("Broadcaster Mode", Category.Interaction, () {
         room.setViewMode(ViewMode.Broadcaster);
       }),
-      OpListItem("自由模式", Category.Interaction, () {
+      OpListItem("Freedom Mode", Category.Interaction, () {
         room.setViewMode(ViewMode.Freedom);
       }),
-      OpListItem("跟随模式", Category.Interaction, () {
+      OpListItem("Follower Mode", Category.Interaction, () {
         room.setViewMode(ViewMode.Follower);
       }),
-      OpListItem("获取视角状态", Category.Interaction, () async {
+      OpListItem("Fetch ViewMode", Category.Interaction, () async {
         var state = await room.getBroadcastState();
         showHint("ViewMode ${state.mode}");
       }),
-      OpListItem("移动视角", Category.Interaction, () {
+      OpListItem("Move Camera", Category.Interaction, () {
         var config = CameraConfig(centerX: 100);
         room.moveCamera(config);
       }),
-      OpListItem("调整视野", Category.Interaction, () {
+      OpListItem("Move Camera By Rectangle", Category.Interaction, () {
         var config = RectangleConfig(1000, 1000, 0, 0);
         room.moveCameraToContainer(config);
       }),
-      OpListItem("撤消", Category.Interaction, () {
+      OpListItem("Undo", Category.Interaction, () {
         room.undo();
       }),
-      OpListItem("重做", Category.Interaction, () {
+      OpListItem("Redo", Category.Interaction, () {
         room.redo();
       }),
-      OpListItem("副本", Category.Interaction, () {
+      OpListItem("Duplicate", Category.Interaction, () {
         room.duplicate();
       }),
-      OpListItem("复制", Category.Interaction, () {
+      OpListItem("Copy", Category.Interaction, () {
         room.copy();
       }),
-      OpListItem("粘贴", Category.Interaction, () {
+      OpListItem("Paste", Category.Interaction, () {
         room.paste();
       }),
-      OpListItem("铺满PPT", Category.Image, () {
+      OpListItem("Fit Ppt", Category.Image, () {
         room.scalePptToFit(AnimationMode.Continuous);
       }),
-      OpListItem("插入新页面", Category.Image, () async {
+      OpListItem("Insert Scene", Category.Image, () async {
         var sceneState = await room.getSceneState();
         var dir = sceneState.scenePath
             .substring(0, sceneState.scenePath.lastIndexOf('/'));
@@ -243,7 +242,7 @@ class OperatingViewState extends State<OperatingView> {
         room.putScenes(dir, [Scene(name: "page1")], 0);
         room.setScenePath(dir + "/page1");
       }),
-      OpListItem("插入新PPT", Category.Image, () async {
+      OpListItem("Insert New Ppt", Category.Image, () async {
         var sceneState = await room.getSceneState();
         var dir = sceneState.scenePath
             .substring(0, sceneState.scenePath.lastIndexOf('/'));
@@ -256,79 +255,79 @@ class OperatingViewState extends State<OperatingView> {
         room.putScenes(dir, [Scene(name: "page2", ppt: ppt)], 0);
         room.setScenePath(dir + "/page2");
       }),
-      OpListItem("插入图片", Category.Image, () {
+      OpListItem("Insert Image", Category.Image, () {
         var image =
             ImageInformation(centerX: 0, centerY: 0, width: 100, height: 200);
         room.insertImageByUrl(image,
             "https://white-pan.oss-cn-shanghai.aliyuncs.com/40/image/mask.jpg");
       }),
-      OpListItem("获取Scene状态", Category.State, () {
+      OpListItem("Get SceneState", Category.State, () {
         room
             .getSceneState()
             .then((value) => print("getSceneState Result ${value.toJson()}"));
       }),
-      OpListItem("获取Room连接状态", Category.State, () {
+      OpListItem("Get RoomPhase", Category.State, () {
         room
             .getRoomPhase()
             .then((value) => print("getRoomPhase result $value"));
       }),
-      OpListItem("获取Room教具状态", Category.State, () async {
+      OpListItem("Get Room MemberState", Category.State, () async {
         room
             .getMemberState()
             .then((value) => print("member state ${value.toJson()}"));
       }),
-      OpListItem("获取Room状态", Category.State, () {
+      OpListItem("Get RoomState", Category.State, () {
         room
             .getRoomState()
             .then((value) => print("room state ${value.toJson()}"));
       }),
-      OpListItem("自定义状态", Category.State, () {
+      OpListItem("Use Global State", Category.State, () {
         room.setGlobalState(
             GlobalDataFoo(a: "change_aaa", b: "change_bbb", c: 321));
         room
             .getGlobalState((jsonMap) => GlobalDataFoo()..fromJson(jsonMap))
             .then((value) => print(value.toJson()));
       }),
-      OpListItem("房间成员", Category.State, () {
+      OpListItem("Get RoomMembers", Category.State, () {
         room.getRoomMembers().then((value) =>
             print("RoomMembers: ${value.map((e) => e.toJson()).join(';;;;')}"));
       }),
-      OpListItem("只读切换", Category.Misc, () {
+      OpListItem("Change Writable", Category.Misc, () {
         room.setWritable(!room.getWritable()).then((writable) => {
               if (writable) {room.disableSerialization(false)}
             });
       }),
-      OpListItem("铅笔工具", Category.Appliance, () {
+      OpListItem("Pencil", Category.Appliance, () {
         var state = MemberState(currentApplianceName: ApplianceName.pencil);
         room.setMemberState(state);
       }),
-      OpListItem("选取工具", Category.Appliance, () {
+      OpListItem("Selector", Category.Appliance, () {
         var state = MemberState(currentApplianceName: ApplianceName.selector);
         room.setMemberState(state);
       }),
-      OpListItem("删除选中", Category.Appliance, () {
+      OpListItem("Delete Selected", Category.Appliance, () {
         room.delete();
       }),
-      OpListItem("矩形工具", Category.Appliance, () {
+      OpListItem("Rectangle", Category.Appliance, () {
         var state = MemberState(currentApplianceName: ApplianceName.rectangle);
         room.setMemberState(state);
       }),
-      OpListItem("移动工具", Category.Appliance, () {
+      OpListItem("Hand", Category.Appliance, () {
         var state = MemberState(currentApplianceName: ApplianceName.hand);
         room.setMemberState(state);
       }),
-      OpListItem("文本工具", Category.Appliance, () {
+      OpListItem("Text", Category.Appliance, () {
         var state = MemberState(currentApplianceName: ApplianceName.text);
         room.setMemberState(state);
       }),
-      OpListItem("形状工具", Category.Appliance, () {
+      OpListItem("Shape", Category.Appliance, () {
         var state = MemberState(
           currentApplianceName: ApplianceName.shape,
           shapeType: ShapeType.pentagram,
         );
         room.setMemberState(state);
       }),
-      OpListItem("缩放", Category.Appliance, () {}),
+      OpListItem("Scale", Category.Appliance, () {}),
     ];
     filterOptList =
         allOpList.where((elem) => elem.category == Category.Appliance).toList();
@@ -373,17 +372,17 @@ class OperatingViewState extends State<OperatingView> {
   String _getFilterDisplay(Category category) {
     switch (category) {
       case Category.Appliance:
-        return "教具";
+        return "Appliance";
       case Category.Image:
-        return "图片及PPT";
+        return "Image & Ppt";
       case Category.Interaction:
-        return "交互操作";
+        return "Interaction";
       case Category.State:
-        return "状态信息";
+        return "State";
       case Category.Misc:
-        return "其它";
+        return "Misc";
       case Category.All:
-        return "全部";
+        return "All";
       default:
         return "Unknown";
     }

@@ -9,8 +9,8 @@ class ReplayTestPage extends StatefulWidget {
 }
 
 class _ReplayTestPageSate extends State<ReplayTestPage> {
-  WhiteSdk sdk;
-  WhiteReplay replay;
+  WhiteSdk whiteSdk;
+  WhiteReplay whiteReplay;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
   static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
@@ -23,8 +23,13 @@ class _ReplayTestPageSate extends State<ReplayTestPage> {
     return Stack(
       children: [
         WhiteboardView(
-          onSdkCreated: (whiteSdk) async {
-            var replay = await whiteSdk.joinReplay(
+          options: WhiteOptions(
+            appIdentifier: APP_ID,
+            log: true,
+            backgroundColor: Color(0xFFF9F4E7),
+          ),
+          onSdkCreated: (sdk) async {
+            var replay = await sdk.joinReplay(
               options: ReplayOptions(room: ROOM_UUID, roomToken: ROOM_TOKEN),
               onPlayerStateChanged: _onPlayerStateChanged,
               onPlayerPhaseChanged: _onPlayerPhaseChanged,
@@ -32,15 +37,10 @@ class _ReplayTestPageSate extends State<ReplayTestPage> {
             );
 
             setState(() {
-              sdk = whiteSdk;
-              replay = replay;
+              whiteSdk = sdk;
+              whiteReplay = replay;
             });
           },
-          options: WhiteOptions(
-            appIdentifier: APP_ID,
-            log: true,
-            backgroundColor: Color(0xFFF9F4E7),
-          ),
         ),
         Column(children: [
           _buildOperatingArea(),
@@ -71,18 +71,19 @@ class _ReplayTestPageSate extends State<ReplayTestPage> {
 
   _ReplayTestPageSate() {
     allOpList = [
-      OpListItem("开始", Category.All, () async {
-        replay.play();
+      OpListItem("Start", Category.All, () async {
+        whiteReplay.play();
       }),
-      OpListItem("暂停）", Category.All, () {
-        replay.pause();
+      OpListItem("Pause）", Category.All, () {
+        whiteReplay.pause();
       }),
-      OpListItem("停止）", Category.All, () {
-        replay.stop();
+      OpListItem("Stop）", Category.All, () {
+        whiteReplay.stop();
       }),
-      OpListItem("播放速度设置", Category.All, () {
-        replay.setPlaybackSpeed(2.0);
-        replay.playbackSpeed.then((value) => print("playbackSpeed $value"));
+      OpListItem("Change Speed", Category.All, () {
+        whiteReplay.setPlaybackSpeed(2.0);
+        whiteReplay.playbackSpeed
+            .then((value) => print("playbackSpeed $value"));
       }),
     ];
   }
