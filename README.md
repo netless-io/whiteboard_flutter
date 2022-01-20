@@ -7,13 +7,14 @@ Add whiteboard_sdk_flutter to your pubspec:
 
 ```yaml
 dependencies:
-  whiteboard_sdk_flutter: 0.1.2 # or the latest version on Pub
+  whiteboard_sdk_flutter: ^0.1.3
 ```
 
 ### Android
 
 Configure your app to use the `INTERNET` permission in the manifest file located
-in `<project root>/android/app/src/main/AndroidManifest.xml`:
+in: </br>
+`<project root>/android/app/src/main/AndroidManifest.xml`:
 
 ```xml
 <uses-permission android:name="android.permission.INTERNET"/>
@@ -84,11 +85,10 @@ Widget build(BuildContext context) {
 }
 ```
 ### Example
-See the `example/` folder for a working example app.
+See the `example/` folder for a working example app. </br>
 
-Common apis can be found in the `examples/`
-[Room](https://github.com/netless-io/Whiteboard-Flutter/tree/main/example/lib/room_test_page.dart)
-
+Common apis can be found in the `examples/` </br>
+[Room](https://github.com/netless-io/Whiteboard-Flutter/tree/main/example/lib/room_test_page.dart) </br>
 [Replay](https://github.com/netless-io/Whiteboard-Flutter/tree/main/example/lib/replay_test_page.dart)
 
 
