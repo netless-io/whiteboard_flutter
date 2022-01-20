@@ -54,12 +54,14 @@ class _MyHomePageState extends State<MyHomePage> {
         SizedBox(
             width: 200,
             height: 50,
-            child: ElevatedButton(onPressed: _onPressRoom, child: Text("房间测试"))),
+            child:
+                ElevatedButton(onPressed: _onPressRoom, child: Text("房间测试"))),
         SizedBox(height: 40),
         SizedBox(
             width: 200,
             height: 50,
-            child: ElevatedButton(onPressed: _onPressPlayback, child: Text("回放测试"))),
+            child: ElevatedButton(
+                onPressed: _onPressPlayback, child: Text("回放测试"))),
         Expanded(flex: 1, child: Container()),
       ],
     );

@@ -13,7 +13,8 @@ class WhiteBoardWithInApp extends StatelessWidget {
   // final String assetFilePath;
   final WhiteBoardSdkConfiguration configuration;
 
-  static GlobalKey<DsBridgeInAppWebViewState> webView = GlobalKey<DsBridgeInAppWebViewState>();
+  static GlobalKey<DsBridgeInAppWebViewState> webView =
+      GlobalKey<DsBridgeInAppWebViewState>();
 
   WhiteBoardWithInApp({
     Key key,
@@ -27,7 +28,9 @@ class WhiteBoardWithInApp extends StatelessWidget {
       key: webView,
       url: "",
       onWebViewCreated: (controller) {
-        controller.loadFile(assetFilePath: "packages/whiteboard_sdk_flutter/assets/whiteboardBridge/index.html");
+        controller.loadFile(
+            assetFilePath:
+                "packages/whiteboard_sdk_flutter/assets/whiteboardBridge/index.html");
       },
       onDSBridgeCreated: (DsBridge dsBridge) async {
         dsBridge.addJavascriptObject(this.createSDKInterface());
@@ -177,7 +180,8 @@ class WhiteBoardDisplayer {
   }
 
   postIframeMessage(dynamic object) {
-    dsBridge.callHandler("${kDisplayerNamespace}postMessage", [jsonEncode(object)]);
+    dsBridge
+        .callHandler("${kDisplayerNamespace}postMessage", [jsonEncode(object)]);
   }
 
   moveCamera(WhiteBoardCameraConfig config) {
@@ -185,7 +189,8 @@ class WhiteBoardDisplayer {
   }
 
   moveCameraToContainer(RectangleConfig config) {
-    dsBridge.callHandler("${kDisplayerNamespace}moveCameraToContain", [config.toJson()]);
+    dsBridge.callHandler(
+        "${kDisplayerNamespace}moveCameraToContain", [config.toJson()]);
   }
 
   refreshViewSize() {
@@ -198,22 +203,26 @@ class WhiteBoardDisplayer {
   }
 
   setDisableCameraTransform(bool disable) {
-    dsBridge.callHandler("${kDisplayerNamespace}setDisableCameraTransform", [disable]);
+    dsBridge.callHandler(
+        "${kDisplayerNamespace}setDisableCameraTransform", [disable]);
   }
 
   Future<bool> getDisableCameraTransform() async {
-    var value = dsBridge.callHandler("${kDisplayerNamespace}getDisableCameraTransform", [], null);
+    var value = dsBridge.callHandler(
+        "${kDisplayerNamespace}getDisableCameraTransform", [], null);
     return value == 'true';
   }
 
   void setCameraBound(CameraBound cameraBound) {
-    dsBridge.callHandler("${kDisplayerNamespace}setCameraBound", [cameraBound.toJson()]);
+    dsBridge.callHandler(
+        "${kDisplayerNamespace}setCameraBound", [cameraBound.toJson()]);
   }
 
   /// 转换白板上点的坐标。
   Future<WhiteBoardPoint> convertToPointInWorld(num x, num y) {
     var completer = Completer<WhiteBoardPoint>();
-    dsBridge.callHandler("${kDisplayerNamespace}convertToPointInWorld", [x, y], ([value]) {
+    dsBridge.callHandler("${kDisplayerNamespace}convertToPointInWorld", [x, y],
+        ([value]) {
       completer.complete(WhiteBoardPoint.fromJson(jsonDecode(value)));
     });
     return completer.future;
@@ -221,7 +230,8 @@ class WhiteBoardDisplayer {
 
   Future<String> getScenePathType(String path) {
     var completer = Completer<String>();
-    dsBridge.callHandler("${kDisplayerNamespace}convertToPointInWorld", [path], ([value]) {
+    dsBridge.callHandler("${kDisplayerNamespace}convertToPointInWorld", [path],
+        ([value]) {
       completer.complete(value);
     });
     return completer.future;
@@ -231,9 +241,12 @@ class WhiteBoardDisplayer {
   Future<Map<String, List<WhiteBoardScene>>> getEntireScenes(String path) {
     var completer = Completer<Map<String, List<WhiteBoardScene>>>();
 
-    dsBridge.callHandler("${kDisplayerNamespace}entireScenes", [path], ([value]) {
+    dsBridge.callHandler("${kDisplayerNamespace}entireScenes", [path], (
+        [value]) {
       var data = (jsonDecode(value) as Map)?.map((k, v) {
-            var convert = (v as List)?.map((e) => WhiteBoardScene()..fromJson(e))?.toList();
+            var convert = (v as List)
+                ?.map((e) => WhiteBoardScene()..fromJson(e))
+                ?.toList();
             return MapEntry<String, List<WhiteBoardScene>>(k, convert);
           }) ??
           {};
@@ -271,7 +284,8 @@ class WhiteBoardMemberState {
   }
 
   void fromJson(Map<String, dynamic> json) {
-    strokeColor = (json["strokeColor"] as List)?.map<int>((e) => e as int)?.toList();
+    strokeColor =
+        (json["strokeColor"] as List)?.map<int>((e) => e as int)?.toList();
     strokeWidth = json["strokeWidth"];
     textSize = json["textSize"];
     shapeType = json["shapeType"];
@@ -343,7 +357,8 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
     interface.setMethod("onLoadFirstFrame", this._onLoadFirstFrame);
     interface.setMethod("onScheduleTimeChanged", this._onScheduleTimeChanged);
     interface.setMethod("onStoppedWithError", this._onStoppedWithError);
-    interface.setMethod("fireCatchErrorWhenAppendFrame", this._fireCatchErrorWhenAppendFrame);
+    interface.setMethod(
+        "fireCatchErrorWhenAppendFrame", this._fireCatchErrorWhenAppendFrame);
     interface.setMethod("onCatchErrorWhenRender", this._onCatchErrorWhenRender);
     interface.setMethod("fireMagixEvent", this._fireMagixEvent);
     interface.setMethod("fireHighFrequencyEvent", this._fireHighFrequencyEvent);
@@ -361,7 +376,8 @@ class WhiteBoardPlayer extends WhiteBoardDisplayer {
   _onPlayerStateChanged(String value) {
     print(value);
     if (onPlayerStateChanged != null) {
-      onPlayerStateChanged(WhiteBoardPlayerState()..fromJson(jsonDecode(value)));
+      onPlayerStateChanged(
+          WhiteBoardPlayerState()..fromJson(jsonDecode(value)));
     }
   }
 
@@ -526,9 +542,11 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     interface.setMethod("fireCanUndoStepsUpdate", this._fireCanUndoStepsUpdate);
     interface.setMethod("fireCanRedoStepsUpdate", this._fireCanRedoStepsUpdate);
     interface.setMethod("fireRoomStateChanged", this._fireRoomStateChanged);
-    interface.setMethod("fireDisconnectWithError", this._fireDisconnectWithError);
+    interface.setMethod(
+        "fireDisconnectWithError", this._fireDisconnectWithError);
     interface.setMethod("fireKickedWithReason", this._fireKickedWithReason);
-    interface.setMethod("fireCatchErrorWhenAppendFrame", this._fireCatchErrorWhenAppendFrame);
+    interface.setMethod(
+        "fireCatchErrorWhenAppendFrame", this._fireCatchErrorWhenAppendFrame);
     interface.setMethod("fireMagixEvent", this._fireMagixEvent);
     interface.setMethod("fireHighFrequencyEvent", this._fireHighFrequencyEvent);
     return interface;
@@ -552,7 +570,9 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
   _fireRoomStateChanged(String value) {
     try {
       var data = jsonDecode(value) as Map<String, dynamic>;
-      state.fromJson((<String, dynamic>{})..addAll(state?.toJson())..addAll(data));
+      state.fromJson((<String, dynamic>{})
+        ..addAll(state?.toJson())
+        ..addAll(data));
       if (onRoomStateChanged != null) onRoomStateChanged(state);
     } catch (e) {
       print(e);
@@ -595,7 +615,8 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     dsBridge.callHandler("room.setGlobalState", [modifyState.toJson()]);
   }
 
-  Future<T> getGlobalState<T extends WhiteBoardGlobalState>(GlobalStateParser<T> parser) {
+  Future<T> getGlobalState<T extends WhiteBoardGlobalState>(
+      GlobalStateParser<T> parser) {
     var completer = Completer<T>();
     dsBridge.callHandler("room.getGlobalState", [], ([value]) {
       completer.complete(parser(jsonDecode(value)));
@@ -778,10 +799,12 @@ class WhiteBoardRoom extends WhiteBoardDisplayer {
     dsBridge.callHandler("ppt.previousStep");
   }
 
-  Future<Map<String, dynamic>> putScenes(String dir, List<WhiteBoardScene> scene, int index) {
+  Future<Map<String, dynamic>> putScenes(
+      String dir, List<WhiteBoardScene> scene, int index) {
     var completer = Completer<Map<String, dynamic>>();
-    dsBridge.callHandler("room.putScenes", [dir, scene.map((e) => e.toJson()).toList(), index], (
-        [value]) {
+    dsBridge.callHandler(
+        "room.putScenes", [dir, scene.map((e) => e.toJson()).toList(), index], (
+            [value]) {
       completer.complete(jsonDecode(value));
     });
     return completer.future;
@@ -1049,7 +1072,8 @@ class WhiteBoardRoomState extends WhiteBoardDisplayerState {
     broadcastState = WhiteBoardBroadcastState.fromJson(json["broadcastState"]);
     zoomScale = json["zoomScale"];
     roomMembers = (json["roomMembers"] as List)
-        ?.map<WhiteBoardRoomMember>((jsonMap) => WhiteBoardRoomMember.fromJson(jsonMap))
+        ?.map<WhiteBoardRoomMember>(
+            (jsonMap) => WhiteBoardRoomMember.fromJson(jsonMap))
         ?.toList();
     cameraState = WhiteBoardCameraConfig()..fromJson(json["cameraState"]);
     globalState = parseGlobalState(json["globalState"]);
@@ -1487,10 +1511,16 @@ class WhiteBoardCameraConfig {
   num scale;
   String animationMode;
 
-  WhiteBoardCameraConfig({this.centerX = 0, this.centerY = 0, this.scale, this.animationMode});
+  WhiteBoardCameraConfig(
+      {this.centerX = 0, this.centerY = 0, this.scale, this.animationMode});
 
   Map<String, dynamic> toJson() {
-    return {"centerX": centerX, "centerY": centerY, "scale": scale, "animationMode": animationMode};
+    return {
+      "centerX": centerX,
+      "centerY": centerY,
+      "scale": scale,
+      "animationMode": animationMode
+    };
   }
 
   void fromJson(Map<String, dynamic> json) {
@@ -1516,7 +1546,8 @@ class RectangleConfig {
         centerY = centerX,
         animationMode = animationMode;
 
-  RectangleConfig.fromSize(num width, num height, [String animationMode = AnimationMode.Continuous])
+  RectangleConfig.fromSize(num width, num height,
+      [String animationMode = AnimationMode.Continuous])
       : width = width,
         height = height,
         centerX = -width / 2.0,
@@ -1592,7 +1623,13 @@ class CameraBound {
   final ContentModeConfig minContentMode;
 
   CameraBound(
-      {this.damping, this.centerX, this.centerY, this.width, this.height, minScale, maxScale})
+      {this.damping,
+      this.centerX,
+      this.centerY,
+      this.width,
+      this.height,
+      minScale,
+      maxScale})
       : this.minContentMode = ContentModeConfig(scale: minScale),
         this.maxContentMode = ContentModeConfig(scale: maxScale);
 
@@ -1627,7 +1664,8 @@ class ContentModeConfig {
   final num space;
   final String mode;
 
-  ContentModeConfig({this.scale = 1, this.space = 0, this.mode = ScaleMode.scale});
+  ContentModeConfig(
+      {this.scale = 1, this.space = 0, this.mode = ScaleMode.scale});
 
   Map<String, dynamic> toJson() {
     return {
@@ -1679,7 +1717,13 @@ class ImageInformation {
   /// 设置锁定图片。
   bool locked;
 
-  ImageInformation({this.uuid, this.centerX, this.centerY, this.width, this.height, this.locked});
+  ImageInformation(
+      {this.uuid,
+      this.centerX,
+      this.centerY,
+      this.width,
+      this.height,
+      this.locked});
 
   Map<String, dynamic> toJson() {
     return {
