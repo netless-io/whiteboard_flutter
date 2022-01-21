@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:whiteboard_sdk_flutter/whiteboard_sdk_flutter.dart';
 
 class ReplayTestPage extends StatefulWidget {
-  ReplayTestPage({Key key}) : super(key: key);
+  ReplayTestPage({Key? key}) : super(key: key);
 
   @override
   _ReplayTestPageSate createState() => _ReplayTestPageSate();
 }
 
 class _ReplayTestPageSate extends State<ReplayTestPage> {
-  WhiteSdk whiteSdk;
-  WhiteReplay whiteReplay;
+  late WhiteSdk whiteSdk;
+  late WhiteReplay whiteReplay;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
   static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";

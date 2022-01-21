@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:whiteboard_sdk_flutter/whiteboard_sdk_flutter.dart';
 
 class RoomTestPage extends StatefulWidget {
-  RoomTestPage({Key key}) : super(key: key);
+  RoomTestPage({Key? key}) : super(key: key);
 
   @override
   _RoomTestPageSate createState() => _RoomTestPageSate();
 }
 
 class _RoomTestPageSate extends State<RoomTestPage> {
-  WhiteSdk whiteSdk;
-  WhiteRoom whiteRoom;
+  late WhiteSdk whiteSdk;
+  late WhiteRoom whiteRoom;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
   static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
@@ -80,9 +80,10 @@ class _RoomTestPageSate extends State<RoomTestPage> {
 class OperatingView extends StatefulWidget {
   WhiteSdk sdk;
   WhiteRoom room;
-  Function joinRoomAgain;
+  Function? joinRoomAgain;
 
-  OperatingView({Key key, this.sdk, this.room, this.joinRoomAgain})
+  OperatingView(
+      {Key? key, required this.sdk, required this.room, this.joinRoomAgain})
       : super(key: key);
 
   @override
@@ -182,7 +183,7 @@ class OperatingViewState extends State<OperatingView> {
       OpListItem("Reconnect", Category.Misc, () async {
         room.disconnect().then((value) {
           Future.delayed(Duration(seconds: 2))
-              .then((value) => widget.joinRoomAgain());
+              .then((value) => widget.joinRoomAgain?.call());
         }).catchError((o) {
           print("disconnect error");
         });
@@ -391,9 +392,9 @@ class OperatingViewState extends State<OperatingView> {
 }
 
 class GlobalDataFoo implements GlobalState {
-  String a = "aaaa";
-  String b = "bbb";
-  int c = 123;
+  String? a = "aaaa";
+  String? b = "bbb";
+  int? c = 123;
 
   GlobalDataFoo({this.a, this.b, this.c});
 

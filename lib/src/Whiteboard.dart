@@ -311,7 +311,7 @@ class WhiteReplay extends WhiteDisplayer {
   final ReplayOptions params;
   final DsBridge dsBridge;
 
-  String tag = "WhiteBoardPlayer";
+  String tag = "WhiteReplay";
 
   ReplayTimeInfo replayTimeInfo = ReplayTimeInfo();
   String phase = WhiteBoardPlayerPhase.WaitingFirstFrame;
