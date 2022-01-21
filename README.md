@@ -59,7 +59,7 @@ Widget build(BuildContext context) {
 2. call `WhiteSdk.joinReplay` using `ReplayOptions` to fetch `WhiteReplay`
 3. `WhiteReplay` is a controller to Record-Whitebarod
 
-```
+```dart
 Widget build(BuildContext context) {
     return new WhiteboardView(
         options: WhiteOptions(
