@@ -17,7 +17,7 @@ class _RoomTestPageSate extends State<RoomTestPage> {
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
   static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
   static const String ROOM_TOKEN = "NETLESSROOM_YWs9eTBJOWsxeC1IVVo4VGh0NyZub25jZT0xNjI5MjU3OTQyNTM2MDAmcm9sZT0wJnNpZz1lZDdjOGJiY2M4YzVjZjQ5NDU5NmIzZGJiYzQzNDczNDJmN2NjYTAxMThlMTMyOWVlZGRmMjljNjE1NzQ5ZWFkJnV1aWQ9ZDQxODQ3OTBmZmQ1MTFlYmI5ZWJiZjdhOGYxZDc3YmQ";
-  static const String APP_UNIQUE_UID = "123456";
+  static const String UNIQUE_CLIENT_ID = "123456";
 
   OnCanRedoStepsUpdate _onCanRedoStepsUpdate = (stepNum) {
     print('can redo step : $stepNum');
@@ -36,7 +36,7 @@ class _RoomTestPageSate extends State<RoomTestPage> {
         options: RoomOptions(
           uuid: ROOM_UUID,
           roomToken: ROOM_TOKEN,
-          uid: APP_UNIQUE_UID,
+          uid: UNIQUE_CLIENT_ID,
           isWritable: true,
         ),
         onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
@@ -61,7 +61,7 @@ class _RoomTestPageSate extends State<RoomTestPage> {
               options: RoomOptions(
                 uuid: ROOM_UUID,
                 roomToken: ROOM_TOKEN,
-                uid: APP_UNIQUE_UID,
+                uid: UNIQUE_CLIENT_ID,
                 isWritable: true,
               ),
             );

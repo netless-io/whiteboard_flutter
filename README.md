@@ -41,7 +41,7 @@ Widget build(BuildContext context) {
                 options: RoomOptions(
                     uuid: ROOM_UUID,
                     roomToken: ROOM_TOKEN,
-                    uid: APP_UNIQUE_UID,
+                    uid: UNIQUE_CLIENT_ID,
                     isWritable: true,
                 ),
             );
