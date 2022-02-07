@@ -21,6 +21,9 @@ Cutting a Release
    sed -i "" \
     "s/whiteboard_sdk_flutter: ^.*/whiteboard_sdk_flutter: ^$RELEASE_VERSION/g" \
    README.md README_zh_CN.md
+   sed -i "" \
+    "s/whiteboard_sdk_flutter: ^.*/whiteboard_sdk_flutter: ^$RELEASE_VERSION/g" \
+   "example/pubspec.yaml"
     ```
 4. Tag the release and push to GitHub.
    ```

@@ -1,4 +1,8 @@
 # ChangeLog
+## [0.3.0] - 2022-02-07
+* Update `white-sdk-web` to 2.15.17
+* `uid` is required by `RoomOptions` to join the room
+
 ## [0.2.1] - 2022-02-07
 * Fix Null to String bugs
 
