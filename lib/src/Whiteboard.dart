@@ -1391,6 +1391,7 @@ abstract class DisplayOptions {
 class RoomOptions extends DisplayOptions {
   final String uuid;
   final String roomToken;
+  final String uid;
 
   /// 数据中心。
   final String region;
@@ -1423,6 +1424,7 @@ class RoomOptions extends DisplayOptions {
   RoomOptions({
     required this.uuid,
     required this.roomToken,
+    required this.uid,
     this.region = Region.cn_hz,
     this.isWritable = true,
     this.cameraBound,
@@ -1445,6 +1447,7 @@ class RoomOptions extends DisplayOptions {
     return {
       "uuid": uuid,
       "roomToken": roomToken,
+      "uid": uid,
       "region": region,
       "cameraBound": cameraBound,
       "timeout": timeout,
@@ -1455,7 +1458,7 @@ class RoomOptions extends DisplayOptions {
       "disableCameraTransform": disableCameraTransform,
       "disableBezier": disableBezier,
       "disableNewPencil": disableNewPencil,
-      "userPayload": jsonEncode(userPayload),
+      if (userPayload != null) "userPayload": jsonEncode(userPayload),
     }..removeWhere((key, value) => value == null);
   }
 }
