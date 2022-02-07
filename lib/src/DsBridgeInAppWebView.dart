@@ -46,15 +46,16 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
     return Builder(builder: (_) {
       return InAppWebView(
         initialUrlRequest: URLRequest(url: Uri.parse(widget.url)),
-        onWebViewCreated: (InAppWebViewController webViewController) async {
-          _controller = webViewController;
+        onWebViewCreated: (InAppWebViewController controller) async {
+          _controller = controller;
           _controller.setOptions(
             options: InAppWebViewGroupOptions(
                 crossPlatform: InAppWebViewOptions(
-                    mediaPlaybackRequiresUserGesture: false,
-                    javaScriptEnabled: true,
-                    userAgent:
-                        "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 DsBridge/1.0.0"),
+                  mediaPlaybackRequiresUserGesture: false,
+                  javaScriptEnabled: true,
+                  userAgent:
+                      "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 DsBridge/1.0.0",
+                ),
                 ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true)),
           );
           widget.onWebViewCreated?.call(_controller);
@@ -75,7 +76,10 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
     print(consoleMessage.message);
   }
 
-  void _onLoadStop(InAppWebViewController controller, Uri? url) async {
+  void _onLoadStop(
+    InAppWebViewController controller,
+    Uri? url,
+  ) async {
     if (url != Uri.parse("") && url != Uri.parse("about:blank")) {
       dsBridge.initWithInAppWebViewController(_controller);
       await _controller.evaluateJavascript(source: _compatDsScript);
@@ -88,8 +92,12 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
     print('Page started loading: $url');
   }
 
-  void _onLoadHttpError(InAppWebViewController controller, Uri? url,
-      int statusCode, String description) {}
+  void _onLoadHttpError(
+    InAppWebViewController controller,
+    Uri? url,
+    int statusCode,
+    String description,
+  ) {}
 
   void _onLoadError(
     InAppWebViewController controller,

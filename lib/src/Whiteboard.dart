@@ -1396,12 +1396,13 @@ class RoomOptions extends DisplayOptions {
   /// 数据中心。
   final String region;
 
-  /// 视角边界。TODO
+  /// 视角边界。
   CameraBound? cameraBound;
 
   /// 重连时，最大重连尝试时间，单位：毫秒，默认 45 秒。
   final int timeout;
 
+  /// 是否以互动模式加入白板房间
   final bool isWritable;
 
   /// 禁止白板工具响应用户输入。
@@ -1418,6 +1419,11 @@ class RoomOptions extends DisplayOptions {
 
   /// 关闭贝塞尔曲线优化。
   final bool disableBezier;
+
+  /// 关闭笔锋效果
+  final bool disableNewPencil;
+
+  dynamic userPayload;
 
   /// 关闭笔锋效果。
   /// 用户配置
@@ -1437,10 +1443,6 @@ class RoomOptions extends DisplayOptions {
     this.disableNewPencil = false,
     this.userPayload,
   });
-
-  final bool disableNewPencil;
-
-  dynamic userPayload;
 
   @override
   Map<String, dynamic> toJson() {
