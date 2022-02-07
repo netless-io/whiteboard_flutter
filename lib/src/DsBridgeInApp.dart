@@ -39,9 +39,7 @@ class DsBridgeInApp extends DsBridge {
       }
       return _controller
           .evaluateJavascript(source: javascript)
-          .then<String>((value) {
-        return value as String;
-      });
+          .then<String>((value) => value);
     } on MissingPluginException catch (e) {
       print(e);
       return null;

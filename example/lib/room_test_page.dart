@@ -11,8 +11,8 @@ class RoomTestPage extends StatefulWidget {
 }
 
 class _RoomTestPageSate extends State<RoomTestPage> {
-  late WhiteSdk whiteSdk;
-  late WhiteRoom whiteRoom;
+  WhiteSdk? whiteSdk;
+  WhiteRoom? whiteRoom;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
   static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
@@ -32,7 +32,7 @@ class _RoomTestPageSate extends State<RoomTestPage> {
   };
 
   Future<WhiteRoom> _joinRoomAgain() async {
-    return await whiteSdk.joinRoom(
+    return await whiteSdk!.joinRoom(
         options: RoomOptions(
           uuid: ROOM_UUID,
           roomToken: ROOM_TOKEN,
@@ -57,11 +57,12 @@ class _RoomTestPageSate extends State<RoomTestPage> {
           onSdkCreated: (sdk) async {
             // use sdk to join room
             var room = await sdk.joinRoom(
-                options: RoomOptions(
-              uuid: ROOM_UUID,
-              roomToken: ROOM_TOKEN,
-              isWritable: true,
-            ));
+              options: RoomOptions(
+                uuid: ROOM_UUID,
+                roomToken: ROOM_TOKEN,
+                isWritable: true,
+              ),
+            );
             room.disableSerialization(false);
 
             setState(() {
@@ -70,8 +71,12 @@ class _RoomTestPageSate extends State<RoomTestPage> {
             });
           },
         ),
-        OperatingView(
-            sdk: whiteSdk, room: whiteRoom, joinRoomAgain: _joinRoomAgain),
+        if (whiteSdk != null && whiteRoom != null)
+          OperatingView(
+            sdk: whiteSdk!,
+            room: whiteRoom!,
+            joinRoomAgain: _joinRoomAgain,
+          ),
       ],
     );
   }

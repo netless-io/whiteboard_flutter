@@ -1174,7 +1174,7 @@ class ApplianceName {
 
 class BroadcastState {
   late String mode;
-  late int broadcasterId;
+  int? broadcasterId;
   RoomMember? broadcasterInformation;
 
   BroadcastState.fromJson(Map<String, dynamic> json) {
@@ -1504,7 +1504,7 @@ class CameraConfig {
   num centerX;
   num centerY;
   num scale;
-  String animationMode;
+  String? animationMode;
 
   CameraConfig({
     this.centerX = 0,
