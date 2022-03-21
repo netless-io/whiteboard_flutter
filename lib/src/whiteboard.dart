@@ -80,11 +80,11 @@ class WhiteSdk {
 
   Future<WhiteReplay> joinReplay({
     required ReplayOptions options,
-    OnPlayerStateChanged? onPlayerStateChanged,
-    OnPlayerPhaseChanged? onPlayerPhaseChanged,
-    OnLoadFirstFrame? onLoadFirstFrame,
-    OnScheduleTimeChanged? onScheduleTimeChanged,
-    OnPlaybackError? onPlaybackError,
+    PlayerStateChangedCallback? onPlayerStateChanged,
+    PlayerPhaseChangedCallback? onPlayerPhaseChanged,
+    FirstFrameLoadedCallback? onLoadFirstFrame,
+    ScheduleTimeChangedCallback? onScheduleTimeChanged,
+    PlaybackErrorCallback? onPlaybackError,
   }) {
     var completer = Completer<WhiteReplay>();
     dsBridge.callHandler("sdk.replayRoom", [options.toJson()], ([value]) {
@@ -114,13 +114,13 @@ class WhiteSdk {
 
   Future<WhiteRoom> joinRoom({
     required RoomOptions options,
-    OnRoomStateChanged? onRoomStateChanged,
-    OnRoomPhaseChanged? onRoomPhaseChanged,
-    OnRoomDisconnected? onRoomDisconnected,
-    OnRoomKicked? onRoomKicked,
-    OnCanUndoStepsUpdate? onCanUndoStepsUpdate,
-    OnCanRedoStepsUpdate? onCanRedoStepsUpdate,
-    OnRoomError? onRoomError,
+    RoomStateChangedCallback? onRoomStateChanged,
+    RoomPhaseChangedCallback? onRoomPhaseChanged,
+    RoomDisconnectedCallback? onRoomDisconnected,
+    RoomKickedCallback? onRoomKicked,
+    UndoStepsUpdatedCallback? onCanUndoStepsUpdate,
+    RedoStepsUpdatedCallback? onCanRedoStepsUpdate,
+    RoomErrorCallback? onRoomError,
   }) {
     var completer = Completer<WhiteRoom>();
     dsBridge.callHandler("sdk.joinRoom", [options.toJson()], ([value]) {
@@ -248,81 +248,42 @@ class WhiteDisplayer {
   }
 }
 
-// class MemberState {
-//   List<int>? strokeColor;
-//   num? strokeWidth;
-//   num? textSize;
-//   String? currentApplianceName;
-//   String? shapeType;
-//
-//   MemberState({
-//     String? currentApplianceName,
-//     String? shapeType,
-//     this.strokeColor,
-//     this.strokeWidth,
-//     this.textSize,
-//   }) {
-//     this.currentApplianceName = currentApplianceName;
-//     if (ApplianceName.shape == currentApplianceName) {
-//       this.shapeType = shapeType != null ? shapeType : ShapeType.triangle;
-//     }
-//   }
-//
-//   MemberState.fromJson(Map<String, dynamic> json) {
-//     strokeColor = (json["strokeColor"]).map<int>((e) => e as int).toList();
-//     strokeWidth = json["strokeWidth"];
-//     textSize = json["textSize"];
-//     shapeType = json["shapeType"];
-//     currentApplianceName = json["currentApplianceName"];
-//   }
-//
-//   Map<String, dynamic> toJson() {
-//     return {
-//       "strokeColor": strokeColor,
-//       "strokeWidth": strokeWidth,
-//       "textSize": textSize,
-//       "shapeType": shapeType,
-//       "currentApplianceName": currentApplianceName,
-//     }..removeWhere((key, value) => value == null);
-//   }
-// }
-
 // Sdk Callback
 typedef SdkCreatedCallback = void Function(WhiteSdk whiteSdk);
 typedef SdkOnLoggerCallback = void Function(dynamic value);
 
 /// Room Callbacks
-typedef OnRoomStateChanged = void Function(RoomState newState);
-typedef OnRoomPhaseChanged = void Function(String phase);
-typedef OnRoomDisconnected = void Function(String error);
-typedef OnRoomKicked = void Function(String reason);
-typedef OnCanUndoStepsUpdate = void Function(int stepNum);
-typedef OnCanRedoStepsUpdate = void Function(int stepNum);
-typedef OnRoomError = void Function(String error);
+typedef RoomStateChangedCallback = void Function(RoomState newState);
+typedef RoomPhaseChangedCallback = void Function(String phase);
+typedef RoomDisconnectedCallback = void Function(String error);
+typedef RoomKickedCallback = void Function(String reason);
+typedef UndoStepsUpdatedCallback = void Function(int stepNum);
+typedef RedoStepsUpdatedCallback = void Function(int stepNum);
+typedef RoomErrorCallback = void Function(String error);
 
 /// Playback Callbacks
-typedef OnPlayerPhaseChanged = void Function(String phase);
-typedef OnPlayerStateChanged = void Function(ReplayState playerState);
-typedef OnLoadFirstFrame = void Function();
-typedef OnSliceChanged = void Function(String slice);
-typedef OnScheduleTimeChanged = void Function(int scheduleTime);
-typedef OnPlaybackError = void Function(String error);
+typedef PlayerPhaseChangedCallback = void Function(String phase);
+typedef PlayerStateChangedCallback = void Function(ReplayState playerState);
+typedef FirstFrameLoadedCallback = void Function();
+typedef SliceChangedCallback = void Function(String slice);
+typedef ScheduleTimeChangedCallback = void Function(int scheduleTime);
+typedef PlaybackErrorCallback = void Function(String error);
 
 class WhiteReplay extends WhiteDisplayer {
+  String tag = "WhiteReplay";
+
   final ReplayOptions params;
   final DsBridge dsBridge;
-
-  String tag = "WhiteReplay";
 
   ReplayTimeInfo replayTimeInfo = ReplayTimeInfo();
   String phase = WhiteBoardPlayerPhase.WaitingFirstFrame;
   int currentTime = 0;
 
-  OnPlayerPhaseChanged? onPlayerPhaseChanged;
-  OnScheduleTimeChanged? onScheduleTimeChanged;
-  OnPlayerStateChanged? onPlayerStateChanged;
-  OnLoadFirstFrame? onLoadFirstFrame;
-  OnPlaybackError? onPlaybackError;
+  PlayerPhaseChangedCallback? onPlayerPhaseChanged;
+  ScheduleTimeChangedCallback? onScheduleTimeChanged;
+  PlayerStateChangedCallback? onPlayerStateChanged;
+  FirstFrameLoadedCallback? onLoadFirstFrame;
+  PlaybackErrorCallback? onPlaybackError;
 
   WhiteReplay({
     required this.params,
@@ -493,13 +454,13 @@ class WhiteRoom extends WhiteDisplayer {
   RoomState state = RoomState();
   RoomPhase phase = RoomPhase();
 
-  OnRoomStateChanged? onRoomStateChanged;
-  OnRoomPhaseChanged? onRoomPhaseChanged;
-  OnRoomDisconnected? onRoomDisconnected;
-  OnRoomKicked? onRoomKicked;
-  OnCanUndoStepsUpdate? onCanUndoStepsUpdate;
-  OnCanRedoStepsUpdate? onCanRedoStepsUpdate;
-  OnRoomError? onRoomError;
+  RoomStateChangedCallback? onRoomStateChanged;
+  RoomPhaseChangedCallback? onRoomPhaseChanged;
+  RoomDisconnectedCallback? onRoomDisconnected;
+  RoomKickedCallback? onRoomKicked;
+  UndoStepsUpdatedCallback? onCanUndoStepsUpdate;
+  RedoStepsUpdatedCallback? onCanRedoStepsUpdate;
+  RoomErrorCallback? onRoomError;
 
   late int observerId;
   int timeDelay = 0;
