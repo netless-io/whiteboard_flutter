@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-import 'DsBridge.dart';
+import 'bridge.dart';
 
 class DsBridgeWebView extends StatefulWidget {
   final String url;

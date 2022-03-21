@@ -1,6 +1,6 @@
 library whiteboard_sdk_flutter;
 
-export 'src/DsBridge.dart';
-export 'src/DsBridgeInApp.dart';
-export 'src/DsBridgeInAppWebView.dart';
-export 'src/Whiteboard.dart';
+export 'src/bridge.dart';
+export 'src/bridge_inapp.dart';
+export 'src/bridge_inapp_webview.dart';
+export 'src/whiteboard.dart';

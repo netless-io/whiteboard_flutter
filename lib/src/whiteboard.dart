@@ -4,8 +4,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import 'DsBridge.dart';
-import 'DsBridgeInAppWebView.dart';
+import 'bridge.dart';
+import 'bridge_inapp_webview.dart';
 
 class WhiteboardView extends StatelessWidget {
   final WhiteOptions options;

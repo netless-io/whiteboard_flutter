@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
-import 'DsBridge.dart';
-import 'DsBridgeInApp.dart';
+import 'bridge.dart';
+import 'bridge_inapp.dart';
 
 class DsBridgeInAppWebView extends StatefulWidget {
   final String url;

@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
-import 'DsBridge.dart';
+import 'bridge.dart';
 
 class DsBridgeInApp extends DsBridge {
   static bool isDebug = false;

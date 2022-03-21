@@ -23,7 +23,7 @@ class JavaScriptNamespaceInterface {
 
 class DsBridge {
   int callID = 0;
-  
+
   Map<int, OnReturnValue> handlerMap = Map<int, OnReturnValue>();
   List<CallInfo>? callInfoList;
   late InnerJavascriptInterface javascriptInterface;
