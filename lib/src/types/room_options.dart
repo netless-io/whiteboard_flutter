@@ -1,17 +1,20 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+
 import 'types.dart';
 
+@immutable
 class RoomOptions {
   final String uuid;
   final String roomToken;
   final String uid;
 
-  /// 数据中心。
+  /// 数据中心。[Region]
   final String region;
 
   /// 视角边界。
-  CameraBound? cameraBound;
+  final CameraBound? cameraBound;
 
   /// 重连时，最大重连尝试时间，单位：毫秒，默认 45 秒。
   final int timeout;
@@ -37,7 +40,7 @@ class RoomOptions {
   /// 关闭笔锋效果
   final bool disableNewPencil;
 
-  dynamic userPayload;
+  final dynamic userPayload;
 
   /// 关闭笔锋效果。
   /// 用户配置

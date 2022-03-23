@@ -23,7 +23,6 @@ class _ReplayTestPageSate extends State<ReplayTestPage> {
     return Stack(
       children: [
         WhiteboardView(
-          useBasicWebView: true,
           options: WhiteOptions(
             appIdentifier: APP_ID,
             log: true,

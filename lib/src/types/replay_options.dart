@@ -1,17 +1,20 @@
+import 'package:flutter/foundation.dart';
+
 import 'types.dart';
 
+@immutable
 class ReplayOptions {
   final String room;
   final String roomToken;
-  String region;
+  final String region;
   final String? mediaURL;
   final int beginTimestamp;
   final int? duration;
-  CameraBound? cameraBound;
-  String? slice;
+  final CameraBound? cameraBound;
+  final String? slice;
 
   /// 回调播放进度的频率 默认500ms
-  int step = 500;
+  final int step;
 
   ReplayOptions({
     required this.room,
@@ -19,7 +22,9 @@ class ReplayOptions {
     this.region = Region.cn_hz,
     this.mediaURL,
     this.beginTimestamp = 0,
+    this.slice,
     this.duration,
+    this.cameraBound,
     this.step = 500,
   });
 
@@ -33,7 +38,7 @@ class ReplayOptions {
       // "mediaURL": mediaURL,
       "beginTimestamp": beginTimestamp,
       "duration": duration,
-      if (cameraBound != null) "cameraBound": cameraBound!.toJson(),
+      "cameraBound": cameraBound?.toJson(),
       "slice": slice,
     }..removeWhere((key, value) => value == null);
   }

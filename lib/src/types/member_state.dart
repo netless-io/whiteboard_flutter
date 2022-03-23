@@ -16,12 +16,12 @@ class MemberState {
   }) {
     this.currentApplianceName = currentApplianceName;
     if (ApplianceName.shape == currentApplianceName) {
-      this.shapeType = shapeType != null ? shapeType : ShapeType.triangle;
+      this.shapeType = shapeType ?? ShapeType.triangle;
     }
   }
 
   MemberState.fromJson(Map<String, dynamic> json) {
-    strokeColor = (json["strokeColor"]).map<int>((e) => e as int).toList();
+    strokeColor = List<int>.from(json["strokeColor"]);
     strokeWidth = json["strokeWidth"];
     textSize = json["textSize"];
     shapeType = json["shapeType"];

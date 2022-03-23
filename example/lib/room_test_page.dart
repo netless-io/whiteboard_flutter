@@ -15,10 +15,10 @@ class _RoomTestPageSate extends State<RoomTestPage> {
   WhiteRoom? whiteRoom;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
-  static const String ROOM_UUID = "24136a70aa5f11ec88373f2075f52e50";
+  static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
   static const String ROOM_TOKEN =
-      "NETLESSROOM_YWs9eTBJOWsxeC1IVVo4VGh0NyZub25jZT0xNjQ4MDA4NjE0ODU0MDAmcm9sZT0wJnNpZz00YTI0NTFkOTg2Mzg3YTM4YWQ5NDBjYzM3NWJmNGMyMTgzZWMwNzMwNmEyODA0ODA1NTQ0ZmU0OGI1NjY4YmQ1JnV1aWQ9MjQxMzZhNzBhYTVmMTFlYzg4MzczZjIwNzVmNTJlNTA";
-  static const String UNIQUE_CLIENT_ID = "1234562";
+      "NETLESSROOM_YWs9eTBJOWsxeC1IVVo4VGh0NyZub25jZT0xNjI5MjU3OTQyNTM2MDAmcm9sZT0wJnNpZz1lZDdjOGJiY2M4YzVjZjQ5NDU5NmIzZGJiYzQzNDczNDJmN2NjYTAxMThlMTMyOWVlZGRmMjljNjE1NzQ5ZWFkJnV1aWQ9ZDQxODQ3OTBmZmQ1MTFlYmI5ZWJiZjdhOGYxZDc3YmQ";
+  static const String UNIQUE_CLIENT_ID = "123456";
 
   RedoStepsUpdatedCallback _onCanRedoStepsUpdate = (stepNum) {
     print('can redo step : $stepNum');
@@ -51,6 +51,7 @@ class _RoomTestPageSate extends State<RoomTestPage> {
     return Stack(
       children: [
         WhiteboardView(
+          useBasicWebView: true,
           options: WhiteOptions(
             appIdentifier: APP_ID,
             log: true,

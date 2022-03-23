@@ -14,4 +14,5 @@ export 'replay_state.dart';
 export 'room_options.dart';
 export 'room_state.dart';
 export 'scene.dart';
+export 'view_mode.dart';
 export 'white_options.dart';

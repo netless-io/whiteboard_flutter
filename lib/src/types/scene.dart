@@ -1,22 +1,3 @@
-class Scene {
-  String? name;
-  WhiteBoardPpt? ppt;
-
-  Scene({this.name, this.ppt});
-
-  Scene.fromJson(Map<String, dynamic> json) {
-    name = json["name"];
-    ppt = json["ppt"] != null ? (WhiteBoardPpt.fromJson(json["ppt"])) : null;
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      "name": name,
-      if (ppt != null) "ppt": ppt!.toJson(),
-    };
-  }
-}
-
 class WhiteBoardPpt {
   final String src;
   final int width;
@@ -36,7 +17,6 @@ class WhiteBoardPpt {
         height = json["height"],
         previewURL = json["previewURL"];
 
-  // TODO
   Map<String, Object> toJson() {
     final Map<String, Object> json = <String, Object>{};
 
@@ -55,9 +35,33 @@ class WhiteBoardPpt {
   }
 }
 
+class Scene {
+  String? name;
+  WhiteBoardPpt? ppt;
+
+  Scene({this.name, this.ppt});
+
+  Scene.fromJson(Map<String, dynamic> json) {
+    name = json["name"];
+    ppt = json["ppt"] != null ? (WhiteBoardPpt.fromJson(json["ppt"])) : null;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "name": name,
+      "ppt": ppt?.toJson(),
+    }..removeWhere((key, value) => value == null);
+  }
+}
+
 class ScenePathType {
+  /// 查询的路径不存在。
   static const empty = "none";
+
+  /// 查询路径为场景路径。
   static const page = "page";
+
+  /// 查询路径为场景组路径。
   static const dir = "dir";
 }
 

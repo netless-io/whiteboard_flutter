@@ -2,11 +2,12 @@ import 'dart:convert';
 
 class AkkoEvent {
   String eventName;
-  var payload;
+  dynamic payload;
 
   AkkoEvent(this.eventName, this.payload);
 
-  Map<String, dynamic> toJson() {
-    return {"eventName": eventName, "payload": jsonEncode(payload)};
-  }
+  Map<String, dynamic> toJson() => {
+        "eventName": eventName,
+        "payload": jsonEncode(payload),
+      };
 }

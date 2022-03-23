@@ -13,11 +13,9 @@ class BroadcastState {
         : null;
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      "mode": mode,
-      "broadcasterId": broadcasterId,
-      "broadcasterInformation": broadcasterInformation,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        "mode": mode,
+        "broadcasterId": broadcasterId,
+        "broadcasterInformation": broadcasterInformation,
+      }..removeWhere((key, value) => value == null);
 }

@@ -146,7 +146,7 @@ class WhiteSdk {
         onRoomError: onRoomError,
       );
       try {
-        room._initStateWithJoinRoom(jsonDecode(value));
+        room._initRoomState(jsonDecode(value));
         completer.complete(room);
       } catch (e) {
         completer.completeError(e);
@@ -238,7 +238,7 @@ class WhiteDisplayer {
 
   Future<String> getScenePathType(String path) {
     var completer = Completer<String>();
-    dsBridge.callHandler("displayer.convertToPointInWorld", [path], ([value]) {
+    dsBridge.callHandler("displayer.scenePathType", [path], ([value]) {
       completer.complete(value);
     });
     return completer.future;
@@ -327,51 +327,37 @@ class WhiteReplay extends WhiteDisplayer {
 
   _onPhaseChanged(String value) {
     phase = value;
-    if (onPlayerPhaseChanged != null) {
-      onPlayerPhaseChanged!(value);
-    }
+    onPlayerPhaseChanged?.call(value);
   }
 
   _onPlayerStateChanged(String value) {
     print(value);
-    if (onPlayerStateChanged != null) {
-      onPlayerStateChanged!(ReplayState.fromJson(jsonDecode(value)));
-    }
+    onPlayerStateChanged?.call(ReplayState()..fromJson(jsonDecode(value)));
   }
 
   _onLoadFirstFrame(value) {
     print(value);
-    if (onPlaybackError != null) {
-      onPlaybackError!(value);
-    }
+    onPlaybackError?.call(value);
   }
 
   _onScheduleTimeChanged(value) {
     currentTime = value;
-    if (onScheduleTimeChanged != null) {
-      onScheduleTimeChanged!(value);
-    }
+    onScheduleTimeChanged?.call(value);
   }
 
   _onStoppedWithError(value) {
     print(value);
-    if (onPlaybackError != null) {
-      onPlaybackError!(value);
-    }
+    onPlaybackError?.call(value);
   }
 
   _fireCatchErrorWhenAppendFrame(value) {
     print(value);
-    if (onPlaybackError != null) {
-      onPlaybackError!(value);
-    }
+    onPlaybackError?.call(value);
   }
 
   _onCatchErrorWhenRender(value) {
     print(value);
-    if (onPlaybackError != null) {
-      onPlaybackError!(value);
-    }
+    onPlaybackError?.call(value);
   }
 
   _fireMagixEvent(value) {
@@ -431,7 +417,7 @@ class WhiteReplay extends WhiteDisplayer {
 
   Future<ReplayState> get playerState async {
     var value = await dsBridge.callHandler("player.state.playerState");
-    return ReplayState.fromJson(jsonDecode(value!));
+    return ReplayState()..fromJson(jsonDecode(value!));
   }
 
   Future<bool> get isPlayable async {
@@ -443,15 +429,6 @@ class WhiteReplay extends WhiteDisplayer {
     var value = await dsBridge.callHandler("player.state.timeInfo");
     return ReplayTimeInfo.fromJson(jsonDecode(value!));
   }
-}
-
-class WhiteBoardPlayerPhase {
-  static const WaitingFirstFrame = "waitingFirstFrame";
-  static const Playing = "playing";
-  static const Pause = "pause";
-  static const Stopped = "stop";
-  static const Ended = "ended";
-  static const Buffering = "buffering";
 }
 
 class WhiteRoom extends WhiteDisplayer {
@@ -516,17 +493,17 @@ class WhiteRoom extends WhiteDisplayer {
     onRoomPhaseChanged?.call(value);
   }
 
-  _fireCanUndoStepsUpdate(value) {
+  void _fireCanUndoStepsUpdate(value) {
     print(value);
     onCanUndoStepsUpdate?.call(value);
   }
 
-  _fireCanRedoStepsUpdate(value) {
+  void _fireCanRedoStepsUpdate(value) {
     print(value);
     onCanRedoStepsUpdate?.call(value);
   }
 
-  _fireRoomStateChanged(String value) {
+  void _fireRoomStateChanged(String value) {
     try {
       var data = jsonDecode(value) as Map<String, dynamic>;
       state.fromJson({}
@@ -566,7 +543,7 @@ class WhiteRoom extends WhiteDisplayer {
     return disconnectedBySelf;
   }
 
-  _initStateWithJoinRoom(Map<String, dynamic> json) {
+  _initRoomState(Map<String, dynamic> json) {
     state = RoomState()..fromJson(json["state"]);
   }
 
@@ -606,26 +583,7 @@ class WhiteRoom extends WhiteDisplayer {
   }
 
   void setViewMode(ViewMode viewMode) {
-    dsBridge.callHandler("room.setViewMode", [viewModeToJson(viewMode)]);
-  }
-
-  String viewModeToJson(ViewMode viewMode) {
-    var viewModeString;
-    switch (viewMode) {
-      case ViewMode.Freedom:
-        viewModeString = "Freedom";
-        break;
-      case ViewMode.Follower:
-        viewModeString = "Follower";
-        break;
-      case ViewMode.Broadcaster:
-        viewModeString = "Broadcaster";
-        break;
-      default:
-        viewModeString = "Freedom";
-        break;
-    }
-    return viewModeString;
+    dsBridge.callHandler("room.setViewMode", [viewMode.serialize()]);
   }
 
   ViewMode viewModeFromJson(String json) {

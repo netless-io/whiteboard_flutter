@@ -10,13 +10,11 @@ import 'bridge.dart';
 class DsBridgeInAppWebView extends StatefulWidget {
   final String url;
   final BridgeCreatedCallback onDSBridgeCreated;
-  final void Function(InAppWebViewController controller)? onWebViewCreated;
 
   DsBridgeInAppWebView({
     Key? key,
     required this.url,
     required this.onDSBridgeCreated,
-    this.onWebViewCreated,
   }) : super(key: key);
 
   @override
@@ -73,14 +71,14 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
   }
 
   void _onLoadStart(InAppWebViewController controller, Uri? url) async {
-    print('Page started loading: $url');
+    print('InAppWebView Page started loading: $url');
     if (url?.path.endsWith("whiteboardBridge/index.html") ?? false) {
       dsBridge = new DsBridgeInApp(_controller);
     }
   }
 
   void _onLoadStop(InAppWebViewController controller, Uri? url) async {
-    print('Page finished loading: $url');
+    print('InAppWebView Page finished loading: $url');
     if (url?.path.endsWith("whiteboardBridge/index.html") ?? false) {
       widget.onDSBridgeCreated(dsBridge);
     }

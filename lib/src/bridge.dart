@@ -29,32 +29,32 @@ abstract class DsBridge {
 
   Map<int, OnReturnValue> handlerMap = Map<int, OnReturnValue>();
   List<CallInfo>? callInfoList;
-  late final InnerJavascriptInterface javascriptInterface;
+  late InnerJavascriptInterface javascriptInterface;
 
   DsBridge() {
     javascriptInterface = InnerJavascriptInterface(this);
-    var dsb = JavaScriptNamespaceInterface("_dsb");
-    dsb.setMethod("returnValue", (Map<String, dynamic> jsonObject) {
-      debugPrint("DsBridge.returnValue call ${jsonEncode(jsonObject)}");
+    var dsb = JavaScriptNamespaceInterface("_dsb")
+      ..setMethod("returnValue", (Map<String, dynamic> jsonObject) {
+        debugPrint("DsBridge.returnValue call ${jsonEncode(jsonObject)}");
 
-      int id = jsonObject["id"];
-      bool isCompleted = jsonObject["complete"];
-      OnReturnValue? handler = handlerMap[id];
-      var data;
-      if (jsonObject.containsKey("data")) {
-        data = jsonObject["data"];
-      }
-      if (handler != null) {
-        handler(data);
-        if (isCompleted) {
-          handlerMap.remove(id);
+        int id = jsonObject["id"];
+        bool isCompleted = jsonObject["complete"];
+        OnReturnValue? handler = handlerMap[id];
+        var data;
+        if (jsonObject.containsKey("data")) {
+          data = jsonObject["data"];
         }
-      }
-    });
-    dsb.setMethod("dsinit", (dynamic _) {
-      debugPrint("DsBridge.dsinit call ...");
-      // dispatchStartupQueue()
-    });
+        if (handler != null) {
+          handler(data);
+          if (isCompleted) {
+            handlerMap.remove(id);
+          }
+        }
+      })
+      ..setMethod("dsinit", (dynamic _) {
+        debugPrint("DsBridge.dsinit call ...");
+        // dispatchStartupQueue()
+      });
     addJavascriptObject(dsb);
   }
 
@@ -66,12 +66,12 @@ abstract class DsBridge {
 
   FutureOr<String?> callHandler(String method,
       [List<dynamic> args = const [], OnReturnValue? handler]) {
-    CallInfo callInfo = new CallInfo(method, ++callID, args);
+    CallInfo callInfo = new CallInfo(++callID, method, args);
     if (handler != null) {
       handlerMap[callInfo.callbackId] = handler;
     }
     if (callInfoList != null) {
-      /// TODO: 开启线程处理，预留
+      // TODO: 开启线程处理，预留
       callInfoList!.add(callInfo);
       return null;
     } else {
@@ -102,7 +102,7 @@ class CallInfo {
   final int callbackId;
   final String method;
 
-  CallInfo(this.method, this.callbackId, this.data);
+  CallInfo(this.callbackId, this.method, this.data);
 
   @override
   String toString() {
@@ -114,8 +114,8 @@ class CallInfo {
   }
 }
 
-typedef List<String> ParseNamespace(String method);
-typedef void EvaluateJavascript(String javascript);
+typedef ParseNamespace = List<String> Function(String method);
+typedef EvaluateJavascript = void Function(String javascript);
 
 class InnerJavascriptInterface {
   InnerJavascriptInterface(this.dsBridge);
@@ -125,13 +125,15 @@ class InnerJavascriptInterface {
 
   void _printDebugInfo(String error) {
     if (DsBridge.isDebug) {
-      var msg = "DEBUG ERR MSG:\\n" + error.replaceAll("\\'", "\\\\'");
+      var msg = 'DEBUG ERR MSG:\\n ${error.replaceAll("\\'", "\\\\'")}';
       dsBridge.evaluateJavascript("alert('$msg')");
     }
   }
 
   FutureOr<String> call(String methodName, String argStr) async {
-    String error = "Js bridge  called, but can't find a corresponded " +
+    debugPrint(
+        "InnerJavascriptInterface call: method $methodName, args $argStr");
+    String error = "Js bridge  called, but can't find a corresponded "
         "JavascriptInterface object , please check your code!";
     List<String> nameStr = parseNamespace(methodName.trim());
     methodName = nameStr[1];
@@ -154,43 +156,37 @@ class InnerJavascriptInterface {
         arg = args["data"];
       }
     } catch (e) {
-      error = "The argument of \"$methodName\" must be a JSON object string!";
+      error = 'The argument of \"$methodName\" must be a JSON object string!';
       _printDebugInfo(error);
       return ret.toString();
     }
 
     if (method is! Function) {
-      error =
-          "Not find method $methodName implementation! please check if the  signature or namespace of the method is right ";
+      error = "Not find method $methodName implementation! "
+          "please check if the signature or namespace of the method is right ";
       _printDebugInfo(error);
       return ret.toString();
     }
 
     try {
-      if (method is Function) {
-        var retData = method(arg);
-        if (retData is Future) {
-          try {
-            var cb = callback;
-            var retValue = await retData;
-            Map<String, dynamic> ret = Map<String, dynamic>();
-            ret["code"] = 0;
-            ret["data"] = retValue;
-            String script = "$cb(${jsonEncode(ret)}.data);";
-            script += "delete window." + cb;
-            dsBridge.evaluateJavascript(script);
-          } catch (e) {
-            print(e);
-          }
-        } else {
+      var retData = method(arg);
+      if (retData is Future) {
+        try {
           var cb = callback;
+          var retValue = await retData;
+          Map<String, dynamic> ret = Map<String, dynamic>();
           ret["code"] = 0;
-          ret["data"] = retData;
+          ret["data"] = retValue;
           String script = "$cb(${jsonEncode(ret)}.data);";
           script += "delete window." + cb;
           dsBridge.evaluateJavascript(script);
-          return jsonEncode(ret);
+        } catch (e) {
+          print(e);
         }
+      } else {
+        ret["code"] = 0;
+        ret["data"] = retData;
+        return jsonEncode(ret);
       }
     } catch (e) {
       print(e);

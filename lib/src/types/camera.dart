@@ -1,11 +1,5 @@
 import 'types.dart';
 
-enum ViewMode {
-  Freedom,
-  Follower,
-  Broadcaster,
-}
-
 class ScaleMode {
   /// （默认）基于设置的 `scale` 缩放视角边界。
   static const scale = 'Scale';
@@ -39,14 +33,12 @@ class CameraConfig {
     this.animationMode = AnimationMode.Continuous,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      "centerX": centerX,
-      "centerY": centerY,
-      "scale": scale,
-      "animationMode": animationMode
-    }..removeWhere((key, value) => value == null);
-  }
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        "centerX": centerX,
+        "centerY": centerY,
+        "scale": scale,
+        "animationMode": animationMode
+      }..removeWhere((key, value) => value == null);
 
   CameraConfig.fromJson(Map<String, dynamic> json)
       : centerX = json["centerX"],
@@ -147,17 +139,15 @@ class CameraBound {
     this.maxContentMode,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      "damping": damping,
-      "centerX": centerX,
-      "centerY": centerY,
-      "width": width,
-      "height": height,
-      if (maxContentMode != null) "maxContentMode": maxContentMode!.toJson(),
-      if (minContentMode != null) "minContentMode": minContentMode!.toJson(),
-    };
-  }
+  Map<String, dynamic> toJson() => {
+        "damping": damping,
+        "centerX": centerX,
+        "centerY": centerY,
+        "width": width,
+        "height": height,
+        if (maxContentMode != null) "maxContentMode": maxContentMode!.toJson(),
+        if (minContentMode != null) "minContentMode": minContentMode!.toJson(),
+      };
 }
 
 class WhiteBoardPoint {

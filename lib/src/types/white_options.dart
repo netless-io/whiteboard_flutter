@@ -32,9 +32,8 @@ class WhiteOptions {
   final bool enableRtcIntercept;
   final bool enableImgErrorCallback;
 
-  PptParams pptParams = new PptParams();
-
-  Map<String, String> fonts = {};
+  final PptParams pptParams;
+  final Map<String, String> fonts;
 
   WhiteOptions({
     required this.appIdentifier,
@@ -52,26 +51,26 @@ class WhiteOptions {
     this.enableIFramePlugin = false,
     this.enableRtcIntercept = false,
     this.enableImgErrorCallback = false,
-  });
+    this.fonts = const <String, String>{},
+    PptParams? pptParams,
+  }) : this.pptParams = pptParams ?? PptParams();
 
-  Map<String, dynamic> toJson() {
-    return {
-      "appIdentifier": appIdentifier,
-      "region": region,
-      "deviceType": deviceType,
-      "renderEngine": renderEngine,
-      "enableInterrupterAPI": enableInterrupterAPI,
-      "preloadDynamicPPT": preloadDynamicPPT,
-      "routeBackup": routeBackup,
-      "userCursor": userCursor,
-      "onlyCallbackRemoteStateModify": onlyCallbackRemoteStateModify,
-      "disableDeviceInputs": disableDeviceInputs,
-      "enableIFramePlugin": enableIFramePlugin,
-      "enableRtcIntercept": enableRtcIntercept,
-      "enableImgErrorCallback": enableImgErrorCallback,
-      "pptParams": pptParams,
-      "fonts": fonts,
-      "log": log,
-    }..removeWhere((key, value) => value == null);
-  }
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        "appIdentifier": appIdentifier,
+        "region": region,
+        "deviceType": deviceType,
+        "renderEngine": renderEngine,
+        "enableInterrupterAPI": enableInterrupterAPI,
+        "preloadDynamicPPT": preloadDynamicPPT,
+        "routeBackup": routeBackup,
+        "userCursor": userCursor,
+        "onlyCallbackRemoteStateModify": onlyCallbackRemoteStateModify,
+        "disableDeviceInputs": disableDeviceInputs,
+        "enableIFramePlugin": enableIFramePlugin,
+        "enableRtcIntercept": enableRtcIntercept,
+        "enableImgErrorCallback": enableImgErrorCallback,
+        "pptParams": pptParams,
+        "fonts": fonts,
+        "log": log,
+      }..removeWhere((key, value) => value == null);
 }

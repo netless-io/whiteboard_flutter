@@ -11,21 +11,38 @@ class ReplayTimeInfo {
     this.beginTimestamp = 0,
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      "scheduleTime": scheduleTime,
-      "timeDuration": timeDuration,
-      "framesCount": framesCount,
-      "beginTimestamp": beginTimestamp
-    };
-  }
+  Map<String, dynamic> toJson() => <String, dynamic>{
+        "scheduleTime": scheduleTime,
+        "timeDuration": timeDuration,
+        "framesCount": framesCount,
+        "beginTimestamp": beginTimestamp
+      };
 
-  // TODO json no filed
   ReplayTimeInfo.fromJson(Map<String, dynamic> json)
-      : scheduleTime = json["scheduleTime"],
-        timeDuration = json["timeDuration"],
-        framesCount = json["framesCount"],
-        beginTimestamp = json["beginTimestamp"];
+      : scheduleTime = json["scheduleTime"] ?? 0,
+        timeDuration = json["timeDuration"] ?? 0,
+        framesCount = json["framesCount"] ?? 0,
+        beginTimestamp = json["beginTimestamp"] ?? 0;
+}
+
+class WhiteBoardPlayerPhase {
+  /// 正在等待白板回放的第一帧。这是白板回放的初始阶段。
+  static const WaitingFirstFrame = "waitingFirstFrame";
+
+  /// 白板回放正在播放。
+  static const Playing = "playing";
+
+  /// 白板回放已暂停。
+  static const Pause = "pause";
+
+  /// 白板回放已停止。
+  static const Stopped = "stop";
+
+  /// 白板回放已结束。
+  static const Ended = "ended";
+
+  /// 白板回放正在缓存。
+  static const Buffering = "buffering";
 }
 
 /// 白板回放的查看模式。
