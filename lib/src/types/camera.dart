@@ -45,7 +45,7 @@ class CameraConfig {
       "centerY": centerY,
       "scale": scale,
       "animationMode": animationMode
-    };
+    }..removeWhere((key, value) => value == null);
   }
 
   CameraConfig.fromJson(Map<String, dynamic> json)
@@ -79,31 +79,31 @@ class ContentModeConfig {
 class RectangleConfig {
   final num width;
   final num height;
-  final num centerX;
-  final num centerY;
+  final num originX;
+  final num originY;
   final String animationMode;
 
-  RectangleConfig(num width, num height, num centerX, num centerY,
+  RectangleConfig(num width, num height, num originX, num originY,
       [String animationMode = AnimationMode.Continuous])
       : width = width,
         height = height,
-        centerX = centerX,
-        centerY = centerX,
+        originX = originX,
+        originY = originY,
         animationMode = animationMode;
 
   RectangleConfig.fromSize(num width, num height,
       [String animationMode = AnimationMode.Continuous])
       : width = width,
         height = height,
-        centerX = -width / 2.0,
-        centerY = -height / 2.0,
+        originX = -width / 2.0,
+        originY = -height / 2.0,
         animationMode = animationMode;
 
   Map<String, dynamic> toJson() => {
         'width': width,
         'height': height,
-        'centerX': centerX,
-        'centerY': centerY,
+        'originX': originX,
+        'originY': originY,
         'animationMode': animationMode,
       };
 }

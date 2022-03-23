@@ -34,21 +34,12 @@ class WhiteboardView extends StatelessWidget {
       return DsBridgeWebView(
         key: webView,
         url: "about:blank",
-        // onWebViewCreated: (controller) {
-        //   controller.loadFlutterAsset(
-        //       "packages/whiteboard_sdk_flutter/assets/whiteboardBridge/index.html");
-        // },
         onDSBridgeCreated: onDSBridgeCreated,
       );
     } else {
       return DsBridgeInAppWebView(
         key: inAppWebView,
         url: "about:blank",
-        // onWebViewCreated: (controller) {
-        //   controller.loadFile(
-        //       assetFilePath:
-        //           "packages/whiteboard_sdk_flutter/assets/whiteboardBridge/index.html");
-        // },
         onDSBridgeCreated: onDSBridgeCreated,
       );
     }

@@ -64,7 +64,8 @@ class RoomState extends DisplayerState {
       if (memberState != null) "memberState": memberState!.toJson(),
       if (broadcastState != null) "broadcastState": broadcastState!.toJson(),
       "zoomScale": zoomScale,
-      if (roomMembers != null) "roomMembers": roomMembers!.map((e) => e.toJson()).toList(),
+      if (roomMembers != null)
+        "roomMembers": roomMembers!.map((e) => e.toJson()).toList(),
       if (cameraState != null) "cameraState": cameraState!.toJson(),
       if (globalState != null) "globalState": globalState!.toJson(),
       if (sceneState != null) "sceneState": sceneState!.toJson(),

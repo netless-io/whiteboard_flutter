@@ -15,10 +15,10 @@ class _RoomTestPageSate extends State<RoomTestPage> {
   WhiteRoom? whiteRoom;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
-  static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
+  static const String ROOM_UUID = "24136a70aa5f11ec88373f2075f52e50";
   static const String ROOM_TOKEN =
-      "NETLESSROOM_YWs9eTBJOWsxeC1IVVo4VGh0NyZub25jZT0xNjI5MjU3OTQyNTM2MDAmcm9sZT0wJnNpZz1lZDdjOGJiY2M4YzVjZjQ5NDU5NmIzZGJiYzQzNDczNDJmN2NjYTAxMThlMTMyOWVlZGRmMjljNjE1NzQ5ZWFkJnV1aWQ9ZDQxODQ3OTBmZmQ1MTFlYmI5ZWJiZjdhOGYxZDc3YmQ";
-  static const String UNIQUE_CLIENT_ID = "123456";
+      "NETLESSROOM_YWs9eTBJOWsxeC1IVVo4VGh0NyZub25jZT0xNjQ4MDA4NjE0ODU0MDAmcm9sZT0wJnNpZz00YTI0NTFkOTg2Mzg3YTM4YWQ5NDBjYzM3NWJmNGMyMTgzZWMwNzMwNmEyODA0ODA1NTQ0ZmU0OGI1NjY4YmQ1JnV1aWQ9MjQxMzZhNzBhYTVmMTFlYzg4MzczZjIwNzVmNTJlNTA";
+  static const String UNIQUE_CLIENT_ID = "1234562";
 
   RedoStepsUpdatedCallback _onCanRedoStepsUpdate = (stepNum) {
     print('can redo step : $stepNum');
@@ -90,9 +90,7 @@ class OperatingView extends StatefulWidget {
   WhiteRoom room;
   Function? joinRoomAgain;
 
-  OperatingView(
-      {Key? key, required this.sdk, required this.room, this.joinRoomAgain})
-      : super(key: key);
+  OperatingView({Key? key, required this.sdk, required this.room, this.joinRoomAgain}) : super(key: key);
 
   @override
   State<OperatingView> createState() {
@@ -190,15 +188,13 @@ class OperatingViewState extends State<OperatingView> {
     allOpList = [
       OpListItem("Reconnect", Category.Misc, () async {
         room.disconnect().then((value) {
-          Future.delayed(Duration(seconds: 2))
-              .then((value) => widget.joinRoomAgain?.call());
+          Future.delayed(Duration(seconds: 2)).then((value) => widget.joinRoomAgain?.call());
         }).catchError((o) {
           print("disconnect error");
         });
       }),
       OpListItem("Camera Bound", Category.Misc, () {
-        room.setCameraBound(CameraBound(
-            width: 1000, height: 1000, minScale: 0.5, maxScale: 1.5));
+        room.setCameraBound(CameraBound(width: 1000, height: 1000, minScale: 0.5, maxScale: 1.5));
       }),
       OpListItem("Clean Scene", Category.Appliance, () {
         room.cleanScene(true);
@@ -221,7 +217,7 @@ class OperatingViewState extends State<OperatingView> {
         room.moveCamera(config);
       }),
       OpListItem("Move Camera By Rectangle", Category.Interaction, () {
-        var config = RectangleConfig(1000, 1000, 0, 0);
+        var config = RectangleConfig.fromSize(200, 400);
         room.moveCameraToContainer(config);
       }),
       OpListItem("Undo", Category.Interaction, () {
@@ -244,16 +240,14 @@ class OperatingViewState extends State<OperatingView> {
       }),
       OpListItem("Insert Scene", Category.Image, () async {
         var sceneState = await room.getSceneState();
-        var dir = sceneState.scenePath
-            .substring(0, sceneState.scenePath.lastIndexOf('/'));
+        var dir = sceneState.scenePath.substring(0, sceneState.scenePath.lastIndexOf('/'));
 
         room.putScenes(dir, [Scene(name: "page1")], 0);
         room.setScenePath(dir + "/page1");
       }),
       OpListItem("Insert New Ppt", Category.Image, () async {
         var sceneState = await room.getSceneState();
-        var dir = sceneState.scenePath
-            .substring(0, sceneState.scenePath.lastIndexOf('/'));
+        var dir = sceneState.scenePath.substring(0, sceneState.scenePath.lastIndexOf('/'));
 
         var ppt = WhiteBoardPpt(
           src: "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/image/alin-rusu-1239275-unsplash_opt.jpg",
@@ -264,41 +258,27 @@ class OperatingViewState extends State<OperatingView> {
         room.setScenePath(dir + "/page2");
       }),
       OpListItem("Insert Image", Category.Image, () {
-        var image =
-            ImageInformation(centerX: 0, centerY: 0, width: 100, height: 200);
-        room.insertImageByUrl(image,
-            "https://white-pan.oss-cn-shanghai.aliyuncs.com/40/image/mask.jpg");
+        var image = ImageInformation(centerX: 0, centerY: 0, width: 100, height: 200);
+        room.insertImageByUrl(image, "https://white-pan.oss-cn-shanghai.aliyuncs.com/40/image/mask.jpg");
       }),
       OpListItem("Get SceneState", Category.State, () {
-        room
-            .getSceneState()
-            .then((value) => print("getSceneState Result ${value.toJson()}"));
+        room.getSceneState().then((value) => print("getSceneState Result ${value.toJson()}"));
       }),
       OpListItem("Get RoomPhase", Category.State, () {
-        room
-            .getRoomPhase()
-            .then((value) => print("getRoomPhase result $value"));
+        room.getRoomPhase().then((value) => print("getRoomPhase result $value"));
       }),
       OpListItem("Get Room MemberState", Category.State, () async {
-        room
-            .getMemberState()
-            .then((value) => print("member state ${value.toJson()}"));
+        room.getMemberState().then((value) => print("member state ${value.toJson()}"));
       }),
       OpListItem("Get RoomState", Category.State, () {
-        room
-            .getRoomState()
-            .then((value) => print("room state ${value.toJson()}"));
+        room.getRoomState().then((value) => print("room state ${value.toJson()}"));
       }),
       OpListItem("Use Global State", Category.State, () {
-        room.setGlobalState(
-            GlobalDataFoo(a: "change_aaa", b: "change_bbb", c: 321));
-        room
-            .getGlobalState((jsonMap) => GlobalDataFoo()..fromJson(jsonMap))
-            .then((value) => print(value.toJson()));
+        room.setGlobalState(GlobalDataFoo(a: "change_aaa", b: "change_bbb", c: 321));
+        room.getGlobalState((jsonMap) => GlobalDataFoo()..fromJson(jsonMap)).then((value) => print(value.toJson()));
       }),
       OpListItem("Get RoomMembers", Category.State, () {
-        room.getRoomMembers().then((value) =>
-            print("RoomMembers: ${value.map((e) => e.toJson()).join(';;;;')}"));
+        room.getRoomMembers().then((value) => print("RoomMembers: ${value.map((e) => e.toJson()).join(';;;;')}"));
       }),
       OpListItem("Change Writable", Category.Misc, () {
         room.setWritable(!room.getWritable()).then((writable) => {
@@ -337,8 +317,7 @@ class OperatingViewState extends State<OperatingView> {
       }),
       OpListItem("Scale", Category.Appliance, () {}),
     ];
-    filterOptList =
-        allOpList.where((elem) => elem.category == Category.Appliance).toList();
+    filterOptList = allOpList.where((elem) => elem.category == Category.Appliance).toList();
   }
 
   int _random() {
@@ -351,8 +330,7 @@ class OperatingViewState extends State<OperatingView> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ElevatedButton(
-          child: Text("${filterOptList[index].text}", softWrap: true),
-          onPressed: filterOptList[index].handler),
+          child: Text("${filterOptList[index].text}", softWrap: true), onPressed: filterOptList[index].handler),
     );
   }
 
@@ -366,9 +344,7 @@ class OperatingViewState extends State<OperatingView> {
                 if (categories[index] == Category.All)
                   filterOptList = allOpList;
                 else
-                  filterOptList = allOpList
-                      .where((item) => item.category == categories[index])
-                      .toList();
+                  filterOptList = allOpList.where((item) => item.category == categories[index]).toList();
               });
             }));
   }

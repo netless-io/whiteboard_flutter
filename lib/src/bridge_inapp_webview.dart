@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
@@ -27,6 +28,14 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
   late InAppWebViewController _controller;
 
   @override
+  void initState() {
+    super.initState();
+    if (Platform.isAndroid) {
+      AndroidInAppWebViewController.setWebContentsDebuggingEnabled(true);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Builder(builder: (_) {
       return InAppWebView(
@@ -38,11 +47,14 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
                 crossPlatform: InAppWebViewOptions(
                   mediaPlaybackRequiresUserGesture: false,
                   javaScriptEnabled: true,
-                  userAgent: "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 DsBridge/1.0.0",
+                  userAgent:
+                      "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1 DsBridge/1.0.0",
                 ),
                 ios: IOSInAppWebViewOptions(allowsInlineMediaPlayback: true)),
           );
-          controller.loadFile(assetFilePath: "packages/whiteboard_sdk_flutter/assets/whiteboardBridge/index.html");
+          controller.loadFile(
+              assetFilePath:
+                  "packages/whiteboard_sdk_flutter/assets/whiteboardBridge/index.html");
         },
         onLoadError: _onLoadError,
         onLoadHttpError: _onLoadHttpError,
@@ -79,7 +91,9 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
     Uri? url,
     int statusCode,
     String description,
-  ) {}
+  ) {
+    print("$url load error code $statusCode, desc $description");
+  }
 
   void _onLoadError(
     InAppWebViewController controller,

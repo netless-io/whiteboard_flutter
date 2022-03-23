@@ -23,6 +23,7 @@ class _ReplayTestPageSate extends State<ReplayTestPage> {
     return Stack(
       children: [
         WhiteboardView(
+          useBasicWebView: true,
           options: WhiteOptions(
             appIdentifier: APP_ID,
             log: true,
@@ -82,8 +83,7 @@ class _ReplayTestPageSate extends State<ReplayTestPage> {
       }),
       OpListItem("Change Speed", Category.All, () {
         whiteReplay.setPlaybackSpeed(2.0);
-        whiteReplay.playbackSpeed
-            .then((value) => print("playbackSpeed $value"));
+        whiteReplay.playbackSpeed.then((value) => print("playbackSpeed $value"));
       }),
     ];
   }
@@ -109,9 +109,8 @@ class _ReplayTestPageSate extends State<ReplayTestPage> {
   Widget _buildOpListItem(BuildContext context, int index) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: ElevatedButton(
-          child: Text("${allOpList[index].text}", softWrap: true),
-          onPressed: allOpList[index].handler),
+      child:
+          ElevatedButton(child: Text("${allOpList[index].text}", softWrap: true), onPressed: allOpList[index].handler),
     );
   }
 

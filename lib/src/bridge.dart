@@ -160,9 +160,8 @@ class InnerJavascriptInterface {
     }
 
     if (method is! Function) {
-      error = "Not find method \"" +
-          methodName +
-          "\" implementation! please check if the  signature or namespace of the method is right ";
+      error =
+          "Not find method $methodName implementation! please check if the  signature or namespace of the method is right ";
       _printDebugInfo(error);
       return ret.toString();
     }

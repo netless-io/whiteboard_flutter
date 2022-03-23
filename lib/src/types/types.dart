@@ -1,4 +1,5 @@
 // All the public types exposed by this package.
+export 'akko_event.dart';
 export 'animation_mode.dart';
 export 'appliance.dart';
 export 'broadcast_state.dart';
@@ -14,4 +15,3 @@ export 'room_options.dart';
 export 'room_state.dart';
 export 'scene.dart';
 export 'white_options.dart';
-export 'akko_event.dart';
