@@ -16,18 +16,19 @@ class _RoomTestPageSate extends State<RoomTestPage> {
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
   static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
-  static const String ROOM_TOKEN = "NETLESSROOM_YWs9eTBJOWsxeC1IVVo4VGh0NyZub25jZT0xNjI5MjU3OTQyNTM2MDAmcm9sZT0wJnNpZz1lZDdjOGJiY2M4YzVjZjQ5NDU5NmIzZGJiYzQzNDczNDJmN2NjYTAxMThlMTMyOWVlZGRmMjljNjE1NzQ5ZWFkJnV1aWQ9ZDQxODQ3OTBmZmQ1MTFlYmI5ZWJiZjdhOGYxZDc3YmQ";
+  static const String ROOM_TOKEN =
+      "NETLESSROOM_YWs9eTBJOWsxeC1IVVo4VGh0NyZub25jZT0xNjI5MjU3OTQyNTM2MDAmcm9sZT0wJnNpZz1lZDdjOGJiY2M4YzVjZjQ5NDU5NmIzZGJiYzQzNDczNDJmN2NjYTAxMThlMTMyOWVlZGRmMjljNjE1NzQ5ZWFkJnV1aWQ9ZDQxODQ3OTBmZmQ1MTFlYmI5ZWJiZjdhOGYxZDc3YmQ";
   static const String UNIQUE_CLIENT_ID = "123456";
 
-  OnCanRedoStepsUpdate _onCanRedoStepsUpdate = (stepNum) {
+  RedoStepsUpdatedCallback _onCanRedoStepsUpdate = (stepNum) {
     print('can redo step : $stepNum');
   };
 
-  OnCanUndoStepsUpdate _onCanUndoStepsUpdate = (stepNum) {
+  UndoStepsUpdatedCallback _onCanUndoStepsUpdate = (stepNum) {
     print('can undo step : $stepNum');
   };
 
-  OnRoomStateChanged _onRoomStateChanged = (newState) {
+  RoomStateChangedCallback _onRoomStateChanged = (newState) {
     print('room state change : ${newState.toJson()}');
   };
 
@@ -198,7 +199,6 @@ class OperatingViewState extends State<OperatingView> {
       OpListItem("Camera Bound", Category.Misc, () {
         room.setCameraBound(CameraBound(
             width: 1000, height: 1000, minScale: 0.5, maxScale: 1.5));
-        room.cleanScene(true);
       }),
       OpListItem("Clean Scene", Category.Appliance, () {
         room.cleanScene(true);
@@ -256,8 +256,7 @@ class OperatingViewState extends State<OperatingView> {
             .substring(0, sceneState.scenePath.lastIndexOf('/'));
 
         var ppt = WhiteBoardPpt(
-          src:
-              "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/image/alin-rusu-1239275-unsplash_opt.jpg",
+          src: "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/image/alin-rusu-1239275-unsplash_opt.jpg",
           width: 360,
           height: 360,
         );

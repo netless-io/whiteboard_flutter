@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/services.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:flutter/foundation.dart';
 
-typedef void OnReturnValue<T>([T returnValue]);
+typedef BridgeCreatedCallback = void Function(DsBridge value);
+typedef OnReturnValue<T> = void Function([T returnValue]);
 
 class JavaScriptNamespaceInterface {
-  JavaScriptNamespaceInterface(this.namespace);
-
-  String namespace = "";
+  String namespace;
   Map<String, Function> methods = Map<String, Function>();
+
+  JavaScriptNamespaceInterface([this.namespace = ""]);
 
   Function? getMethod(String method) {
     return methods[method];
@@ -21,30 +21,22 @@ class JavaScriptNamespaceInterface {
   }
 }
 
-class DsBridge {
+abstract class DsBridge {
+  static const String BRIDGE_NAME = "__dsbridge";
+  static bool isDebug = false;
+
   int callID = 0;
 
   Map<int, OnReturnValue> handlerMap = Map<int, OnReturnValue>();
   List<CallInfo>? callInfoList;
-  late InnerJavascriptInterface javascriptInterface;
+  late final InnerJavascriptInterface javascriptInterface;
 
-  static const String BRIDGE_NAME = "__dsbridge";
-  static bool isDebug = false;
-
-  List<String> parseNamespace(String method) {
-    int pos = method.lastIndexOf('.');
-    String namespace = "";
-    if (pos != -1) {
-      namespace = method.substring(0, pos);
-      method = method.substring(pos + 1);
-    }
-    return [namespace, method];
-  }
-
-  addJavascriptInterface(InnerJavascriptInterface jsInterface) {
-    javascriptInterface = jsInterface;
+  DsBridge() {
+    javascriptInterface = InnerJavascriptInterface(this);
     var dsb = JavaScriptNamespaceInterface("_dsb");
     dsb.setMethod("returnValue", (Map<String, dynamic> jsonObject) {
+      debugPrint("DsBridge.returnValue call ${jsonEncode(jsonObject)}");
+
       int id = jsonObject["id"];
       bool isCompleted = jsonObject["complete"];
       OnReturnValue? handler = handlerMap[id];
@@ -59,53 +51,14 @@ class DsBridge {
         }
       }
     });
+    dsb.setMethod("dsinit", (dynamic _) {
+      debugPrint("DsBridge.dsinit call ...");
+      // dispatchStartupQueue()
+    });
     addJavascriptObject(dsb);
   }
 
-  WebViewController? _controller;
-  JavascriptChannel? _javascriptChannel;
-
-  JavascriptChannel get javascriptChannel {
-    if (_javascriptChannel != null) return _javascriptChannel!;
-    _javascriptChannel = JavascriptChannel(
-      name: BRIDGE_NAME,
-      onMessageReceived: (JavascriptMessage message) {
-        var res = jsonDecode(message.message);
-        if (javascriptInterface != null)
-          javascriptInterface.call(res["method"], res["args"]);
-      },
-    );
-    return _javascriptChannel!;
-  }
-
-  void initWithWebViewController(WebViewController controller) {
-    this.addJavascriptInterface(InnerJavascriptInterface());
-    _controller = controller;
-  }
-
-  DsBridge() {
-    InnerJavascriptInterface.evaluateJavascript = evaluateJavascript;
-    InnerJavascriptInterface.parseNamespace = parseNamespace;
-    InnerJavascriptInterface.isDebug = isDebug;
-  }
-
-  FutureOr<String?> evaluateJavascript(String javascript) {
-    try {
-      if (_controller == null) {
-        return null;
-      }
-      return _controller!.evaluateJavascript(javascript);
-    } on MissingPluginException catch (e) {
-      print(e);
-      return null;
-    } on Error catch (e) {
-      print(e);
-      return null;
-    } catch (e) {
-      print(e);
-      return null;
-    }
-  }
+  FutureOr<String?> evaluateJavascript(String javascript);
 
   FutureOr<String?> dispatchJavascriptCall(CallInfo info) {
     return evaluateJavascript("window._handleMessageFromNative($info)");
@@ -131,19 +84,14 @@ class DsBridge {
   }
 
   void addJavascriptObject(JavaScriptNamespaceInterface interface) {
-    if (interface.namespace == null) {
+    if (interface.namespace == "") {
       interface.namespace = BRIDGE_NAME;
     }
-    if (interface != null) {
-      javascriptInterface.javaScriptNamespaceInterfaces[interface.namespace] =
-          interface;
-    }
+    javascriptInterface.javaScriptNamespaceInterfaces[interface.namespace] =
+        interface;
   }
 
   void removeJavascriptObject(String namespace) {
-    if (namespace == null) {
-      namespace = "";
-    }
     javascriptInterface.javaScriptNamespaceInterfaces
         .removeWhere((key, value) => key == namespace);
   }
@@ -170,16 +118,15 @@ typedef List<String> ParseNamespace(String method);
 typedef void EvaluateJavascript(String javascript);
 
 class InnerJavascriptInterface {
-  static bool isDebug = false;
-  static late EvaluateJavascript evaluateJavascript;
-  static late ParseNamespace parseNamespace;
+  InnerJavascriptInterface(this.dsBridge);
 
+  DsBridge dsBridge;
   Map<String, JavaScriptNamespaceInterface> javaScriptNamespaceInterfaces = {};
 
   void _printDebugInfo(String error) {
-    if (isDebug) {
+    if (DsBridge.isDebug) {
       var msg = "DEBUG ERR MSG:\\n" + error.replaceAll("\\'", "\\\\'");
-      evaluateJavascript("alert('$msg')");
+      dsBridge.evaluateJavascript("alert('$msg')");
     }
   }
 
@@ -230,11 +177,9 @@ class InnerJavascriptInterface {
             Map<String, dynamic> ret = Map<String, dynamic>();
             ret["code"] = 0;
             ret["data"] = retValue;
-            if (cb != null) {
-              String script = "$cb(${jsonEncode(ret)}.data);";
-              script += "delete window." + cb;
-              evaluateJavascript(script);
-            }
+            String script = "$cb(${jsonEncode(ret)}.data);";
+            script += "delete window." + cb;
+            dsBridge.evaluateJavascript(script);
           } catch (e) {
             print(e);
           }
@@ -242,11 +187,9 @@ class InnerJavascriptInterface {
           var cb = callback;
           ret["code"] = 0;
           ret["data"] = retData;
-          if (cb != null) {
-            String script = "$cb(${jsonEncode(ret)}.data);";
-            script += "delete window." + cb;
-            evaluateJavascript(script);
-          }
+          String script = "$cb(${jsonEncode(ret)}.data);";
+          script += "delete window." + cb;
+          dsBridge.evaluateJavascript(script);
           return jsonEncode(ret);
         }
       }
@@ -254,5 +197,15 @@ class InnerJavascriptInterface {
       print(e);
     }
     return jsonEncode(ret);
+  }
+
+  List<String> parseNamespace(String method) {
+    int pos = method.lastIndexOf('.');
+    String namespace = "";
+    if (pos != -1) {
+      namespace = method.substring(0, pos);
+      method = method.substring(pos + 1);
+    }
+    return [namespace, method];
   }
 }

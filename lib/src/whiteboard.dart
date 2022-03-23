@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:whiteboard_sdk_flutter/src/bridge_webview.dart';
 
 import 'bridge.dart';
 import 'bridge_inapp_webview.dart';
@@ -12,32 +13,50 @@ class WhiteboardView extends StatelessWidget {
   final WhiteOptions options;
   final SdkCreatedCallback onSdkCreated;
   final SdkOnLoggerCallback? onLogger;
+  final bool useBasicWebView;
 
-  static GlobalKey<DsBridgeInAppWebViewState> webView =
+  static GlobalKey<DsBridgeInAppWebViewState> inAppWebView =
       GlobalKey<DsBridgeInAppWebViewState>();
+  static GlobalKey<DsBridgeWebViewState> webView =
+      GlobalKey<DsBridgeWebViewState>();
 
   WhiteboardView({
     Key? key,
     required this.options,
     required this.onSdkCreated,
     this.onLogger,
+    this.useBasicWebView = false,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return DsBridgeInAppWebView(
-      key: webView,
-      url: "",
-      onWebViewCreated: (controller) {
-        controller.loadFile(
-            assetFilePath:
-                "packages/whiteboard_sdk_flutter/assets/whiteboardBridge/index.html");
-      },
-      onDSBridgeCreated: (DsBridge dsBridge) async {
-        dsBridge.addJavascriptObject(this.createSDKInterface());
-        onSdkCreated(WhiteSdk(options: options, dsBridge: dsBridge));
-      },
-    );
+    if (useBasicWebView) {
+      return DsBridgeWebView(
+        key: webView,
+        url: "about:blank",
+        // onWebViewCreated: (controller) {
+        //   controller.loadFlutterAsset(
+        //       "packages/whiteboard_sdk_flutter/assets/whiteboardBridge/index.html");
+        // },
+        onDSBridgeCreated: onDSBridgeCreated,
+      );
+    } else {
+      return DsBridgeInAppWebView(
+        key: inAppWebView,
+        url: "about:blank",
+        // onWebViewCreated: (controller) {
+        //   controller.loadFile(
+        //       assetFilePath:
+        //           "packages/whiteboard_sdk_flutter/assets/whiteboardBridge/index.html");
+        // },
+        onDSBridgeCreated: onDSBridgeCreated,
+      );
+    }
+  }
+
+  void onDSBridgeCreated(DsBridge dsBridge) {
+    dsBridge.addJavascriptObject(this.createSDKInterface());
+    onSdkCreated(WhiteSdk(options: options, dsBridge: dsBridge));
   }
 
   JavaScriptNamespaceInterface createSDKInterface() {

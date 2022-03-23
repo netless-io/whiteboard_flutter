@@ -27,8 +27,8 @@ class ScaleMode {
 }
 
 class CameraConfig {
-  num centerX;
-  num centerY;
+  num? centerX;
+  num? centerY;
   num scale;
   String? animationMode;
 
