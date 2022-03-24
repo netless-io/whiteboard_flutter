@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:whiteboard_sdk_flutter/whiteboard_sdk_flutter.dart';
 
-class ReplayTestPage extends StatefulWidget {
-  ReplayTestPage({Key? key}) : super(key: key);
+import 'white_example_page.dart';
+
+class ReplayTestPage extends WhiteExamplePage {
+  ReplayTestPage({Key? key}) : super('Replay');
 
   @override
-  _ReplayTestPageSate createState() => _ReplayTestPageSate();
+  Widget build(BuildContext context) {
+    return ReplayTestBody();
+  }
 }
 
-class _ReplayTestPageSate extends State<ReplayTestPage> {
+class ReplayTestBody extends StatefulWidget {
+  @override
+  _ReplayTestBodySate createState() => _ReplayTestBodySate();
+}
+
+class _ReplayTestBodySate extends State<ReplayTestBody> {
   late WhiteSdk whiteSdk;
   late WhiteReplay whiteReplay;
 
@@ -69,20 +78,21 @@ class _ReplayTestPageSate extends State<ReplayTestPage> {
 
   var allOpList = <OpListItem>[];
 
-  _ReplayTestPageSate() {
+  _ReplayTestBodySate() {
     allOpList = [
-      OpListItem("Start", Category.All, () async {
+      OpListItem("Start", Category.All, () {
         whiteReplay.play();
       }),
-      OpListItem("Pause）", Category.All, () {
+      OpListItem("Pause", Category.All, () {
         whiteReplay.pause();
       }),
-      OpListItem("Stop）", Category.All, () {
+      OpListItem("Stop", Category.All, () {
         whiteReplay.stop();
       }),
       OpListItem("Change Speed", Category.All, () {
         whiteReplay.setPlaybackSpeed(2.0);
-        whiteReplay.playbackSpeed.then((value) => print("playbackSpeed $value"));
+        whiteReplay.playbackSpeed
+            .then((value) => print("playbackSpeed $value"));
       }),
     ];
   }
@@ -108,8 +118,9 @@ class _ReplayTestPageSate extends State<ReplayTestPage> {
   Widget _buildOpListItem(BuildContext context, int index) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child:
-          ElevatedButton(child: Text("${allOpList[index].text}", softWrap: true), onPressed: allOpList[index].handler),
+      child: ElevatedButton(
+          child: Text("${allOpList[index].text}", softWrap: true),
+          onPressed: allOpList[index].handler),
     );
   }
 

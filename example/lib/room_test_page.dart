@@ -1,18 +1,28 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:whiteboard_sdk_flutter/whiteboard_sdk_flutter.dart';
 
-class RoomTestPage extends StatefulWidget {
-  RoomTestPage({Key? key}) : super(key: key);
+import 'white_example_page.dart';
+
+class RoomTestPage extends WhiteExamplePage {
+  RoomTestPage({Key? key}) : super('Room');
 
   @override
-  _RoomTestPageSate createState() => _RoomTestPageSate();
+  Widget build(BuildContext context) {
+    return RoomTestBody();
+  }
 }
 
-class _RoomTestPageSate extends State<RoomTestPage> {
+class RoomTestBody extends StatefulWidget {
+  @override
+  _RoomTestBodySate createState() => _RoomTestBodySate();
+}
+
+class _RoomTestBodySate extends State<RoomTestBody> {
   WhiteSdk? whiteSdk;
-  WhiteRoom? whiteRoom;
+  final Completer<WhiteRoom> whiteRoomCompleter = Completer<WhiteRoom>();
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
   static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
@@ -51,11 +61,9 @@ class _RoomTestPageSate extends State<RoomTestPage> {
     return Stack(
       children: [
         WhiteboardView(
-          useBasicWebView: true,
           options: WhiteOptions(
             appIdentifier: APP_ID,
             log: true,
-            backgroundColor: Color(0xFFF9F4E7),
           ),
           onSdkCreated: (sdk) async {
             // use sdk to join room
@@ -71,27 +79,45 @@ class _RoomTestPageSate extends State<RoomTestPage> {
 
             setState(() {
               whiteSdk = sdk;
-              whiteRoom = room;
+              whiteRoomCompleter.complete(room);
             });
           },
         ),
-        if (whiteSdk != null && whiteRoom != null)
-          OperatingView(
-            sdk: whiteSdk!,
-            room: whiteRoom!,
-            joinRoomAgain: _joinRoomAgain,
+        Container(
+          child: FutureBuilder<WhiteRoom>(
+            future: whiteRoomCompleter.future,
+            builder: (BuildContext context, AsyncSnapshot<WhiteRoom> snapshot) {
+              if (snapshot.data != null) {
+                return OperatingView(
+                  room: snapshot.data!,
+                  onReconnect: _joinRoomAgain,
+                );
+              } else {
+                return Center(
+                  child: CircularProgressIndicator(
+                    backgroundColor: Colors.grey[200],
+                    valueColor: AlwaysStoppedAnimation(Colors.blue),
+                  ),
+                );
+              }
+            },
           ),
+        ),
       ],
     );
   }
 }
 
+@immutable
 class OperatingView extends StatefulWidget {
-  WhiteSdk sdk;
-  WhiteRoom room;
-  Function? joinRoomAgain;
+  final WhiteRoom room;
+  final VoidCallback? onReconnect;
 
-  OperatingView({Key? key, required this.sdk, required this.room, this.joinRoomAgain}) : super(key: key);
+  OperatingView({
+    Key? key,
+    required this.room,
+    this.onReconnect,
+  }) : super(key: key);
 
   @override
   State<OperatingView> createState() {
@@ -99,7 +125,7 @@ class OperatingView extends StatefulWidget {
   }
 }
 
-typedef void Handler();
+typedef Handler = void Function();
 
 class OpListItem {
   String text;
@@ -189,13 +215,15 @@ class OperatingViewState extends State<OperatingView> {
     allOpList = [
       OpListItem("Reconnect", Category.Misc, () async {
         room.disconnect().then((value) {
-          Future.delayed(Duration(seconds: 2)).then((value) => widget.joinRoomAgain?.call());
+          Future.delayed(Duration(seconds: 2))
+              .then((value) => widget.onReconnect?.call());
         }).catchError((o) {
           print("disconnect error");
         });
       }),
       OpListItem("Camera Bound", Category.Misc, () {
-        room.setCameraBound(CameraBound(width: 1000, height: 1000, minScale: 0.5, maxScale: 1.5));
+        room.setCameraBound(CameraBound(
+            width: 1000, height: 1000, minScale: 0.5, maxScale: 1.5));
       }),
       OpListItem("Clean Scene", Category.Appliance, () {
         room.cleanScene(true);
@@ -241,17 +269,20 @@ class OperatingViewState extends State<OperatingView> {
       }),
       OpListItem("Insert Scene", Category.Image, () async {
         var sceneState = await room.getSceneState();
-        var dir = sceneState.scenePath.substring(0, sceneState.scenePath.lastIndexOf('/'));
+        var dir = sceneState.scenePath
+            .substring(0, sceneState.scenePath.lastIndexOf('/'));
 
         room.putScenes(dir, [Scene(name: "page1")], 0);
         room.setScenePath(dir + "/page1");
       }),
       OpListItem("Insert New Ppt", Category.Image, () async {
         var sceneState = await room.getSceneState();
-        var dir = sceneState.scenePath.substring(0, sceneState.scenePath.lastIndexOf('/'));
+        var dir = sceneState.scenePath
+            .substring(0, sceneState.scenePath.lastIndexOf('/'));
 
         var ppt = WhiteBoardPpt(
-          src: "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/image/alin-rusu-1239275-unsplash_opt.jpg",
+          src:
+              "https://white-pan.oss-cn-shanghai.aliyuncs.com/101/image/alin-rusu-1239275-unsplash_opt.jpg",
           width: 360,
           height: 360,
         );
@@ -259,27 +290,41 @@ class OperatingViewState extends State<OperatingView> {
         room.setScenePath(dir + "/page2");
       }),
       OpListItem("Insert Image", Category.Image, () {
-        var image = ImageInformation(centerX: 0, centerY: 0, width: 100, height: 200);
-        room.insertImageByUrl(image, "https://white-pan.oss-cn-shanghai.aliyuncs.com/40/image/mask.jpg");
+        var image =
+            ImageInformation(centerX: 0, centerY: 0, width: 100, height: 200);
+        room.insertImageByUrl(image,
+            "https://white-pan.oss-cn-shanghai.aliyuncs.com/40/image/mask.jpg");
       }),
       OpListItem("Get SceneState", Category.State, () {
-        room.getSceneState().then((value) => print("getSceneState Result ${value.toJson()}"));
+        room
+            .getSceneState()
+            .then((value) => print("getSceneState Result ${value.toJson()}"));
       }),
       OpListItem("Get RoomPhase", Category.State, () {
-        room.getRoomPhase().then((value) => print("getRoomPhase result $value"));
+        room
+            .getRoomPhase()
+            .then((value) => print("getRoomPhase result $value"));
       }),
       OpListItem("Get Room MemberState", Category.State, () async {
-        room.getMemberState().then((value) => print("member state ${value.toJson()}"));
+        room
+            .getMemberState()
+            .then((value) => print("member state ${value.toJson()}"));
       }),
       OpListItem("Get RoomState", Category.State, () {
-        room.getRoomState().then((value) => print("room state ${value.toJson()}"));
+        room
+            .getRoomState()
+            .then((value) => print("room state ${value.toJson()}"));
       }),
       OpListItem("Use Global State", Category.State, () {
-        room.setGlobalState(GlobalDataFoo(a: "change_aaa", b: "change_bbb", c: 321));
-        room.getGlobalState((jsonMap) => GlobalDataFoo()..fromJson(jsonMap)).then((value) => print(value.toJson()));
+        room.setGlobalState(
+            GlobalDataFoo(a: "change_aaa", b: "change_bbb", c: 321));
+        room
+            .getGlobalState((jsonMap) => GlobalDataFoo()..fromJson(jsonMap))
+            .then((value) => print(value.toJson()));
       }),
       OpListItem("Get RoomMembers", Category.State, () {
-        room.getRoomMembers().then((value) => print("RoomMembers: ${value.map((e) => e.toJson()).join(';;;;')}"));
+        room.getRoomMembers().then((value) =>
+            print("RoomMembers: ${value.map((e) => e.toJson()).join(';;;;')}"));
       }),
       OpListItem("Change Writable", Category.Misc, () {
         room.setWritable(!room.getWritable()).then((writable) => {
@@ -318,7 +363,8 @@ class OperatingViewState extends State<OperatingView> {
       }),
       OpListItem("Scale", Category.Appliance, () {}),
     ];
-    filterOptList = allOpList.where((elem) => elem.category == Category.Appliance).toList();
+    filterOptList =
+        allOpList.where((elem) => elem.category == Category.Appliance).toList();
   }
 
   int _random() {
@@ -331,7 +377,8 @@ class OperatingViewState extends State<OperatingView> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ElevatedButton(
-          child: Text("${filterOptList[index].text}", softWrap: true), onPressed: filterOptList[index].handler),
+          child: Text("${filterOptList[index].text}", softWrap: true),
+          onPressed: filterOptList[index].handler),
     );
   }
 
@@ -345,7 +392,9 @@ class OperatingViewState extends State<OperatingView> {
                 if (categories[index] == Category.All)
                   filterOptList = allOpList;
                 else
-                  filterOptList = allOpList.where((item) => item.category == categories[index]).toList();
+                  filterOptList = allOpList
+                      .where((item) => item.category == categories[index])
+                      .toList();
               });
             }));
   }

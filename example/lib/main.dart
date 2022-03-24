@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:whiteboard_sdk_flutter_example/white_example_page.dart';
 
 import 'replay_test_page.dart';
 import 'room_test_page.dart';
@@ -31,51 +32,46 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String? testPage;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: testPage == null
-          ? _buildPickView()
-          : testPage == "room"
-              ? RoomTestPage()
-              : ReplayTestPage(),
+      body: Column(
+        children: [
+          Expanded(flex: 1, child: Container()),
+          SizedBox(
+              width: 200,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () => _pushPage(context, allPages[0]),
+                child: Text("Room"),
+              )),
+          SizedBox(height: 40),
+          SizedBox(
+              width: 200,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () => _pushPage(context, allPages[1]),
+                child: Text("Replay"),
+              )),
+          Expanded(flex: 1, child: Container()),
+        ],
+      ),
     );
   }
 
-  Widget _buildPickView() {
-    return Column(
-      children: [
-        Expanded(flex: 1, child: Container()),
-        SizedBox(
-            width: 200,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: _onPressRoom,
-              child: Text("Room"),
-            )),
-        SizedBox(height: 40),
-        SizedBox(
-            width: 200,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: _onPressReplay,
-              child: Text("Replay"),
-            )),
-        Expanded(flex: 1, child: Container()),
-      ],
-    );
+  void _pushPage(BuildContext context, WhiteExamplePage page) {
+    Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (_) => Scaffold(
+              appBar: AppBar(title: Text(page.title)),
+              body: page,
+            )));
   }
-
-  void _onPressRoom() => setState(() {
-        testPage = "room";
-      });
-
-  void _onPressReplay() => setState(() {
-        testPage = "replay";
-      });
 }
+
+final List<WhiteExamplePage> allPages = <WhiteExamplePage>[
+  RoomTestPage(),
+  ReplayTestPage(),
+];
