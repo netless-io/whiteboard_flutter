@@ -22,7 +22,7 @@ class RoomTestBody extends StatefulWidget {
 
 class _RoomTestBodySate extends State<RoomTestBody> {
   WhiteSdk? whiteSdk;
-  final Completer<WhiteRoom> whiteRoomCompleter = Completer<WhiteRoom>();
+  WhiteRoom? whiteRoom;
 
   static const String APP_ID = '283/VGiScM9Wiw2HJg';
   static const String ROOM_UUID = "d4184790ffd511ebb9ebbf7a8f1d77bd";
@@ -55,6 +55,11 @@ class _RoomTestBodySate extends State<RoomTestBody> {
         onRoomStateChanged: _onRoomStateChanged);
   }
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -65,50 +70,43 @@ class _RoomTestBodySate extends State<RoomTestBody> {
             appIdentifier: APP_ID,
             log: true,
           ),
-          onSdkCreated: (sdk) async {
-            // use sdk to join room
-            var room = await sdk.joinRoom(
-              options: RoomOptions(
-                uuid: ROOM_UUID,
-                roomToken: ROOM_TOKEN,
-                uid: UNIQUE_CLIENT_ID,
-                isWritable: true,
-              ),
-            );
-            room.disableSerialization(false);
-
-            setState(() {
-              whiteSdk = sdk;
-              whiteRoomCompleter.complete(room);
-            });
-          },
+          onSdkCreated: _onSdkCreated,
         ),
         Container(
-          child: FutureBuilder<WhiteRoom>(
-            future: whiteRoomCompleter.future,
-            builder: (BuildContext context, AsyncSnapshot<WhiteRoom> snapshot) {
-              if (snapshot.data != null) {
-                return OperatingView(
-                  room: snapshot.data!,
+          child: whiteRoom != null
+              ? OperatingView(
+                  room: whiteRoom!,
                   onReconnect: _joinRoomAgain,
-                );
-              } else {
-                return Center(
+                )
+              : Center(
                   child: CircularProgressIndicator(
-                    backgroundColor: Colors.grey[200],
-                    valueColor: AlwaysStoppedAnimation(Colors.blue),
-                  ),
-                );
-              }
-            },
-          ),
-        ),
+                  backgroundColor: Colors.grey[200],
+                  valueColor: AlwaysStoppedAnimation(Colors.blue),
+                )),
+        )
       ],
     );
   }
+
+  void _onSdkCreated(WhiteSdk sdk) async {
+    var room = await sdk.joinRoom(
+      options: RoomOptions(
+        uuid: ROOM_UUID,
+        roomToken: ROOM_TOKEN,
+        uid: UNIQUE_CLIENT_ID,
+        isWritable: true,
+      ),
+    );
+    room.disableSerialization(false);
+
+    setState(() {
+      print("whiteboard setState ");
+      whiteSdk = sdk;
+      whiteRoom = room;
+    });
+  }
 }
 
-@immutable
 class OperatingView extends StatefulWidget {
   final WhiteRoom room;
   final VoidCallback? onReconnect;

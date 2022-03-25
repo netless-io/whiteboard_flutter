@@ -33,13 +33,11 @@ class WhiteboardView extends StatelessWidget {
     if (useBasicWebView) {
       return DsBridgeWebView(
         key: webView,
-        url: "about:blank",
         onDSBridgeCreated: onDSBridgeCreated,
       );
     } else {
       return DsBridgeInAppWebView(
         key: inAppWebView,
-        url: "about:blank",
         onDSBridgeCreated: onDSBridgeCreated,
       );
     }
@@ -586,25 +584,6 @@ class WhiteRoom extends WhiteDisplayer {
     dsBridge.callHandler("room.setViewMode", [viewMode.serialize()]);
   }
 
-  ViewMode viewModeFromJson(String json) {
-    ViewMode viewMode;
-    switch (json) {
-      case "freedom":
-        viewMode = ViewMode.Freedom;
-        break;
-      case "follower":
-        viewMode = ViewMode.Follower;
-        break;
-      case "broadcaster":
-        viewMode = ViewMode.Broadcaster;
-        break;
-      default:
-        viewMode = ViewMode.Freedom;
-        break;
-    }
-    return viewMode;
-  }
-
   Future<BroadcastState> getBroadcastState() {
     var completer = Completer<BroadcastState>();
     dsBridge.callHandler('room.getBroadcastState', [], ([value]) {
@@ -907,7 +886,7 @@ class WhiteRoom extends WhiteDisplayer {
 
   /// 同步时间戳。
   void syncBlockTimestamp(int utcMs) {
-    dsBridge.callHandler("room.sync.syncBlockTimstamp", [utcMs]);
+    dsBridge.callHandler("room.sync.syncBlockTimestamp", [utcMs]);
   }
 
   /// 发送自定义事件。

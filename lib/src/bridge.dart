@@ -26,8 +26,8 @@ abstract class DsBridge {
   static bool isDebug = false;
 
   int callID = 0;
+  Map<int, OnReturnValue> handlerMap = <int, OnReturnValue>{};
 
-  Map<int, OnReturnValue> handlerMap = Map<int, OnReturnValue>();
   List<CallInfo>? callInfoList;
   late InnerJavascriptInterface javascriptInterface;
 
@@ -35,7 +35,7 @@ abstract class DsBridge {
     javascriptInterface = InnerJavascriptInterface(this);
     var dsb = JavaScriptNamespaceInterface("_dsb")
       ..setMethod("returnValue", (Map<String, dynamic> jsonObject) {
-        debugPrint("DsBridge.returnValue call ${jsonEncode(jsonObject)}");
+        debugPrint("_dsb.returnValue called ${jsonEncode(jsonObject)}");
 
         int id = jsonObject["id"];
         bool isCompleted = jsonObject["complete"];
@@ -51,9 +51,9 @@ abstract class DsBridge {
           }
         }
       })
-      ..setMethod("dsinit", (dynamic _) {
-        debugPrint("DsBridge.dsinit call ...");
-        // dispatchStartupQueue()
+      ..setMethod("dsinit", (args) {
+        // TODO 无法保证不修改WhiteboardBridge的情况下完全兼容 DsBridge，兼容 的Js 无法在合适的位置注入
+        debugPrint("_dsb.dsinit called ${jsonEncode(args)}");
       });
     addJavascriptObject(dsb);
   }
@@ -71,7 +71,7 @@ abstract class DsBridge {
       handlerMap[callInfo.callbackId] = handler;
     }
     if (callInfoList != null) {
-      // TODO: 开启线程处理，预留
+      // TODO: 暂未使用
       callInfoList!.add(callInfo);
       return null;
     } else {
@@ -84,16 +84,11 @@ abstract class DsBridge {
   }
 
   void addJavascriptObject(JavaScriptNamespaceInterface interface) {
-    if (interface.namespace == "") {
-      interface.namespace = BRIDGE_NAME;
-    }
-    javascriptInterface.javaScriptNamespaceInterfaces[interface.namespace] =
-        interface;
+    javascriptInterface.addNamespaceInterface(interface);
   }
 
   void removeJavascriptObject(String namespace) {
-    javascriptInterface.javaScriptNamespaceInterfaces
-        .removeWhere((key, value) => key == namespace);
+    javascriptInterface.removeNamespaceInterface(namespace);
   }
 }
 
@@ -114,25 +109,36 @@ class CallInfo {
   }
 }
 
-typedef ParseNamespace = List<String> Function(String method);
-typedef EvaluateJavascript = void Function(String javascript);
-
 class InnerJavascriptInterface {
   InnerJavascriptInterface(this.dsBridge);
 
   DsBridge dsBridge;
-  Map<String, JavaScriptNamespaceInterface> javaScriptNamespaceInterfaces = {};
 
-  void _printDebugInfo(String error) {
-    if (DsBridge.isDebug) {
-      var msg = 'DEBUG ERR MSG:\\n ${error.replaceAll("\\'", "\\\\'")}';
-      dsBridge.evaluateJavascript("alert('$msg')");
+  @visibleForTesting
+  var javaScriptNamespaceInterfaces = <String, JavaScriptNamespaceInterface>{};
+
+  void addNamespaceInterface(JavaScriptNamespaceInterface interface) {
+    if (interface.namespace == "") {
+      interface.namespace = DsBridge.BRIDGE_NAME;
     }
+    javaScriptNamespaceInterfaces[interface.namespace] = interface;
+  }
+
+  void removeNamespaceInterface(String namespace) {
+    assert(javaScriptNamespaceInterfaces.containsKey(namespace));
+    javaScriptNamespaceInterfaces.remove(namespace);
   }
 
   FutureOr<String> call(String methodName, String argStr) async {
-    debugPrint(
-        "InnerJavascriptInterface call: method $methodName, args $argStr");
+    void _printDebugInfo(String error) {
+      if (DsBridge.isDebug) {
+        var msg = 'DEBUG ERR MSG:\\n ${error.replaceAll("\\'", "\\\\'")}';
+        dsBridge.evaluateJavascript("alert('$msg')");
+      }
+    }
+
+    debugPrint("[InnerJavascriptInterface] call: method $methodName, "
+        "args $argStr");
     String error = "Js bridge  called, but can't find a corresponded "
         "JavascriptInterface object , please check your code!";
     List<String> nameStr = parseNamespace(methodName.trim());

@@ -8,12 +8,10 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'bridge.dart';
 
 class DsBridgeInAppWebView extends StatefulWidget {
-  final String url;
   final BridgeCreatedCallback onDSBridgeCreated;
 
   DsBridgeInAppWebView({
     Key? key,
-    required this.url,
     required this.onDSBridgeCreated,
   }) : super(key: key);
 
@@ -22,14 +20,15 @@ class DsBridgeInAppWebView extends StatefulWidget {
 }
 
 class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
-  late DsBridgeInApp dsBridge;
+  DsBridgeInApp dsBridge = new DsBridgeInApp();
   late InAppWebViewController _controller;
 
   @override
   void initState() {
     super.initState();
     if (Platform.isAndroid) {
-      AndroidInAppWebViewController.setWebContentsDebuggingEnabled(true);
+      AndroidInAppWebViewController.setWebContentsDebuggingEnabled(
+          DsBridge.isDebug);
     }
   }
 
@@ -37,7 +36,7 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
   Widget build(BuildContext context) {
     return Builder(builder: (_) {
       return InAppWebView(
-        initialUrlRequest: URLRequest(url: Uri.parse(widget.url)),
+        initialUrlRequest: URLRequest(url: Uri.parse("about:blank")),
         onWebViewCreated: (InAppWebViewController controller) async {
           _controller = controller;
           _controller.setOptions(
@@ -53,6 +52,7 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
           controller.loadFile(
               assetFilePath:
                   "packages/whiteboard_sdk_flutter/assets/whiteboardBridge/index.html");
+          await dsBridge.initController(controller);
         },
         onLoadError: _onLoadError,
         onLoadHttpError: _onLoadHttpError,
@@ -67,19 +67,18 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
     InAppWebViewController controller,
     ConsoleMessage consoleMessage,
   ) {
-    print(consoleMessage.message);
+    debugPrint("[InAppWebView] consoleMessage ${consoleMessage.message}");
   }
 
   void _onLoadStart(InAppWebViewController controller, Uri? url) async {
-    print('InAppWebView Page started loading: $url');
-    if (url?.path.endsWith("whiteboardBridge/index.html") ?? false) {
-      dsBridge = new DsBridgeInApp(_controller);
-    }
+    debugPrint('[InAppWebView] page started loading: $url');
+    if (url?.path.endsWith("whiteboardBridge/index.html") ?? false) {}
   }
 
   void _onLoadStop(InAppWebViewController controller, Uri? url) async {
-    print('InAppWebView Page finished loading: $url');
+    debugPrint('[InAppWebView] page finished loading: $url');
     if (url?.path.endsWith("whiteboardBridge/index.html") ?? false) {
+      await dsBridge.runCompatScript();
       widget.onDSBridgeCreated(dsBridge);
     }
   }
@@ -90,7 +89,8 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
     int statusCode,
     String description,
   ) {
-    print("$url load error code $statusCode, desc $description");
+    debugPrint("[InAppWebView] $url load error "
+        "code $statusCode, desc $description");
   }
 
   void _onLoadError(
@@ -99,7 +99,7 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
     int code,
     String message,
   ) {
-    print(message);
+    debugPrint("[InAppWebView] load error, message $message");
   }
 }
 
@@ -117,12 +117,17 @@ class DsBridgeInApp extends DsBridge {
               return '{}';
           }
           console.log("wrapper flutter_inappwebview success");
+      } else {
+          console.log("window.flutter_inappwebview undefine");
       }
   """;
 
   late InAppWebViewController _controller;
 
-  DsBridgeInApp(this._controller) : super() {
+  DsBridgeInApp() : super();
+
+  Future<void> initController(InAppWebViewController controller) async {
+    _controller = controller;
     _controller.addJavaScriptHandler(
       handlerName: DsBridge.BRIDGE_NAME,
       callback: (args) {
@@ -130,7 +135,10 @@ class DsBridgeInApp extends DsBridge {
         javascriptInterface.call(res["method"], res["args"]);
       },
     );
-    _controller.evaluateJavascript(source: _compatDsScript);
+  }
+
+  Future<void> runCompatScript() async {
+    await _controller.evaluateJavascript(source: _compatDsScript);
   }
 
   @override
