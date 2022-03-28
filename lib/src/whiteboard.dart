@@ -50,11 +50,14 @@ class WhiteboardView extends StatelessWidget {
 
   JavaScriptNamespaceInterface createSDKInterface() {
     var interface = JavaScriptNamespaceInterface("sdk");
-    interface.setMethod("onPPTMediaPlay", this._onPPTMediaPlay);
-    interface.setMethod("onPPTMediaPause", this._onPPTMediaPause);
-    interface.setMethod('throwError', this._onThrowMessage);
-    interface.setMethod('postMessage', this._onPostMessage);
-    interface.setMethod('logger', this._onLogger);
+    Map methods = <String, Function>{
+      "onPPTMediaPlay": _onPPTMediaPlay,
+      "onPPTMediaPause": _onPPTMediaPause,
+      "throwError": _onThrowMessage,
+      "postMessage": _onPostMessage,
+      "logger": _onLogger,
+    };
+    methods.forEach((key, value) => interface.setMethod(key, value));
     return interface;
   }
 
@@ -96,18 +99,18 @@ class WhiteSdk {
   }) {
     var completer = Completer<WhiteReplay>();
     dsBridge.callHandler("sdk.replayRoom", [options.toJson()], ([value]) {
-      var replayRoom = WhiteReplay(
+      var replay = WhiteReplay(
         dsBridge: dsBridge,
         params: options,
+        onLoadFirstFrame: onLoadFirstFrame,
         onPlayerPhaseChanged: onPlayerPhaseChanged,
         onPlayerStateChanged: onPlayerStateChanged,
-        onLoadFirstFrame: onLoadFirstFrame,
-        onScheduleTimeChanged: onScheduleTimeChanged,
         onPlaybackError: onPlaybackError,
+        onScheduleTimeChanged: onScheduleTimeChanged,
       );
       try {
-        replayRoom.initTimeInfoWithReplayRoom(jsonDecode(value));
-        completer.complete(replayRoom);
+        replay.initTimeInfo(jsonDecode(value));
+        completer.complete(replay);
       } catch (e) {
         completer.completeError(e);
       }
@@ -115,7 +118,10 @@ class WhiteSdk {
     return completer.future;
   }
 
-  WhiteSdk({required this.options, required this.dsBridge}) {
+  WhiteSdk({
+    required this.options,
+    required this.dsBridge,
+  }) {
     dsBridge.callHandler("sdk.newWhiteSdk", [options.toJson()], null);
     setBackgroundColor(options.backgroundColor);
   }
@@ -247,11 +253,12 @@ class WhiteDisplayer {
 
     dsBridge.callHandler("displayer.entireScenes", [path], ([value]) {
       var data = (jsonDecode(value) as Map).map((k, v) {
-        var convert = (v as List).map((e) => Scene.fromJson(e)).toList();
-        return MapEntry<String, List<Scene>>(k, convert);
+        var scenes = (v as List).map((e) => Scene.fromJson(e)).toList();
+        return MapEntry<String, List<Scene>>(k, scenes);
       });
       completer.complete(data);
     });
+
     return completer.future;
   }
 }
@@ -307,19 +314,19 @@ class WhiteReplay extends WhiteDisplayer {
 
   JavaScriptNamespaceInterface createPlayerInterface() {
     var interface = JavaScriptNamespaceInterface("player");
-    interface.setMethod("onPhaseChanged", this._onPhaseChanged);
-    interface.setMethod("onPlayerStateChanged", this._onPlayerStateChanged);
-    interface.setMethod("onLoadFirstFrame", this._onLoadFirstFrame);
-    interface.setMethod("onScheduleTimeChanged", this._onScheduleTimeChanged);
-    interface.setMethod("onStoppedWithError", this._onStoppedWithError);
-    interface.setMethod(
-      "fireCatchErrorWhenAppendFrame",
-      this._fireCatchErrorWhenAppendFrame,
-    );
-    interface.setMethod("onCatchErrorWhenRender", this._onCatchErrorWhenRender);
-    interface.setMethod("fireMagixEvent", this._fireMagixEvent);
-    interface.setMethod("fireHighFrequencyEvent", this._fireHighFrequencyEvent);
-    interface.setMethod("onSliceChanged", this._onSliceChanged);
+    Map methods = <String, Function>{
+      "onPhaseChanged": _onPhaseChanged,
+      "onPlayerStateChanged": _onPlayerStateChanged,
+      "onLoadFirstFrame": _onLoadFirstFrame,
+      "onScheduleTimeChanged": _onScheduleTimeChanged,
+      "onStoppedWithError": _onStoppedWithError,
+      "fireCatchErrorWhenAppendFrame": _fireCatchErrorWhenAppendFrame,
+      "onCatchErrorWhenRender": _onCatchErrorWhenRender,
+      "fireMagixEvent": _fireMagixEvent,
+      "fireHighFrequencyEvent": _fireHighFrequencyEvent,
+      "onSliceChanged": _onSliceChanged,
+    };
+    methods.forEach((key, value) => interface.setMethod(key, value));
     return interface;
   }
 
@@ -370,7 +377,7 @@ class WhiteReplay extends WhiteDisplayer {
     print(value);
   }
 
-  initTimeInfoWithReplayRoom(Map<String, dynamic> json) {
+  initTimeInfo(Map<String, dynamic> json) {
     replayTimeInfo = ReplayTimeInfo.fromJson(json["timeInfo"]);
   }
 
@@ -442,9 +449,9 @@ class WhiteRoom extends WhiteDisplayer {
   RoomStateChangedCallback? onRoomStateChanged;
   RoomPhaseChangedCallback? onRoomPhaseChanged;
   RoomDisconnectedCallback? onRoomDisconnected;
-  RoomKickedCallback? onRoomKicked;
   UndoStepsUpdatedCallback? onCanUndoStepsUpdate;
   RedoStepsUpdatedCallback? onCanRedoStepsUpdate;
+  RoomKickedCallback? onRoomKicked;
   RoomErrorCallback? onRoomError;
 
   late int observerId;
@@ -458,9 +465,9 @@ class WhiteRoom extends WhiteDisplayer {
     this.onRoomStateChanged,
     this.onRoomPhaseChanged,
     this.onRoomDisconnected,
-    this.onRoomKicked,
     this.onCanUndoStepsUpdate,
     this.onCanRedoStepsUpdate,
+    this.onRoomKicked,
     this.onRoomError,
   }) : super(dsBridge) {
     dsBridge.addJavascriptObject(this.createRoomInterface());
@@ -468,21 +475,18 @@ class WhiteRoom extends WhiteDisplayer {
 
   JavaScriptNamespaceInterface createRoomInterface() {
     var interface = JavaScriptNamespaceInterface("room");
-    interface.setMethod("firePhaseChanged", this._firePhaseChanged);
-    interface.setMethod("fireCanUndoStepsUpdate", this._fireCanUndoStepsUpdate);
-    interface.setMethod("fireCanRedoStepsUpdate", this._fireCanRedoStepsUpdate);
-    interface.setMethod("fireRoomStateChanged", this._fireRoomStateChanged);
-    interface.setMethod(
-      "fireDisconnectWithError",
-      this._fireDisconnectWithError,
-    );
-    interface.setMethod("fireKickedWithReason", this._fireKickedWithReason);
-    interface.setMethod(
-      "fireCatchErrorWhenAppendFrame",
-      this._fireCatchErrorWhenAppendFrame,
-    );
-    interface.setMethod("fireMagixEvent", this._fireMagixEvent);
-    interface.setMethod("fireHighFrequencyEvent", this._fireHighFrequencyEvent);
+    Map methods = <String, Function>{
+      "fireRoomStateChanged": _fireRoomStateChanged,
+      "firePhaseChanged": _firePhaseChanged,
+      "fireDisconnectWithError": _fireDisconnectWithError,
+      "fireCanUndoStepsUpdate": _fireCanUndoStepsUpdate,
+      "fireCanRedoStepsUpdate": _fireCanRedoStepsUpdate,
+      "fireCatchErrorWhenAppendFrame": _fireCatchErrorWhenAppendFrame,
+      "fireKickedWithReason": _fireKickedWithReason,
+      "fireMagixEvent": _fireMagixEvent,
+      "fireHighFrequencyEvent": _fireHighFrequencyEvent,
+    };
+    methods.forEach((key, value) => interface.setMethod(key, value));
     return interface;
   }
 
@@ -528,7 +532,6 @@ class WhiteRoom extends WhiteDisplayer {
     onRoomError?.call(value);
   }
 
-  // TODO Support Custom Event
   _fireMagixEvent(value) {
     print(value);
   }
@@ -572,7 +575,7 @@ class WhiteRoom extends WhiteDisplayer {
   Future<List<RoomMember>> getRoomMembers() {
     var completer = Completer<List<RoomMember>>();
     dsBridge.callHandler("room.getRoomMembers", [], ([value]) {
-      var members = (json.decode(value) as List)
+      var members = (jsonDecode(value) as List)
           .map((jsonMap) => RoomMember.fromJson(jsonMap))
           .toList();
       completer.complete(members);
@@ -779,7 +782,7 @@ class WhiteRoom extends WhiteDisplayer {
   /// 3. 如果上一级目录中，dirA 后没有场景目录，当前上一级目录，也不存在任何场景；
   /// 则查看是否 dirA 前面是否存在场景目录 dirC，选择 dir C 中的第一顺位场景
   /// 4. 以上都不满足，则继续向上递归执行该逻辑。
-  removeScenes(String dirOrPath) {
+  void removeScenes(String dirOrPath) {
     dsBridge.callHandler("room.removeScenes", [dirOrPath]);
   }
 
