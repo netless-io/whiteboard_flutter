@@ -1,4 +1,4 @@
-import 'types.dart';
+import 'appliance.dart';
 
 class MemberState {
   List<int>? strokeColor;

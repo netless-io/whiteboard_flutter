@@ -1,4 +1,4 @@
-import 'types.dart';
+import 'room_state.dart';
 
 class BroadcastState {
   late String mode;

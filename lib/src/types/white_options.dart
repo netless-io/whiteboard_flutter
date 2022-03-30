@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'dart:ui';
 
-import 'package:whiteboard_sdk_flutter/src/types/version.dart';
-
 import 'types.dart';
 
 class RenderEngineType {

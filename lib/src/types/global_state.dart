@@ -1,5 +1,3 @@
-import 'package:whiteboard_sdk_flutter/src/types/page_state.dart';
-
 import 'types.dart';
 
 class DisplayerState {

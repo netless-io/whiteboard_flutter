@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:whiteboard_sdk_flutter/src/types/windows.dart';
 
 import 'types.dart';
 

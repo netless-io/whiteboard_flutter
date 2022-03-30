@@ -7,6 +7,7 @@ export 'camera.dart';
 export 'global_state.dart';
 export 'image.dart';
 export 'member_state.dart';
+export 'page_state.dart';
 export 'ppt_params.dart';
 export 'region.dart';
 export 'replay_options.dart';

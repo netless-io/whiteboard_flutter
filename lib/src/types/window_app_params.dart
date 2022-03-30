@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:whiteboard_sdk_flutter/src/types/scene.dart';
+import 'scene.dart';
 
 class WindowAppParams {
   static const String kindDocsViewer = "DocsViewer";

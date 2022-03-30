@@ -1,4 +1,4 @@
-import 'types.dart';
+import 'animation_mode.dart';
 
 class ScaleMode {
   /// （默认）基于设置的 `scale` 缩放视角边界。

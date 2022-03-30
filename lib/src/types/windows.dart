@@ -56,4 +56,3 @@ class WindowParams {
     }..removeWhere((key, value) => value == null);
   }
 }
-

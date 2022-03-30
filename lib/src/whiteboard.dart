@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'package:whiteboard_sdk_flutter/src/bridge_webview.dart';
+import 'package:flutter/widgets.dart';
 
 import 'bridge.dart';
 import 'bridge_inapp_webview.dart';
+import 'bridge_webview.dart';
 import 'types/types.dart';
 
 class WhiteboardView extends StatelessWidget {

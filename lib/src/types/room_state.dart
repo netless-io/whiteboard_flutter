@@ -1,4 +1,4 @@
-import 'types.dart';
+import 'member_state.dart';
 
 class RoomMember {
   int memberId;

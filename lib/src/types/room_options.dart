@@ -1,9 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 
 import 'types.dart';
-import 'windows.dart';
 
 @immutable
 class RoomOptions {
