@@ -12,6 +12,31 @@ var paint = Paint()
   ..strokeCap = StrokeCap.round
   ..strokeWidth = 5.0;
 ```
+#### AVOID using Completer directly.
+```dart
+/// bad
+Future<bool> fileContainsBear(String path) {
+  var completer = Completer<bool>();
+
+  File(path).readAsString().then((contents) {
+    completer.complete(contents.contains('bear'));
+  });
+
+  return completer.future;
+}
+
+/// good
+Future<bool> fileContainsBear(String path) {
+  return File(path).readAsString().then((contents) {
+    return contents.contains('bear');
+  });
+}
+
+Future<bool> fileContainsBear(String path) async {
+  var contents = await File(path).readAsString();
+  return contents.contains('bear');
+}
+```
 ### Function
 ```dart
 void doStuff({
@@ -26,7 +51,7 @@ void doStuff({
   print('gifts: $gifts');
 }
 ```
-### Classes
+### Class
 #### Redirecting constructors
 ```dart
 class Point {
@@ -49,6 +74,13 @@ class ImmutablePoint {
   const ImmutablePoint(this.x, this.y);
 }
 ```
+#### CONSIDER declaring multiple classes in the same library.
+It’s perfectly fine for a single library to contain multiple classes, top level variables, and functions if they all logically belong together.
+
+### Comments
+行注释使用 //
+变量及行数类注释使用 ///
+
 ## Project
 ### enum 类型 json 处理
 参考官网例子
