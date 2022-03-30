@@ -1,7 +1,7 @@
 class WhiteBoardPpt {
   final String src;
-  final int width;
-  final int height;
+  final num width;
+  final num height;
   final String? previewURL;
 
   WhiteBoardPpt({

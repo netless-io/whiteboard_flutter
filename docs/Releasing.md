@@ -15,6 +15,9 @@ Cutting a Release
     ```
 3. Update versions:
    ```
+   sed -i "" -r \
+   "s/^(.*const String flutterWhiteSdkVersion = )(.*)(;.*)/\1\"${RELEASE_VERSION}\"\3/" \
+   lib/src/types/version.dart
    sed -i "" \
    "s/version: .*/version: $RELEASE_VERSION/g" \
    "pubspec.yaml"

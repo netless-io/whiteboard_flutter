@@ -1,3 +1,5 @@
+import 'package:whiteboard_sdk_flutter/src/types/page_state.dart';
+
 import 'types.dart';
 
 class DisplayerState {
@@ -5,6 +7,8 @@ class DisplayerState {
   WhiteBoardSceneState? sceneState;
   CameraConfig? cameraState;
   List<RoomMember>? roomMembers;
+  String? windowBoxState;
+  PageState? pageState;
 
   var globalStateParser;
 
@@ -27,6 +31,9 @@ class ReplayState extends DisplayerState {
         .toList();
     cameraState = CameraConfig.fromJson(json["cameraState"]);
     sceneState = WhiteBoardSceneState.fromJson(json["sceneState"]);
+    windowBoxState = json["windowBoxState"];
+    if (json["pageState"] != null)
+      pageState = PageState.fromJson(json["pageState"]);
     globalState = parseGlobalState(json['globalState']);
   }
 
@@ -36,6 +43,8 @@ class ReplayState extends DisplayerState {
         "cameraState": cameraState?.toJson(),
         "globalState": globalState?.toJson(),
         "sceneState": sceneState?.toJson(),
+        "windowBoxState": windowBoxState,
+        "pageState": pageState?.toJson(),
       }..removeWhere((key, value) => value == null);
 }
 
@@ -53,6 +62,9 @@ class RoomState extends DisplayerState {
         .toList();
     cameraState = CameraConfig.fromJson(json["cameraState"]);
     sceneState = WhiteBoardSceneState.fromJson(json["sceneState"]);
+    windowBoxState = json["windowBoxState"];
+    if (json["pageState"] != null)
+      pageState = PageState.fromJson(json["pageState"]);
     globalState = parseGlobalState(json["globalState"] ?? {});
   }
 
@@ -64,6 +76,8 @@ class RoomState extends DisplayerState {
         "cameraState": cameraState?.toJson(),
         "globalState": globalState?.toJson(),
         "sceneState": sceneState?.toJson(),
+        "windowBoxState": windowBoxState,
+        "pageState": pageState?.toJson(),
       }..removeWhere((key, value) => value == null);
 }
 

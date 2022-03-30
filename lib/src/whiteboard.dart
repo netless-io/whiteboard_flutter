@@ -89,35 +89,6 @@ class WhiteSdk {
   final DsBridge dsBridge;
   final WhiteOptions options;
 
-  Future<WhiteReplay> joinReplay({
-    required ReplayOptions options,
-    PlayerStateChangedCallback? onPlayerStateChanged,
-    PlayerPhaseChangedCallback? onPlayerPhaseChanged,
-    FirstFrameLoadedCallback? onLoadFirstFrame,
-    ScheduleTimeChangedCallback? onScheduleTimeChanged,
-    PlaybackErrorCallback? onPlaybackError,
-  }) {
-    var completer = Completer<WhiteReplay>();
-    dsBridge.callHandler("sdk.replayRoom", [options.toJson()], ([value]) {
-      var replay = WhiteReplay(
-        dsBridge: dsBridge,
-        params: options,
-        onLoadFirstFrame: onLoadFirstFrame,
-        onPlayerPhaseChanged: onPlayerPhaseChanged,
-        onPlayerStateChanged: onPlayerStateChanged,
-        onPlaybackError: onPlaybackError,
-        onScheduleTimeChanged: onScheduleTimeChanged,
-      );
-      try {
-        replay.initTimeInfo(jsonDecode(value));
-        completer.complete(replay);
-      } catch (e) {
-        completer.completeError(e);
-      }
-    });
-    return completer.future;
-  }
-
   WhiteSdk({
     required this.options,
     required this.dsBridge,
@@ -159,6 +130,49 @@ class WhiteSdk {
     return completer.future;
   }
 
+  Future<WhiteReplay> joinReplay({
+    required ReplayOptions options,
+    PlayerStateChangedCallback? onPlayerStateChanged,
+    PlayerPhaseChangedCallback? onPlayerPhaseChanged,
+    FirstFrameLoadedCallback? onLoadFirstFrame,
+    ScheduleTimeChangedCallback? onScheduleTimeChanged,
+    PlaybackErrorCallback? onPlaybackError,
+  }) {
+    var completer = Completer<WhiteReplay>();
+    dsBridge.callHandler("sdk.replayRoom", [options.toJson()], ([value]) {
+      var replay = WhiteReplay(
+        dsBridge: dsBridge,
+        params: options,
+        onLoadFirstFrame: onLoadFirstFrame,
+        onPlayerPhaseChanged: onPlayerPhaseChanged,
+        onPlayerStateChanged: onPlayerStateChanged,
+        onPlaybackError: onPlaybackError,
+        onScheduleTimeChanged: onScheduleTimeChanged,
+      );
+      try {
+        replay.initTimeInfo(jsonDecode(value));
+        completer.complete(replay);
+      } catch (e) {
+        completer.completeError(e);
+      }
+    });
+    return completer.future;
+  }
+
+  String get version => flutterWhiteSdkVersion;
+
+  Future<bool> registerApp(WindowRegisterAppParams params) {
+    var completer = Completer<bool>();
+    dsBridge.callHandler("sdk.registerApp", [params.toJson()], ([value]) {
+      if (value == null) {
+        completer.complete(true);
+      } else {
+        completer.completeError(value);
+      }
+    });
+    return completer.future;
+  }
+
   setBackgroundColor(Color? color) {
     if (color == null) {
       return;
@@ -182,7 +196,7 @@ class WhiteDisplayer {
 
   WhiteDisplayer(this.dsBridge);
 
-  scalePptToFit(String mode) {
+  scalePptToFit([String mode = AnimationMode.Continuous]) {
     dsBridge.callHandler("displayer.scalePptToFit", [mode]);
   }
 
@@ -191,7 +205,7 @@ class WhiteDisplayer {
   }
 
   postIframeMessage(dynamic object) {
-    dsBridge.callHandler("displayer.postMessage", [jsonEncode(object)]);
+    dsBridge.callHandler("displayer.postMessage", [object]);
   }
 
   moveCamera(CameraConfig config) {
@@ -218,15 +232,6 @@ class WhiteDisplayer {
     dsBridge.callHandler("displayer.setDisableCameraTransform", [disable]);
   }
 
-  Future<bool> getDisableCameraTransform() async {
-    var value = dsBridge.callHandler(
-      "displayer.getDisableCameraTransform",
-      [],
-      null,
-    );
-    return value == 'true';
-  }
-
   void setCameraBound(CameraBound cameraBound) {
     dsBridge.callHandler("displayer.setCameraBound", [cameraBound.toJson()]);
   }
@@ -250,7 +255,6 @@ class WhiteDisplayer {
 
   Future<Map<String, List<Scene>>> getEntireScenes(String path) {
     var completer = Completer<Map<String, List<Scene>>>();
-
     dsBridge.callHandler("displayer.entireScenes", [path], ([value]) {
       var data = (jsonDecode(value) as Map).map((k, v) {
         var scenes = (v as List).map((e) => Scene.fromJson(e)).toList();
@@ -258,7 +262,6 @@ class WhiteDisplayer {
       });
       completer.complete(data);
     });
-
     return completer.future;
   }
 }
@@ -292,7 +295,9 @@ class WhiteReplay extends WhiteDisplayer {
 
   ReplayTimeInfo replayTimeInfo = ReplayTimeInfo();
   String phase = WhiteBoardPlayerPhase.WaitingFirstFrame;
-  int currentTime = 0;
+  int scheduleTime = 0;
+  int timeDuration = 0;
+  int beginTimestamp = 0;
 
   PlayerPhaseChangedCallback? onPlayerPhaseChanged;
   ScheduleTimeChangedCallback? onScheduleTimeChanged;
@@ -308,7 +313,9 @@ class WhiteReplay extends WhiteDisplayer {
     this.onLoadFirstFrame,
     this.onScheduleTimeChanged,
     this.onPlaybackError,
-  }) : super(dsBridge) {
+  })  : beginTimestamp = params.beginTimestamp,
+        timeDuration = params.duration ?? 0,
+        super(dsBridge) {
     dsBridge.addJavascriptObject(this.createPlayerInterface());
   }
 
@@ -346,7 +353,7 @@ class WhiteReplay extends WhiteDisplayer {
   }
 
   _onScheduleTimeChanged(value) {
-    currentTime = value;
+    scheduleTime = value;
     onScheduleTimeChanged?.call(value);
   }
 
@@ -394,7 +401,7 @@ class WhiteReplay extends WhiteDisplayer {
   }
 
   seekToScheduleTime(double beginTime) {
-    currentTime = beginTime.toInt();
+    scheduleTime = beginTime.toInt();
     dsBridge.callHandler("player.seekToScheduleTime", [beginTime]);
   }
 
@@ -407,32 +414,58 @@ class WhiteReplay extends WhiteDisplayer {
     dsBridge.callHandler("player.setPlaybackSpeed", [rate]);
   }
 
-  Future<double> get playbackSpeed async {
-    var value = await dsBridge.callHandler("player.state.playbackSpeed");
-    return double.tryParse(value!) ?? 0;
+  Future<double> get playbackSpeed {
+    var completer = Completer<double>();
+    dsBridge.callHandler("player.state.playbackSpeed", [], ([value]) {
+      completer.complete(double.tryParse(value!) ?? 0);
+    });
+    return completer.future;
   }
 
   FutureOr<String?> get roomUUID {
     return dsBridge.callHandler("player.state.roomUUID");
   }
 
-  FutureOr<String?> getPhase() {
-    return dsBridge.callHandler("player.state.phase");
+  Future<String> getPhase() {
+    var completer = Completer<String>();
+    dsBridge.callHandler("player.state.phase", [], ([value]) {
+      try {
+        completer.complete(value);
+      } catch (e) {
+        // ignore
+      }
+    });
+    return completer.future;
   }
 
-  Future<ReplayState> get playerState async {
-    var value = await dsBridge.callHandler("player.state.playerState");
-    return ReplayState()..fromJson(jsonDecode(value!));
+  Future<ReplayState> get playerState {
+    var completer = Completer<ReplayState>();
+    dsBridge.callHandler("player.state.playerState", [], ([value]) {
+      var replayState = ReplayState()..fromJson(jsonDecode(value!));
+      completer.complete(replayState);
+    });
+    return completer.future;
   }
 
-  Future<bool> get isPlayable async {
-    var value = await dsBridge.callHandler("player.state.isPlayable");
-    return value == 'true';
+  Future<bool> get isPlayable {
+    var completer = Completer<bool>();
+    dsBridge.callHandler("player.state.isPlayable", [], ([value]) {
+      completer.complete(value == 'true');
+    });
+    return completer.future;
   }
 
-  Future<ReplayTimeInfo> get timeInfo async {
-    var value = await dsBridge.callHandler("player.state.timeInfo");
-    return ReplayTimeInfo.fromJson(jsonDecode(value!));
+  Future<ReplayTimeInfo> get timeInfo {
+    var completer = Completer<ReplayTimeInfo>();
+    dsBridge.callHandler("player.state.timeInfo", [], ([_]) {
+      var timeInfo = ReplayTimeInfo(
+        scheduleTime: scheduleTime,
+        timeDuration: timeDuration,
+        beginTimestamp: beginTimestamp,
+      );
+      completer.complete(timeInfo);
+    });
+    return completer.future;
   }
 }
 
@@ -596,10 +629,12 @@ class WhiteRoom extends WhiteDisplayer {
     return completer.future;
   }
 
+  /// 获取本地缓存的房间状态
   RoomState getRoomStateNative() {
     return state;
   }
 
+  /// 异步获取最新房间状态
   Future<RoomState> getRoomState() {
     var completer = Completer<RoomState>();
     dsBridge.callHandler("room.state.getRoomState", [], ([value]) {
@@ -634,17 +669,51 @@ class WhiteRoom extends WhiteDisplayer {
     return completer.future;
   }
 
+  /// 允许/禁止白板响应用户任何操作。
+  /// <p>
+  /// 该方法设置是否禁止白板响应用户的操作，包括：
+  /// - `CameraTransform`：移动、缩放视角。
+  /// - `DeviceInputs`：使用白板工具输入。
+  ///
+  /// @param value 允许/禁止白板响应用户任何操作。
+  ///                          - `true`：不响应用户操作。
+  ///                          - `false`：（默认）响应用户操作。
   set disableOperations(bool value) {
     disableCameraTransform = value;
     disableDeviceInputs = value;
   }
 
+  /// 禁止/允许用户调整（移动或缩放）视角。
+  ///
+  /// @since 2.2.0
+  ///
+  /// @param value 是否禁止用户调整视角：
+  ///                               - `true`：禁止用户调整视角。
+  ///                               - `false`：（默认）允许用户调整视角。
   set disableCameraTransform(bool value) {
     dsBridge.callHandler("room.disableCameraTransform", [value]);
   }
 
+  /// 禁止/允许用户操作白板工具。
+  ///
+  /// @since 2.2.0
+  ///
+  /// @param value 是否禁止用户操作白板工具：
+  ///                          - `true`：禁止用户操作白板工具操作。
+  ///                          - `false`：（默认）允许用户操作白板工具输入操作。
   set disableDeviceInputs(bool value) {
     dsBridge.callHandler("room.disableDeviceInputs", [value]);
+  }
+
+  /// 禁止/允许窗口操作。
+  ///
+  /// @since 2.2.0
+  ///
+  /// @param value 是否禁止窗口操作：
+  ///                          - `true`：禁止窗口操作。
+  ///                          - `false`：（默认）允许窗口操作。
+  set disableWindowOperation(bool value) {
+    dsBridge.callHandler("room.disableWindowOperation", [value]);
   }
 
   void disableEraseImage(bool value) {
@@ -670,6 +739,12 @@ class WhiteRoom extends WhiteDisplayer {
   Future<bool> setWritable(bool writable) {
     var completer = Completer<bool>();
     dsBridge.callHandler("room.setWritable", [writable], ([value]) {
+      var jsonMap = jsonDecode(value);
+      if (jsonMap["__error"] != null) {
+        completer.completeError(jsonMap);
+        return;
+      }
+
       bool isWritable = jsonDecode(value)['isWritable'];
       int observerId = jsonDecode(value)['observerId'];
 
@@ -697,14 +772,37 @@ class WhiteRoom extends WhiteDisplayer {
     dsBridge.callHandler("ppt.previousStep");
   }
 
+  addPage([Scene? scene, bool after = false]) {
+    var params = AddPageParams(scene: scene, after: after);
+    dsBridge.callHandler("room.addPage", [params.toJson()]);
+  }
+
+  Future<bool> nextPage() {
+    var completer = Completer<bool>();
+    dsBridge.callHandler("room.nextPage", [], ([value]) {
+      completer.complete(value);
+    });
+    return completer.future;
+  }
+
+  Future<bool> prevPage() {
+    var completer = Completer<bool>();
+    dsBridge.callHandler("room.prevPage", [], ([value]) {
+      completer.complete(value);
+    });
+    return completer.future;
+  }
+
   Future<Map<String, dynamic>> putScenes(
       String dir, List<Scene> scene, int index) {
     var completer = Completer<Map<String, dynamic>>();
     dsBridge.callHandler(
-        "room.putScenes", [dir, scene.map((e) => e.toJson()).toList(), index], (
-            [value]) {
-      completer.complete(jsonDecode(value));
-    });
+      "room.putScenes",
+      [dir, scene.map((e) => e.toJson()).toList(), index],
+      ([value]) {
+        completer.complete(jsonDecode(value));
+      },
+    );
     return completer.future;
   }
 
@@ -742,7 +840,7 @@ class WhiteRoom extends WhiteDisplayer {
   /// @param promise `Promise<Boolean>` 接口，详见 {@link Promise<> Promise<T>}。你可以通过该接口获取 `setSceneIndex` 的调用结果：
   ///                - 如果方法调用成功，则返回 `true`.
   ///                - 如果方法调用失败，则返回错误信息。
-  Future<bool> setSceneIndex(int index) async {
+  Future<bool> setSceneIndex(int index) {
     var completer = Completer<bool>();
     dsBridge.callHandler("room.setSceneIndex", [index], ([value]) {
       var jsonMap = jsonDecode(value);
@@ -843,6 +941,11 @@ class WhiteRoom extends WhiteDisplayer {
         .join();
   }
 
+  /// 插入文字
+  void insertText(int x, int y, String text) {
+    dsBridge.callHandler("room.insertText", [x, y, text]);
+  }
+
   /// 开启/禁止本地序列化。
   /// @param disable 是否禁止本地序列化：
   ///                - `true`：（默认）禁止开启本地序列化；
@@ -912,6 +1015,16 @@ class WhiteRoom extends WhiteDisplayer {
   Future<num> getZoomScale() {
     var completer = Completer<num>();
     dsBridge.callHandler("room.getZoomScale", [], ([value]) {
+      completer.complete(value);
+    });
+    return completer.future;
+  }
+
+  Future<String> addApp(WindowAppParams appParam) {
+    var completer = Completer<String>();
+    dsBridge.callHandler(
+        "room.addApp", [appParam.kind, appParam.options, appParam.attributes], (
+            [value]) {
       completer.complete(value);
     });
     return completer.future;

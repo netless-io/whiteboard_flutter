@@ -33,7 +33,6 @@ Widget build(BuildContext context) {
         options: WhiteOptions(
             appIdentifier: APP_ID,
             log: true,
-            backgroundColor: Color(0xFFF9F4E7),
         ),
         onSdkCreated: (sdk) async {
             // use sdk to join room
@@ -58,7 +57,7 @@ Widget build(BuildContext context) {
 ### Replay
 1. Init whiteboard using `WhiteSdkOptions`, `WhiteSdk` can be fetch on `onSdkCreated`
 2. call `WhiteSdk.joinReplay` using `ReplayOptions` to fetch `WhiteReplay`
-3. `WhiteReplay` is a controller to Record-Whitebarod
+3. `WhiteReplay` is a controller to Record-Whiteboard
 
 ```dart
 Widget build(BuildContext context) {

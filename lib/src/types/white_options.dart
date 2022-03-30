@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'dart:ui';
+
+import 'package:whiteboard_sdk_flutter/src/types/version.dart';
 
 import 'types.dart';
 
@@ -16,8 +19,31 @@ class DeviceType {
 }
 
 class WhiteOptions {
+  WhiteOptions({
+    required this.appIdentifier,
+    this.useMultiViews = false,
+    this.log = true,
+    this.backgroundColor,
+    this.region = Region.cn_hz,
+    this.deviceType = DeviceType.touch,
+    this.renderEngine = RenderEngineType.canvas,
+    this.enableInterrupterAPI = false,
+    this.preloadDynamicPPT = false,
+    this.routeBackup = false,
+    this.userCursor = false,
+    this.onlyCallbackRemoteStateModify = false,
+    this.disableDeviceInputs = false,
+    this.enableIFramePlugin = false,
+    this.enableRtcIntercept = false,
+    this.enableImgErrorCallback = false,
+    this.fonts = const <String, String>{},
+    this.nativeTags = const <String, String>{},
+    PptParams? pptParams,
+  }) : this.pptParams = pptParams ?? PptParams();
+
   final String appIdentifier;
   final String region;
+  final bool useMultiViews;
   final String deviceType;
   final String renderEngine;
   final Color? backgroundColor;
@@ -34,29 +60,11 @@ class WhiteOptions {
 
   final PptParams pptParams;
   final Map<String, String> fonts;
-
-  WhiteOptions({
-    required this.appIdentifier,
-    this.log = true,
-    this.backgroundColor,
-    this.region = Region.cn_hz,
-    this.deviceType = DeviceType.touch,
-    this.renderEngine = RenderEngineType.canvas,
-    this.enableInterrupterAPI = false,
-    this.preloadDynamicPPT = false,
-    this.routeBackup = false,
-    this.userCursor = false,
-    this.onlyCallbackRemoteStateModify = false,
-    this.disableDeviceInputs = false,
-    this.enableIFramePlugin = false,
-    this.enableRtcIntercept = false,
-    this.enableImgErrorCallback = false,
-    this.fonts = const <String, String>{},
-    PptParams? pptParams,
-  }) : this.pptParams = pptParams ?? PptParams();
+  final Map<String, String> nativeTags;
 
   Map<String, dynamic> toJson() => <String, dynamic>{
         "appIdentifier": appIdentifier,
+        "useMultiViews": useMultiViews,
         "region": region,
         "deviceType": deviceType,
         "renderEngine": renderEngine,
@@ -72,5 +80,10 @@ class WhiteOptions {
         "pptParams": pptParams,
         "fonts": fonts,
         "log": log,
+        "__nativeTags": jsonEncode({
+          "nativeVersion": flutterWhiteSdkVersion,
+          "platform": "flutter",
+          ...nativeTags,
+        }),
       }..removeWhere((key, value) => value == null);
 }

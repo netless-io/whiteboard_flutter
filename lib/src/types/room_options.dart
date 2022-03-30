@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import 'types.dart';
+import 'windows.dart';
 
 @immutable
 class RoomOptions {
@@ -40,10 +41,16 @@ class RoomOptions {
   /// 关闭笔锋效果
   final bool disableNewPencil;
 
+  /// 获取自定义用户信息。
   final dynamic userPayload;
 
-  /// 关闭笔锋效果。
-  /// 用户配置
+  /// 多窗口属性
+  final WindowParams? windowParams;
+
+  /// 是否关闭 ``insertText`` 与 ``updateText`` 操作权限
+  final bool disableTextOperations;
+
+  /// 实时房间的参数
   RoomOptions({
     required this.uuid,
     required this.roomToken,
@@ -58,7 +65,9 @@ class RoomOptions {
     this.disableCameraTransform = false,
     this.disableBezier = false,
     this.disableNewPencil = false,
+    this.disableTextOperations = false,
     this.userPayload,
+    this.windowParams,
   });
 
   Map<String, dynamic> toJson() {
@@ -76,7 +85,8 @@ class RoomOptions {
       "disableCameraTransform": disableCameraTransform,
       "disableBezier": disableBezier,
       "disableNewPencil": disableNewPencil,
-      if (userPayload != null) "userPayload": jsonEncode(userPayload),
+      if (userPayload != null) "userPayload": userPayload,
+      if (windowParams != null) "windowParams": windowParams,
     }..removeWhere((key, value) => value == null);
   }
 }

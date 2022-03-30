@@ -28,6 +28,7 @@ abstract class DsBridge {
   int callID = 0;
   Map<int, OnReturnValue> handlerMap = <int, OnReturnValue>{};
 
+  // TODO: 迁移遗留，暂保留未使用
   List<CallInfo>? callInfoList;
   late InnerJavascriptInterface javascriptInterface;
 
@@ -71,7 +72,6 @@ abstract class DsBridge {
       handlerMap[callInfo.callbackId] = handler;
     }
     if (callInfoList != null) {
-      // TODO: 暂未使用
       callInfoList!.add(callInfo);
       return null;
     } else {
