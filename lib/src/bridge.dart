@@ -8,7 +8,7 @@ typedef OnReturnValue<T> = void Function([T returnValue]);
 
 class JavaScriptNamespaceInterface {
   String namespace;
-  Map<String, Function> methods = Map<String, Function>();
+  Map<String, Function> methods = {};
 
   JavaScriptNamespaceInterface([this.namespace = ""]);
 

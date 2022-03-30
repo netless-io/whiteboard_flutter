@@ -240,7 +240,7 @@ class OperatingViewState extends State<OperatingView> {
         showHint("ViewMode ${state.mode}");
       }),
       OpListItem("Move Camera", Category.Interaction, () {
-        var config = CameraConfig(centerX: 100);
+        var config = CameraConfig(centerX: _randomInRange(-100, 100));
         room.moveCamera(config);
       }),
       OpListItem("Move Camera By Rectangle", Category.Interaction, () {
@@ -365,10 +365,10 @@ class OperatingViewState extends State<OperatingView> {
         allOpList.where((elem) => elem.category == Category.Appliance).toList();
   }
 
-  int _random() {
-    Random random = new Random();
-    int randomNumber = random.nextInt(100); // from 0 upto 99 included
-    return randomNumber;
+  var random = new Random();
+
+  int _randomInRange(int from, int to) {
+    return random.nextInt(to - from) + from;
   }
 
   Widget _buildOpListItem(BuildContext context, int index) {

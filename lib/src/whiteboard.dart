@@ -50,7 +50,7 @@ class WhiteboardView extends StatelessWidget {
 
   JavaScriptNamespaceInterface createSDKInterface() {
     var interface = JavaScriptNamespaceInterface("sdk");
-    Map methods = <String, Function>{
+    var methods = <String, Function>{
       "onPPTMediaPlay": _onPPTMediaPlay,
       "onPPTMediaPause": _onPPTMediaPause,
       "throwError": _onThrowMessage,
@@ -173,7 +173,7 @@ class WhiteSdk {
     return completer.future;
   }
 
-  setBackgroundColor(Color? color) {
+  void setBackgroundColor(Color? color) {
     if (color == null) {
       return;
     }
@@ -321,7 +321,7 @@ class WhiteReplay extends WhiteDisplayer {
 
   JavaScriptNamespaceInterface createPlayerInterface() {
     var interface = JavaScriptNamespaceInterface("player");
-    Map methods = <String, Function>{
+    var methods = <String, Function>{
       "onPhaseChanged": _onPhaseChanged,
       "onPlayerStateChanged": _onPlayerStateChanged,
       "onLoadFirstFrame": _onLoadFirstFrame,
@@ -503,12 +503,12 @@ class WhiteRoom extends WhiteDisplayer {
     this.onRoomKicked,
     this.onRoomError,
   }) : super(dsBridge) {
-    dsBridge.addJavascriptObject(this.createRoomInterface());
+    dsBridge.addJavascriptObject(createRoomInterface());
   }
 
   JavaScriptNamespaceInterface createRoomInterface() {
     var interface = JavaScriptNamespaceInterface("room");
-    Map methods = <String, Function>{
+    var methods = <String, Function>{
       "fireRoomStateChanged": _fireRoomStateChanged,
       "firePhaseChanged": _firePhaseChanged,
       "fireDisconnectWithError": _fireDisconnectWithError,
@@ -523,7 +523,7 @@ class WhiteRoom extends WhiteDisplayer {
     return interface;
   }
 
-  _firePhaseChanged(String value) {
+  void _firePhaseChanged(String value) {
     phase.value = value;
     onRoomPhaseChanged?.call(value);
   }
@@ -550,26 +550,26 @@ class WhiteRoom extends WhiteDisplayer {
     }
   }
 
-  _fireDisconnectWithError(value) {
+  void _fireDisconnectWithError(value) {
     print(value);
     onRoomDisconnected?.call(value);
   }
 
-  _fireKickedWithReason(value) {
+  void _fireKickedWithReason(value) {
     print(value);
     onRoomKicked?.call(value);
   }
 
-  _fireCatchErrorWhenAppendFrame(value) {
+  void _fireCatchErrorWhenAppendFrame(value) {
     print(value);
     onRoomError?.call(value);
   }
 
-  _fireMagixEvent(value) {
+  void _fireMagixEvent(value) {
     print(value);
   }
 
-  _fireHighFrequencyEvent(value) {
+  void _fireHighFrequencyEvent(value) {
     print(value);
   }
 
@@ -577,11 +577,11 @@ class WhiteRoom extends WhiteDisplayer {
     return disconnectedBySelf;
   }
 
-  _initRoomState(Map<String, dynamic> json) {
+  void _initRoomState(Map<String, dynamic> json) {
     state = RoomState()..fromJson(json["state"]);
   }
 
-  setGlobalState(GlobalState modifyState) {
+  void setGlobalState(GlobalState modifyState) {
     dsBridge.callHandler("room.setGlobalState", [modifyState.toJson()]);
   }
 
@@ -593,7 +593,7 @@ class WhiteRoom extends WhiteDisplayer {
     return completer.future;
   }
 
-  setMemberState(MemberState state) {
+  void setMemberState(MemberState state) {
     dsBridge.callHandler('room.setMemberState', [state.toJson()]);
   }
 
@@ -764,15 +764,15 @@ class WhiteRoom extends WhiteDisplayer {
     return completer.future;
   }
 
-  pptNextStep() {
+  void pptNextStep() {
     dsBridge.callHandler("ppt.nextStep");
   }
 
-  pptPreviousStep() {
+  void pptPreviousStep() {
     dsBridge.callHandler("ppt.previousStep");
   }
 
-  addPage([Scene? scene, bool after = false]) {
+  void addPage([Scene? scene, bool after = false]) {
     var params = AddPageParams(scene: scene, after: after);
     dsBridge.callHandler("room.addPage", [params.toJson()]);
   }

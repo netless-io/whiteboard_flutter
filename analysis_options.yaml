@@ -1,0 +1,20 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  exclude: [ build/**, example/** ]
+  language:
+    strict-raw-types: true
+    strict-inference: true
+
+linter:
+  rules:
+    - always_declare_return_types
+    - cancel_subscriptions
+    - close_sinks
+    - comment_references
+    - depend_on_referenced_packages
+    - library_private_types_in_public_api
+    - one_member_abstracts
+    - only_throw_errors
+
+# reference [https://dart.dev/guides/language/analysis-options#enabling-linter-rules]
