@@ -11,7 +11,7 @@ class WindowRegisterAppParams {
     required String kind,
     required String javascriptString,
     required String variable,
-    appOptions,
+    Map<String, Object>? appOptions,
   }) : this(
           javascriptString: javascriptString,
           variable: variable,
@@ -22,7 +22,7 @@ class WindowRegisterAppParams {
   WindowRegisterAppParams.remoteJs({
     required String url,
     required String kind,
-    appOptions,
+    Map<String, Object>? appOptions,
   }) : this(
           kind: kind,
           url: url,

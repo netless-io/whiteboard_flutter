@@ -8,14 +8,14 @@ class DisplayerState {
   String? windowBoxState;
   PageState? pageState;
 
-  var globalStateParser;
+  GlobalStateParser<dynamic>? globalStateParser;
 
   void setCustomGlobalStateParser<T>(GlobalStateParser<T> parser) {
-    this.globalStateParser = parser;
+    globalStateParser = parser;
   }
 
-  parseGlobalState(Map<String, dynamic> state) {
-    return globalStateParser != null ? globalStateParser(state) : null;
+  dynamic parseGlobalState(Map<String, dynamic> state) {
+    return globalStateParser != null ? globalStateParser!(state) : null;
   }
 }
 
@@ -30,8 +30,9 @@ class ReplayState extends DisplayerState {
     cameraState = CameraConfig.fromJson(json["cameraState"]);
     sceneState = WhiteBoardSceneState.fromJson(json["sceneState"]);
     windowBoxState = json["windowBoxState"];
-    if (json["pageState"] != null)
+    if (json["pageState"] != null) {
       pageState = PageState.fromJson(json["pageState"]);
+    }
     globalState = parseGlobalState(json['globalState']);
   }
 
@@ -61,8 +62,9 @@ class RoomState extends DisplayerState {
     cameraState = CameraConfig.fromJson(json["cameraState"]);
     sceneState = WhiteBoardSceneState.fromJson(json["sceneState"]);
     windowBoxState = json["windowBoxState"];
-    if (json["pageState"] != null)
+    if (json["pageState"] != null) {
       pageState = PageState.fromJson(json["pageState"]);
+    }
     globalState = parseGlobalState(json["globalState"] ?? {});
   }
 

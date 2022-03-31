@@ -1,3 +1,5 @@
+// ignore_for_file: inference_failure_on_untyped_parameter
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
@@ -44,7 +46,7 @@ class WhiteboardView extends StatelessWidget {
   }
 
   void onDSBridgeCreated(DsBridge dsBridge) {
-    dsBridge.addJavascriptObject(this.createSDKInterface());
+    dsBridge.addJavascriptObject(createSDKInterface());
     onSdkCreated(WhiteSdk(options: options, dsBridge: dsBridge));
   }
 
@@ -61,23 +63,23 @@ class WhiteboardView extends StatelessWidget {
     return interface;
   }
 
-  _onPPTMediaPlay(value) {
+  void _onPPTMediaPlay(value) {
     print(value);
   }
 
-  _onPPTMediaPause(value) {
+  void _onPPTMediaPause(value) {
     print(value);
   }
 
-  _onThrowMessage(value) {
+  void _onThrowMessage(value) {
     print(value);
   }
 
-  _onPostMessage(value) {
+  void _onPostMessage(value) {
     print(value);
   }
 
-  _onLogger(value) {
+  void _onLogger(value) {
     print(value);
     onLogger?.call(value);
   }
@@ -190,37 +192,35 @@ class WhiteSdk {
 }
 
 class WhiteDisplayer {
-  String tag = "WhiteDisplayer";
-
   final DsBridge dsBridge;
 
   WhiteDisplayer(this.dsBridge);
 
-  scalePptToFit([String mode = AnimationMode.Continuous]) {
+  void scalePptToFit([String mode = AnimationMode.Continuous]) {
     dsBridge.callHandler("displayer.scalePptToFit", [mode]);
   }
 
-  scaleIframeToFit() {
+  void scaleIframeToFit() {
     dsBridge.callHandler("displayer.scaleIframeToFit");
   }
 
-  postIframeMessage(dynamic object) {
+  void postIframeMessage(dynamic object) {
     dsBridge.callHandler("displayer.postMessage", [object]);
   }
 
-  moveCamera(CameraConfig config) {
+  void moveCamera(CameraConfig config) {
     dsBridge.callHandler("displayer.moveCamera", [config.toJson()]);
   }
 
-  moveCameraToContainer(RectangleConfig config) {
+  void moveCameraToContainer(RectangleConfig config) {
     dsBridge.callHandler("displayer.moveCameraToContain", [config.toJson()]);
   }
 
-  refreshViewSize() {
+  void refreshViewSize() {
     dsBridge.callHandler("displayer.refreshViewSize");
   }
 
-  setBackgroundColor(Color color) {
+  void setBackgroundColor(Color color) {
     dsBridge.callHandler(
       "displayer.setBackgroundColor",
       [color.red, color.green, color.blue, color.alpha],
@@ -228,7 +228,7 @@ class WhiteDisplayer {
     );
   }
 
-  setDisableCameraTransform(bool disable) {
+  void setDisableCameraTransform(bool disable) {
     dsBridge.callHandler("displayer.setDisableCameraTransform", [disable]);
   }
 
@@ -291,7 +291,6 @@ class WhiteReplay extends WhiteDisplayer {
   String tag = "WhiteReplay";
 
   final ReplayOptions params;
-  final DsBridge dsBridge;
 
   ReplayTimeInfo replayTimeInfo = ReplayTimeInfo();
   String phase = WhiteBoardPlayerPhase.WaitingFirstFrame;
@@ -307,7 +306,7 @@ class WhiteReplay extends WhiteDisplayer {
 
   WhiteReplay({
     required this.params,
-    required this.dsBridge,
+    required DsBridge dsBridge,
     this.onPlayerPhaseChanged,
     this.onPlayerStateChanged,
     this.onLoadFirstFrame,
@@ -316,7 +315,7 @@ class WhiteReplay extends WhiteDisplayer {
   })  : beginTimestamp = params.beginTimestamp,
         timeDuration = params.duration ?? 0,
         super(dsBridge) {
-    dsBridge.addJavascriptObject(this.createPlayerInterface());
+    dsBridge.addJavascriptObject(createPlayerInterface());
   }
 
   JavaScriptNamespaceInterface createPlayerInterface() {
@@ -337,80 +336,80 @@ class WhiteReplay extends WhiteDisplayer {
     return interface;
   }
 
-  _onPhaseChanged(String value) {
+  void _onPhaseChanged(String value) {
     phase = value;
     onPlayerPhaseChanged?.call(value);
   }
 
-  _onPlayerStateChanged(String value) {
+  void _onPlayerStateChanged(String value) {
     print(value);
     onPlayerStateChanged?.call(ReplayState()..fromJson(jsonDecode(value)));
   }
 
-  _onLoadFirstFrame(value) {
+  void _onLoadFirstFrame(value) {
     print(value);
     onPlaybackError?.call(value);
   }
 
-  _onScheduleTimeChanged(value) {
+  void _onScheduleTimeChanged(value) {
     scheduleTime = value;
     onScheduleTimeChanged?.call(value);
   }
 
-  _onStoppedWithError(value) {
+  void _onStoppedWithError(value) {
     print(value);
     onPlaybackError?.call(value);
   }
 
-  _fireCatchErrorWhenAppendFrame(value) {
+  void _fireCatchErrorWhenAppendFrame(value) {
     print(value);
     onPlaybackError?.call(value);
   }
 
-  _onCatchErrorWhenRender(value) {
+  void _onCatchErrorWhenRender(value) {
     print(value);
     onPlaybackError?.call(value);
   }
 
-  _fireMagixEvent(value) {
+  void _fireMagixEvent(value) {
     print(value);
   }
 
-  _fireHighFrequencyEvent(value) {
+  void _fireHighFrequencyEvent(value) {
     print(value);
   }
 
-  _onSliceChanged(value) {
+  void _onSliceChanged(value) {
     print(value);
   }
 
-  initTimeInfo(Map<String, dynamic> json) {
+  void initTimeInfo(Map<String, dynamic> json) {
     replayTimeInfo = ReplayTimeInfo.fromJson(json["timeInfo"]);
   }
 
-  play() {
+  void play() {
     dsBridge.callHandler("player.play");
   }
 
-  stop() {
+  void stop() {
     dsBridge.callHandler("player.stop");
   }
 
-  pause() {
+  void pause() {
     dsBridge.callHandler("player.pause");
   }
 
-  seekToScheduleTime(double beginTime) {
+  void seekToScheduleTime(double beginTime) {
     scheduleTime = beginTime.toInt();
     dsBridge.callHandler("player.seekToScheduleTime", [beginTime]);
   }
 
   /// 参数限定 PlayerObserverMode
-  setObserverMode(String observerMode) {
+  void setObserverMode(String observerMode) {
     dsBridge.callHandler("player.setObserverMode", [observerMode]);
   }
 
-  setPlaybackSpeed(double rate) {
+  void setPlaybackSpeed(double rate) {
     dsBridge.callHandler("player.setPlaybackSpeed", [rate]);
   }
 
@@ -470,10 +469,9 @@ class WhiteReplay extends WhiteDisplayer {
 }
 
 class WhiteRoom extends WhiteDisplayer {
-  final RoomOptions options;
-  final DsBridge dsBridge;
+  static const String tag = "WhiteRoom";
 
-  String tag = "WhiteRoom";
+  final RoomOptions options;
 
   // TODO 状态增量同步处理
   RoomState state = RoomState();
@@ -494,7 +492,7 @@ class WhiteRoom extends WhiteDisplayer {
 
   WhiteRoom({
     required this.options,
-    required this.dsBridge,
+    required DsBridge dsBridge,
     this.onRoomStateChanged,
     this.onRoomPhaseChanged,
     this.onRoomDisconnected,
@@ -823,10 +821,11 @@ class WhiteRoom extends WhiteDisplayer {
     var completer = Completer<bool>();
     dsBridge.callHandler("room.setScenePath", [path], ([value]) {
       var jsonMap = jsonDecode(value);
-      if (jsonMap['__error'] == null)
+      if (jsonMap['__error'] == null) {
         completer.complete(true);
-      else
+      } else {
         completer.completeError(jsonMap);
+      }
     });
     return completer.future;
   }
@@ -844,10 +843,11 @@ class WhiteRoom extends WhiteDisplayer {
     var completer = Completer<bool>();
     dsBridge.callHandler("room.setSceneIndex", [index], ([value]) {
       var jsonMap = jsonDecode(value);
-      if (jsonMap['__error'] == null)
+      if (jsonMap['__error'] == null) {
         completer.complete(true);
-      else
+      } else {
         completer.completeError(jsonMap);
+      }
     });
     return completer.future;
   }
@@ -904,7 +904,7 @@ class WhiteRoom extends WhiteDisplayer {
     return completer.future;
   }
 
-  cleanScene(bool retainPPT) {
+  void cleanScene(bool retainPPT) {
     dsBridge.callHandler("room.cleanScene", [retainPPT]);
   }
 
@@ -927,7 +927,7 @@ class WhiteRoom extends WhiteDisplayer {
   }
 
   String genUuidV4() {
-    Random random = new Random();
+    Random random = Random();
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
         .runes
         .map((e) {
@@ -1003,12 +1003,12 @@ class WhiteRoom extends WhiteDisplayer {
   /// 设置远端白板画面同步延时。单位为秒。
   void setTimeDelay(int delaySec) {
     dsBridge.callHandler("room.setTimeDelay", [delaySec * 1000]);
-    this.timeDelay = delaySec;
+    timeDelay = delaySec;
   }
 
   /// 获取设置得远端白板画面同步延时。单位为秒。
   int getTimeDelay() {
-    return this.timeDelay;
+    return timeDelay;
   }
 
   /// 获取当前用户的视野缩放比例。

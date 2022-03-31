@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_initializing_formals
+
 import 'animation_mode.dart';
 
 class ScaleMode {
@@ -56,8 +58,11 @@ class ContentModeConfig {
   final num space;
   final String mode;
 
-  ContentModeConfig(
-      {this.scale = 1, this.space = 0, this.mode = ScaleMode.scale});
+  ContentModeConfig({
+    this.scale = 1,
+    this.space = 0,
+    this.mode = ScaleMode.scale,
+  });
 
   Map<String, dynamic> toJson() {
     return {
@@ -75,19 +80,13 @@ class RectangleConfig {
   final num originY;
   final String animationMode;
 
-  RectangleConfig(num width, num height, num originX, num originY,
+  RectangleConfig(this.width, this.height, this.originX, this.originY,
       [String animationMode = AnimationMode.Continuous])
-      : width = width,
-        height = height,
-        originX = originX,
-        originY = originY,
-        animationMode = animationMode;
+      : animationMode = animationMode;
 
-  RectangleConfig.fromSize(num width, num height,
+  RectangleConfig.fromSize(this.width, this.height,
       [String animationMode = AnimationMode.Continuous])
-      : width = width,
-        height = height,
-        originX = -width / 2.0,
+      : originX = -width / 2.0,
         originY = -height / 2.0,
         animationMode = animationMode;
 
@@ -124,10 +123,12 @@ class CameraBound {
     this.centerY = 0,
     this.width = 0,
     this.height = 0,
-    minScale,
-    maxScale,
-  })  : this.minContentMode = ContentModeConfig(scale: minScale),
-        this.maxContentMode = ContentModeConfig(scale: maxScale);
+    num? minScale,
+    num? maxScale,
+  })  : minContentMode =
+            minScale != null ? ContentModeConfig(scale: minScale) : null,
+        maxContentMode =
+            maxScale != null ? ContentModeConfig(scale: maxScale) : null;
 
   CameraBound.withContentModeConfig({
     this.damping = 0,

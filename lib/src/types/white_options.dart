@@ -37,7 +37,7 @@ class WhiteOptions {
     this.fonts = const <String, String>{},
     this.nativeTags = const <String, String>{},
     PptParams? pptParams,
-  }) : this.pptParams = pptParams ?? PptParams();
+  }) : pptParams = pptParams ?? PptParams();
 
   final String appIdentifier;
   final String region;

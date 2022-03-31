@@ -20,7 +20,7 @@ class DsBridgeInAppWebView extends StatefulWidget {
 }
 
 class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
-  DsBridgeInApp dsBridge = new DsBridgeInApp();
+  DsBridgeInApp dsBridge = DsBridgeInApp();
   late InAppWebViewController _controller;
 
   @override

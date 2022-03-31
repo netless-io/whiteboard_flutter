@@ -1,3 +1,5 @@
+// ignore_for_file: inference_failure_on_collection_literal
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:whiteboard_sdk_flutter/src/types/types.dart';
 

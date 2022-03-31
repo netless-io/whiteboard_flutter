@@ -352,14 +352,20 @@ class OperatingViewState extends State<OperatingView> {
         var state = MemberState(currentApplianceName: ApplianceName.text);
         room.setMemberState(state);
       }),
-      OpListItem("Shape", Category.Appliance, () {
+      OpListItem("Pentagram", Category.Appliance, () {
         var state = MemberState(
           currentApplianceName: ApplianceName.shape,
           shapeType: ShapeType.pentagram,
         );
         room.setMemberState(state);
       }),
-      OpListItem("Scale", Category.Appliance, () {}),
+      OpListItem("Triangle", Category.Appliance, () {
+        var state = MemberState(
+          currentApplianceName: ApplianceName.shape,
+          shapeType: ShapeType.triangle,
+        );
+        room.setMemberState(state);
+      }),
     ];
     filterOptList =
         allOpList.where((elem) => elem.category == Category.Appliance).toList();

@@ -7,9 +7,9 @@ import 'bridge_test.mocks.dart';
 
 class FakeInterface extends JavaScriptNamespaceInterface {
   FakeInterface() : super("fake") {
-    setMethod('onNormalCallReturnValue', this._onNormalCallReturnValue);
-    setMethod('onNormalCallReturnVoid', this._onNormalCallReturnVoid);
-    setMethod('onFutureCall', this._onFutureCall);
+    setMethod('onNormalCallReturnValue', _onNormalCallReturnValue);
+    setMethod('onNormalCallReturnVoid', _onNormalCallReturnVoid);
+    setMethod('onFutureCall', _onFutureCall);
   }
 
   void _onNormalCallReturnVoid(value) {}

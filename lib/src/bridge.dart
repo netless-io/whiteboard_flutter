@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_typing_uninitialized_variables, strict_raw_type, inference_failure_on_uninitialized_variable, inference_failure_on_untyped_parameter
+
 import 'dart:async';
 import 'dart:convert';
 
@@ -16,17 +18,18 @@ class JavaScriptNamespaceInterface {
     return methods[method];
   }
 
-  setMethod(String method, Function func) {
+  void setMethod(String method, Function func) {
     methods[method] = func;
   }
 }
 
 abstract class DsBridge {
+  // ignore: constant_identifier_names
   static const String BRIDGE_NAME = "__dsbridge";
   static bool isDebug = false;
 
   int callID = 0;
-  Map<int, OnReturnValue> handlerMap = <int, OnReturnValue>{};
+  Map<int, OnReturnValue<dynamic>> handlerMap = <int, OnReturnValue<dynamic>>{};
 
   // TODO: 迁移遗留，暂保留未使用
   List<CallInfo>? callInfoList;
@@ -40,7 +43,7 @@ abstract class DsBridge {
 
         int id = jsonObject["id"];
         bool isCompleted = jsonObject["complete"];
-        OnReturnValue? handler = handlerMap[id];
+        OnReturnValue<dynamic>? handler = handlerMap[id];
         var data;
         if (jsonObject.containsKey("data")) {
           data = jsonObject["data"];
@@ -67,7 +70,7 @@ abstract class DsBridge {
 
   FutureOr<String?> callHandler(String method,
       [List<dynamic> args = const [], OnReturnValue? handler]) {
-    CallInfo callInfo = new CallInfo(++callID, method, args);
+    CallInfo callInfo = CallInfo(++callID, method, args);
     if (handler != null) {
       handlerMap[callInfo.callbackId] = handler;
     }
@@ -144,13 +147,13 @@ class InnerJavascriptInterface {
     List<String> nameStr = parseNamespace(methodName.trim());
     methodName = nameStr[1];
     var jsb = javaScriptNamespaceInterfaces[nameStr[0]];
-    var ret = Map<String, dynamic>();
+    var ret = <String, dynamic>{};
     ret["code"] = -1;
     if (jsb == null) {
       _printDebugInfo(error);
       return ret.toString();
     }
-    var arg;
+    dynamic arg;
     var method = jsb.getMethod(methodName);
     late String callback;
     try {
@@ -162,7 +165,7 @@ class InnerJavascriptInterface {
         arg = args["data"];
       }
     } catch (e) {
-      error = 'The argument of \"$methodName\" must be a JSON object string!';
+      error = 'The argument of "$methodName" must be a JSON object string!';
       _printDebugInfo(error);
       return ret.toString();
     }
@@ -180,7 +183,7 @@ class InnerJavascriptInterface {
         try {
           var cb = callback;
           var retValue = await retData;
-          Map<String, dynamic> ret = Map<String, dynamic>();
+          Map<String, dynamic> ret = <String, dynamic>{};
           ret["code"] = 0;
           ret["data"] = retValue;
           String script = "$cb(${jsonEncode(ret)}.data);";

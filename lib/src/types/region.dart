@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 /// 数据中心。
 class Region {
   /// 中国杭州。

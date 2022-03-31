@@ -108,15 +108,13 @@ class DsBridgeBasic extends DsBridge {
   }
 
   JavascriptChannel get javascriptChannel {
-    if (_javascriptChannel == null) {
-      _javascriptChannel = JavascriptChannel(
+    _javascriptChannel ??= JavascriptChannel(
         name: DsBridge.BRIDGE_NAME,
         onMessageReceived: (JavascriptMessage message) {
           var res = jsonDecode(message.message);
           javascriptInterface.call(res["method"], res["args"]);
         },
       );
-    }
     return _javascriptChannel!;
   }
 

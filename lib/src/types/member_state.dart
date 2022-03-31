@@ -8,13 +8,12 @@ class MemberState {
   String? shapeType;
 
   MemberState({
-    String? currentApplianceName,
+    this.currentApplianceName,
     String? shapeType,
     this.strokeColor,
     this.strokeWidth,
     this.textSize,
   }) {
-    this.currentApplianceName = currentApplianceName;
     if (ApplianceName.shape == currentApplianceName) {
       this.shapeType = shapeType ?? ShapeType.triangle;
     }
