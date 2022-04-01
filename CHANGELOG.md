@@ -1,5 +1,9 @@
 # ChangeLog
 
+## [0.4.0+1]
+
+* fix no roomPhase callback before joinRoom end
+
 ## [0.4.0] - 2022-03-30
 
 * Update `white-sdk-web` to 2.16.10
