@@ -11,8 +11,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-    # When depending on this package from a real application you should use:
-
   # whiteboard_sdk_flutter: ^0.4.0
   whiteboard_sdk_flutter:
     path: ../

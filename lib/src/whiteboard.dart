@@ -110,18 +110,18 @@ class WhiteSdk {
     RoomErrorCallback? onRoomError,
   }) {
     var completer = Completer<WhiteRoom>();
+    var room = WhiteRoom(
+      dsBridge: dsBridge,
+      options: options,
+      onRoomStateChanged: onRoomStateChanged,
+      onRoomPhaseChanged: onRoomPhaseChanged,
+      onRoomDisconnected: onRoomDisconnected,
+      onRoomKicked: onRoomKicked,
+      onCanUndoStepsUpdate: onCanUndoStepsUpdate,
+      onCanRedoStepsUpdate: onCanRedoStepsUpdate,
+      onRoomError: onRoomError,
+    );
     dsBridge.callHandler("sdk.joinRoom", [options.toJson()], ([value]) {
-      var room = WhiteRoom(
-        dsBridge: dsBridge,
-        options: options,
-        onRoomStateChanged: onRoomStateChanged,
-        onRoomPhaseChanged: onRoomPhaseChanged,
-        onRoomDisconnected: onRoomDisconnected,
-        onRoomKicked: onRoomKicked,
-        onCanUndoStepsUpdate: onCanUndoStepsUpdate,
-        onCanRedoStepsUpdate: onCanRedoStepsUpdate,
-        onRoomError: onRoomError,
-      );
       try {
         room._initRoomState(jsonDecode(value));
         completer.complete(room);
@@ -141,16 +141,16 @@ class WhiteSdk {
     PlaybackErrorCallback? onPlaybackError,
   }) {
     var completer = Completer<WhiteReplay>();
+    var replay = WhiteReplay(
+      dsBridge: dsBridge,
+      params: options,
+      onLoadFirstFrame: onLoadFirstFrame,
+      onPlayerPhaseChanged: onPlayerPhaseChanged,
+      onPlayerStateChanged: onPlayerStateChanged,
+      onPlaybackError: onPlaybackError,
+      onScheduleTimeChanged: onScheduleTimeChanged,
+    );
     dsBridge.callHandler("sdk.replayRoom", [options.toJson()], ([value]) {
-      var replay = WhiteReplay(
-        dsBridge: dsBridge,
-        params: options,
-        onLoadFirstFrame: onLoadFirstFrame,
-        onPlayerPhaseChanged: onPlayerPhaseChanged,
-        onPlayerStateChanged: onPlayerStateChanged,
-        onPlaybackError: onPlaybackError,
-        onScheduleTimeChanged: onScheduleTimeChanged,
-      );
       try {
         replay.initTimeInfo(jsonDecode(value));
         completer.complete(replay);
@@ -522,6 +522,7 @@ class WhiteRoom extends WhiteDisplayer {
   }
 
   void _firePhaseChanged(String value) {
+    print("_firePhaseChanged $value");
     phase.value = value;
     onRoomPhaseChanged?.call(value);
   }

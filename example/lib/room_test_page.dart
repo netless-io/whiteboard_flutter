@@ -42,22 +42,18 @@ class _RoomTestBodySate extends State<RoomTestBody> {
     print('room state change : ${newState.toJson()}');
   };
 
+  RoomPhaseChangedCallback _onPhaseChanged = (phase) {
+    print('room phase state change : ${phase}');
+  };
+
   Future<WhiteRoom> _joinRoomAgain() async {
     return await whiteSdk!.joinRoom(
         options: RoomOptions(
-          uuid: ROOM_UUID,
-          roomToken: ROOM_TOKEN,
-          uid: UNIQUE_CLIENT_ID,
-          isWritable: true,
-        ),
-        onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
-        onCanUndoStepsUpdate: _onCanUndoStepsUpdate,
-        onRoomStateChanged: _onRoomStateChanged);
-  }
-
-  @override
-  void initState() {
-    super.initState();
+      uuid: ROOM_UUID,
+      roomToken: ROOM_TOKEN,
+      uid: UNIQUE_CLIENT_ID,
+      isWritable: true,
+    ));
   }
 
   // This widget is the root of your application.
@@ -96,11 +92,15 @@ class _RoomTestBodySate extends State<RoomTestBody> {
         uid: UNIQUE_CLIENT_ID,
         isWritable: true,
       ),
+      onCanRedoStepsUpdate: _onCanRedoStepsUpdate,
+      onCanUndoStepsUpdate: _onCanUndoStepsUpdate,
+      onRoomStateChanged: _onRoomStateChanged,
+      onRoomPhaseChanged: _onPhaseChanged,
     );
     room.disableSerialization(false);
 
     setState(() {
-      print("whiteboard setState ");
+      print("whiteboard setState");
       whiteSdk = sdk;
       whiteRoom = room;
     });
