@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_initializing_formals
-
 import 'animation_mode.dart';
 
 class ScaleMode {
@@ -25,17 +23,17 @@ class ScaleMode {
 class CameraConfig {
   num? centerX;
   num? centerY;
-  num scale;
+  num? scale;
   String? animationMode;
 
   CameraConfig({
-    this.centerX = 0,
-    this.centerY = 0,
+    this.centerX,
+    this.centerY,
     this.scale = 1.0,
     this.animationMode = AnimationMode.Continuous,
   });
 
-  Map<String, dynamic> toJson() => <String, dynamic>{
+  Map<String, dynamic> toJson() => {
         "centerX": centerX,
         "centerY": centerY,
         "scale": scale,
@@ -81,14 +79,12 @@ class RectangleConfig {
   final String animationMode;
 
   RectangleConfig(this.width, this.height, this.originX, this.originY,
-      [String animationMode = AnimationMode.Continuous])
-      : animationMode = animationMode;
+      [this.animationMode = AnimationMode.Continuous]);
 
   RectangleConfig.fromSize(this.width, this.height,
-      [String animationMode = AnimationMode.Continuous])
+      [this.animationMode = AnimationMode.Continuous])
       : originX = -width / 2.0,
-        originY = -height / 2.0,
-        animationMode = animationMode;
+        originY = -height / 2.0;
 
   Map<String, dynamic> toJson() => {
         'width': width,
@@ -110,32 +106,37 @@ class CameraBound {
   final num centerY;
 
   /// 视角边界的宽度。
-  final num width;
+  final num? width;
 
   /// 视角边界的高度。
-  final num height;
-  final ContentModeConfig? maxContentMode;
-  final ContentModeConfig? minContentMode;
+  final num? height;
+
+  ContentModeConfig? maxContentMode;
+  ContentModeConfig? minContentMode;
 
   CameraBound({
     this.damping = 0,
     this.centerX = 0,
     this.centerY = 0,
-    this.width = 0,
-    this.height = 0,
+    this.width,
+    this.height,
     num? minScale,
     num? maxScale,
-  })  : minContentMode =
-            minScale != null ? ContentModeConfig(scale: minScale) : null,
-        maxContentMode =
-            maxScale != null ? ContentModeConfig(scale: maxScale) : null;
+  }) {
+    if (minScale != null) {
+      minContentMode = ContentModeConfig(scale: minScale);
+    }
+    if (maxScale != null) {
+      maxContentMode = ContentModeConfig(scale: maxScale);
+    }
+  }
 
   CameraBound.withContentModeConfig({
     this.damping = 0,
     this.centerX = 0,
     this.centerY = 0,
-    this.width = 0,
-    this.height = 0,
+    this.width,
+    this.height,
     this.minContentMode,
     this.maxContentMode,
   });
@@ -148,7 +149,7 @@ class CameraBound {
         "height": height,
         if (maxContentMode != null) "maxContentMode": maxContentMode!.toJson(),
         if (minContentMode != null) "minContentMode": minContentMode!.toJson(),
-      };
+      }..removeWhere((key, value) => value == null);
 }
 
 class WhiteBoardPoint {
