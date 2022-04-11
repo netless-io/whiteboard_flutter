@@ -1,5 +1,5 @@
 name: whiteboard_sdk_flutter
-description: A Flutter wrapper for netless whiteboard
+description: A flutter wrapper for agora whiteboard sdk.
 version: 0.4.0+1
 homepage: https://github.com/netless-io/Whiteboard-Flutter
 

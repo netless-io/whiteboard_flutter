@@ -5,9 +5,10 @@ Cutting a Release
 -----------------
 
 1. Update `CHANGELOG.md`.
-   > Fix: 
+   > Fix:
    > New: new api, feature, etc.
    > Update: bump dependencies
+   > Breaking change. change class to enum.
 2. Set versions:
 
     ```
