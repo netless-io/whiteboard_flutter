@@ -60,6 +60,52 @@ class WhiteOptions {
   final Map<String, String> fonts;
   final Map<String, String> nativeTags;
 
+  WhiteOptions copyWith({
+    String? appIdentifier,
+    bool? useMultiViews,
+    bool? log,
+    String? region,
+    String? deviceType,
+    String? renderEngine,
+    Color? backgroundColor,
+    bool? enableInterrupterAPI,
+    bool? preloadDynamicPPT,
+    bool? routeBackup,
+    bool? userCursor,
+    bool? onlyCallbackRemoteStateModify,
+    bool? disableDeviceInputs,
+    bool? enableIFramePlugin,
+    bool? enableRtcIntercept,
+    bool? enableImgErrorCallback,
+    PptParams? pptParams,
+    Map<String, String>? fonts,
+    Map<String, String>? nativeTags,
+  }) {
+    return WhiteOptions(
+      appIdentifier: appIdentifier ?? this.appIdentifier,
+      useMultiViews: useMultiViews ?? this.useMultiViews,
+      log: log ?? this.log,
+      region: region ?? this.region,
+      deviceType: deviceType ?? this.deviceType,
+      renderEngine: renderEngine ?? this.renderEngine,
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      enableInterrupterAPI: enableInterrupterAPI ?? this.enableInterrupterAPI,
+      preloadDynamicPPT: preloadDynamicPPT ?? this.preloadDynamicPPT,
+      routeBackup: routeBackup ?? this.routeBackup,
+      userCursor: userCursor ?? this.userCursor,
+      onlyCallbackRemoteStateModify:
+          onlyCallbackRemoteStateModify ?? this.onlyCallbackRemoteStateModify,
+      disableDeviceInputs: disableDeviceInputs ?? this.disableDeviceInputs,
+      enableIFramePlugin: enableIFramePlugin ?? this.enableIFramePlugin,
+      enableRtcIntercept: enableRtcIntercept ?? this.enableRtcIntercept,
+      enableImgErrorCallback:
+          enableImgErrorCallback ?? this.enableImgErrorCallback,
+      pptParams: pptParams ?? this.pptParams,
+      fonts: fonts ?? this.fonts,
+      nativeTags: nativeTags ?? this.nativeTags,
+    );
+  }
+
   Map<String, dynamic> toJson() => <String, dynamic>{
         "appIdentifier": appIdentifier,
         "useMultiViews": useMultiViews,

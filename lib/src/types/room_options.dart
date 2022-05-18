@@ -67,6 +67,46 @@ class RoomOptions {
     this.windowParams,
   });
 
+  RoomOptions copyWith({
+    String? uuid,
+    String? roomToken,
+    String? uid,
+    String? region,
+    bool? isWritable,
+    CameraBound? cameraBound,
+    int? timeout,
+    bool? disableEraseImage,
+    bool? disableDeviceInputs,
+    bool? disableOperations,
+    bool? disableCameraTransform,
+    bool? disableBezier,
+    bool? disableNewPencil,
+    bool? disableTextOperations,
+    dynamic userPayload,
+    WindowParams? windowParams,
+  }) {
+    return RoomOptions(
+      uuid: uuid ?? this.uuid,
+      roomToken: roomToken ?? this.roomToken,
+      uid: uid ?? this.uid,
+      region: region ?? this.region,
+      isWritable: isWritable ?? this.isWritable,
+      cameraBound: cameraBound ?? this.cameraBound,
+      timeout: timeout ?? this.timeout,
+      disableEraseImage: disableEraseImage ?? this.disableEraseImage,
+      disableDeviceInputs: disableDeviceInputs ?? this.disableDeviceInputs,
+      disableOperations: disableOperations ?? this.disableOperations,
+      disableCameraTransform:
+          disableCameraTransform ?? this.disableCameraTransform,
+      disableBezier: disableBezier ?? this.disableBezier,
+      disableNewPencil: disableNewPencil ?? this.disableNewPencil,
+      disableTextOperations:
+          disableTextOperations ?? this.disableTextOperations,
+      userPayload: userPayload ?? this.userPayload,
+      windowParams: windowParams ?? this.windowParams,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       "uuid": uuid,

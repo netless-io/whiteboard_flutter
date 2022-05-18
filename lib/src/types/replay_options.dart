@@ -49,6 +49,32 @@ class ReplayOptions {
     this.windowParams,
   });
 
+  ReplayOptions copyWith({
+    String? room,
+    String? roomToken,
+    String? region,
+    String? mediaURL,
+    int? beginTimestamp,
+    String? slice,
+    int? duration,
+    CameraBound? cameraBound,
+    int? step,
+    WindowParams? windowParams,
+  }) {
+    return ReplayOptions(
+      room: room ?? this.room,
+      roomToken: roomToken ?? this.roomToken,
+      region: region ?? this.region,
+      mediaURL: mediaURL ?? this.mediaURL,
+      beginTimestamp: beginTimestamp ?? this.beginTimestamp,
+      slice: slice ?? this.slice,
+      duration: duration ?? this.duration,
+      cameraBound: cameraBound ?? this.cameraBound,
+      step: step ?? this.step,
+      windowParams: windowParams ?? this.windowParams,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       "room": room,
