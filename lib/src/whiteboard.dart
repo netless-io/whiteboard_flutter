@@ -1021,6 +1021,7 @@ class WhiteRoom extends WhiteDisplayer {
     return completer.future;
   }
 
+  /// 添加窗口
   Future<String> addApp(WindowAppParams appParam) {
     var completer = Completer<String>();
     dsBridge.callHandler(
@@ -1029,5 +1030,21 @@ class WhiteRoom extends WhiteDisplayer {
       completer.complete(value);
     });
     return completer.future;
+  }
+
+  /// 设置多窗口显示比例
+  /// [ratio] 高与宽比例
+  void setContainerSizeRatio(double ratio) {
+    dsBridge.callHandler("room.setContainerSizeRatio", [ratio]);
+  }
+
+  /// 设置设置暗色模式
+  ///
+  /// [colorScheme]
+  void setPrefersColorScheme(WindowPrefersColorScheme colorScheme) {
+    dsBridge.callHandler(
+      "room.setPrefersColorScheme",
+      [colorScheme.serialize()],
+    );
   }
 }

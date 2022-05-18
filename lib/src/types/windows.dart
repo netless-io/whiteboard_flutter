@@ -1,6 +1,9 @@
 enum WindowPrefersColorScheme {
+  /// Always use the light mode regardless of system preference.
   light,
+  /// Always use the dark mode (if available) regardless of system preference.
   dark,
+  /// Use either the light or dark theme detected by webview
   auto,
 }
 

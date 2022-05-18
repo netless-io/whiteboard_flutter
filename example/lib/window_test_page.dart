@@ -99,7 +99,7 @@ class WindowTestBodySate extends State<WindowTestBody> {
         uid: UNIQUE_CLIENT_ID,
         isWritable: true,
         windowParams: WindowParams(
-          containerSizeRatio: 1.5,
+          containerSizeRatio: 9 / 16,
         ),
       ),
     );
@@ -162,26 +162,17 @@ enum Category {
 class OperatingViewState extends State<OperatingView> {
   @override
   Widget build(BuildContext context) {
-    return Column(children: [
-      _buildOperatingArea(),
-      Expanded(
-        flex: 1,
-        child: Container(),
-      ),
-      // _buildFilterArea(),
-      Padding(padding: EdgeInsets.only(top: 16))
-    ]);
+    return _buildOperatingArea();
   }
 
   Widget _buildOperatingArea() {
     return Container(
-      // color: Colors.red,
+      // color: Colors.cyan,
       child: SizedBox(
-        width: double.infinity,
-        height: 60,
+        width: 200,
         child: ListView.builder(
           itemCount: filterOptList.length,
-          scrollDirection: Axis.horizontal,
+          scrollDirection: Axis.vertical,
           //列表项构造器
           itemBuilder: (BuildContext context, int index) {
             return _buildOpListItem(context, index);
@@ -194,6 +185,12 @@ class OperatingViewState extends State<OperatingView> {
   var allOpList = <OpListItem>[];
   var filterOptList = <OpListItem>[];
   var categories = Category.values;
+  var index = 0;
+  List<double> ratios = [16 / 9, 1 / 1, 9 / 16];
+  List<WindowPrefersColorScheme> colorSchemes = [
+    WindowPrefersColorScheme.dark,
+    WindowPrefersColorScheme.light,
+  ];
 
   WhiteRoom get room => widget.room;
 
@@ -231,6 +228,12 @@ class OperatingViewState extends State<OperatingView> {
           "test player",
         );
         room.addApp(appParams);
+      }),
+      OpListItem("ColorScheme", Category.Misc, () {
+        room.setPrefersColorScheme(colorSchemes[index++ % colorSchemes.length]);
+      }),
+      OpListItem("ContainerSizeRatio", Category.Misc, () {
+        room.setContainerSizeRatio(ratios[index++ % ratios.length]);
       }),
       OpListItem("Reconnect", Category.Misc, () async {
         room.disconnect().then((value) {

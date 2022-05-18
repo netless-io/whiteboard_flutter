@@ -34,6 +34,7 @@ class WhiteOptions {
     this.enableIFramePlugin = false,
     this.enableRtcIntercept = false,
     this.enableImgErrorCallback = false,
+    this.disableNewPencilStroke = false,
     this.fonts = const <String, String>{},
     this.nativeTags = const <String, String>{},
     PptParams? pptParams,
@@ -55,6 +56,7 @@ class WhiteOptions {
   final bool enableIFramePlugin;
   final bool enableRtcIntercept;
   final bool enableImgErrorCallback;
+  final bool disableNewPencilStroke;
 
   final PptParams pptParams;
   final Map<String, String> fonts;
