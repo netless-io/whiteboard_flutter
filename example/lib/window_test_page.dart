@@ -17,10 +17,10 @@ class WindowTestPage extends WhiteExamplePage {
 
 class WindowTestBody extends StatefulWidget {
   @override
-  _WindowTestBodySate createState() => _WindowTestBodySate();
+  WindowTestBodySate createState() => WindowTestBodySate();
 }
 
-class _WindowTestBodySate extends State<WindowTestBody> {
+class WindowTestBodySate extends State<WindowTestBody> {
   WhiteSdk? whiteSdk;
   WhiteRoom? whiteRoom;
 
@@ -191,24 +191,6 @@ class OperatingViewState extends State<OperatingView> {
     );
   }
 
-  Widget _buildFilterArea() {
-    return Container(
-      // color: Colors.red,
-      child: SizedBox(
-        width: double.infinity,
-        height: 60,
-        child: ListView.builder(
-          itemCount: categories.length,
-          scrollDirection: Axis.horizontal,
-          //列表项构造器
-          itemBuilder: (BuildContext context, int index) {
-            return _buildCategoryListItem(context, index);
-          },
-        ),
-      ),
-    );
-  }
-
   var allOpList = <OpListItem>[];
   var filterOptList = <OpListItem>[];
   var categories = Category.values;
@@ -252,8 +234,10 @@ class OperatingViewState extends State<OperatingView> {
       }),
       OpListItem("Reconnect", Category.Misc, () async {
         room.disconnect().then((value) {
-          Future.delayed(Duration(seconds: 2))
-              .then((value) => widget.onReconnect?.call());
+          Future.delayed(
+            Duration(seconds: 2),
+            () => widget.onReconnect?.call(),
+          );
         }).catchError((o) {
           print("disconnect error");
         });
@@ -271,43 +255,7 @@ class OperatingViewState extends State<OperatingView> {
     );
   }
 
-  Widget _buildCategoryListItem(BuildContext context, int index) {
-    return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ElevatedButton(
-            child: Text(_getFilterDisplay(categories[index]), softWrap: true),
-            onPressed: () {
-              setState(() {
-                if (categories[index] == Category.All)
-                  filterOptList = allOpList;
-                else
-                  filterOptList = allOpList
-                      .where((item) => item.category == categories[index])
-                      .toList();
-              });
-            }));
-  }
-
   void showHint(String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
-  }
-
-  String _getFilterDisplay(Category category) {
-    switch (category) {
-      case Category.Appliance:
-        return "Appliance";
-      case Category.Image:
-        return "Image & Ppt";
-      case Category.Interaction:
-        return "Interaction";
-      case Category.State:
-        return "State";
-      case Category.Misc:
-        return "Misc";
-      case Category.All:
-        return "All";
-      default:
-        return "Unknown";
-    }
   }
 }

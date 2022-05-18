@@ -14,10 +14,10 @@ class ReplayTestPage extends WhiteExamplePage {
 
 class ReplayTestBody extends StatefulWidget {
   @override
-  _ReplayTestBodySate createState() => _ReplayTestBodySate();
+  ReplayTestBodySate createState() => ReplayTestBodySate();
 }
 
-class _ReplayTestBodySate extends State<ReplayTestBody> {
+class ReplayTestBodySate extends State<ReplayTestBody> {
   late WhiteSdk whiteSdk;
   late WhiteReplay whiteReplay;
 
@@ -78,7 +78,7 @@ class _ReplayTestBodySate extends State<ReplayTestBody> {
 
   var allOpList = <OpListItem>[];
 
-  _ReplayTestBodySate() {
+  ReplayTestBodySate() {
     allOpList = [
       OpListItem("Start", Category.All, () {
         whiteReplay.play();

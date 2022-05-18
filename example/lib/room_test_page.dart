@@ -17,10 +17,10 @@ class RoomTestPage extends WhiteExamplePage {
 
 class RoomTestBody extends StatefulWidget {
   @override
-  _RoomTestBodySate createState() => _RoomTestBodySate();
+  RoomTestBodySate createState() => RoomTestBodySate();
 }
 
-class _RoomTestBodySate extends State<RoomTestBody> {
+class RoomTestBodySate extends State<RoomTestBody> {
   WhiteSdk? whiteSdk;
   WhiteRoom? whiteRoom;
 
@@ -213,8 +213,10 @@ class OperatingViewState extends State<OperatingView> {
     allOpList = [
       OpListItem("Reconnect", Category.Misc, () async {
         room.disconnect().then((value) {
-          Future.delayed(Duration(seconds: 2))
-              .then((value) => widget.onReconnect?.call());
+          Future.delayed(
+            const Duration(seconds: 2),
+            () => widget.onReconnect?.call(),
+          );
         }).catchError((o) {
           print("disconnect error");
         });
