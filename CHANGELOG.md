@@ -1,5 +1,13 @@
 # ChangeLog
 
+## [0.5.0]
+
+* Update `white-sdk-web` to 2.16.20
+* Update `window-manager` to 0.4.25
+* Add `WhiteRoom.setContainerSizeRatio` to update window ratio
+* Add `WhiteRoom.setPrefersColorScheme` to update window theme mode
+* Fix the problem of switching writable immediately after joining the room
+
 ## [0.4.0+1]
 
 * fix no roomPhase callback before joinRoom end
