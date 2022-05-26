@@ -36,7 +36,8 @@ class ReplayState extends DisplayerState {
     globalState = parseGlobalState(json['globalState']);
   }
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() =>
+      {
         "observerMode": observerMode,
         "roomMembers": roomMembers?.map((e) => e.toJson()).toList(),
         "cameraState": cameraState?.toJson(),
@@ -53,22 +54,35 @@ class RoomState extends DisplayerState {
   num? zoomScale;
 
   void fromJson(Map<String, dynamic> json) {
-    memberState = MemberState.fromJson(json["memberState"]);
-    broadcastState = BroadcastState.fromJson(json["broadcastState"]);
+    if (json["pageState"] != null) {
+      memberState = MemberState.fromJson(json["memberState"]);
+    }
+    if (json["broadcastState"] != null) {
+      BroadcastState.fromJson(json["broadcastState"]);
+    }
     zoomScale = json["zoomScale"];
-    roomMembers = (json["roomMembers"] as List)
-        .map<RoomMember>((jsonMap) => RoomMember.fromJson(jsonMap))
-        .toList();
-    cameraState = CameraConfig.fromJson(json["cameraState"]);
-    sceneState = WhiteBoardSceneState.fromJson(json["sceneState"]);
-    windowBoxState = json["windowBoxState"];
+    if (json["roomMembers"] != null) {
+      roomMembers = (json["roomMembers"] as List)
+          .map<RoomMember>((jsonMap) => RoomMember.fromJson(jsonMap))
+          .toList();
+    }
+    if (json["cameraState"] != null) {
+      cameraState = CameraConfig.fromJson(json["cameraState"]);
+    }
+    if (json["sceneState"] != null) {
+      sceneState = WhiteBoardSceneState.fromJson(json["sceneState"]);
+    }
+    if (json["windowBoxState"] != null) {
+      windowBoxState = json["windowBoxState"];
+    }
     if (json["pageState"] != null) {
       pageState = PageState.fromJson(json["pageState"]);
     }
     globalState = parseGlobalState(json["globalState"] ?? {});
   }
 
-  Map<String, dynamic> toJson() => {
+  Map<String, dynamic> toJson() =>
+      {
         "memberState": memberState?.toJson(),
         "broadcastState": broadcastState?.toJson(),
         "zoomScale": zoomScale,
@@ -78,7 +92,8 @@ class RoomState extends DisplayerState {
         "sceneState": sceneState?.toJson(),
         "windowBoxState": windowBoxState,
         "pageState": pageState?.toJson(),
-      }..removeWhere((key, value) => value == null);
+      }
+        ..removeWhere((key, value) => value == null);
 }
 
 typedef GlobalStateParser<T> = T Function(Map<String, dynamic> jsonMap);

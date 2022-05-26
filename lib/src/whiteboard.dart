@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/widgets.dart';
+import 'package:whiteboard_sdk_flutter/whiteboard_sdk_flutter.dart';
 
 import 'bridge.dart';
 import 'bridge_inapp_webview.dart';
@@ -57,10 +58,16 @@ class WhiteboardView extends StatelessWidget {
       "onPPTMediaPause": _onPPTMediaPause,
       "throwError": _onThrowMessage,
       "postMessage": _onPostMessage,
+      "setupFail": _onSetupFail,
       "logger": _onLogger,
     };
     methods.forEach((key, value) => interface.setMethod(key, value));
     return interface;
+  }
+
+  void _onSetupFail(value) {
+    var whiteException = WhiteException.parseError(value);
+    print(whiteException);
   }
 
   void _onPPTMediaPlay(value) {
@@ -82,6 +89,59 @@ class WhiteboardView extends StatelessWidget {
   void _onLogger(value) {
     print(value);
     onLogger?.call(value);
+  }
+}
+
+class WhiteErrorCode {
+  const WhiteErrorCode._(this._type);
+
+  final String _type;
+
+  @override
+  String toString() => _type;
+
+  static const WhiteErrorCode invalidAppId = WhiteErrorCode._('invalidAppId');
+
+  static const WhiteErrorCode sdkInitFailed = WhiteErrorCode._('sdkInitFailed');
+
+  static const WhiteErrorCode joinRoomError = WhiteErrorCode._('joinRoomError');
+
+  static const WhiteErrorCode invalidRoomToken =
+      WhiteErrorCode._('invalidRoomToken');
+
+  static const WhiteErrorCode unknown = WhiteErrorCode._('unknown');
+
+  static WhiteErrorCode fromMessage(String message) {
+    if (message.contains("invalid appIdentifier")) return invalidAppId;
+    if (message.contains("sdk init failed")) return sdkInitFailed;
+    if (message.contains("akko setup failed")) return joinRoomError;
+    if (message.contains("invalid room token")) return invalidRoomToken;
+    return unknown;
+  }
+}
+
+class WhiteException implements Exception {
+  WhiteException({
+    required this.message,
+    this.jsStack,
+  }) : code = WhiteErrorCode.fromMessage(message);
+
+  final String message;
+
+  final String? jsStack;
+
+  final WhiteErrorCode code;
+
+  factory WhiteException.parseError(Map<String, dynamic> error) {
+    return WhiteException(message: error['message'], jsStack: error['jsStack']);
+  }
+
+  static WhiteException? parseValueError(String value) {
+    var error = jsonDecode(value);
+    if (error.containsKey('__error')) {
+      return WhiteException.parseError(error['__error']);
+    }
+    return null;
   }
 }
 
@@ -122,11 +182,12 @@ class WhiteSdk {
       onRoomError: onRoomError,
     );
     dsBridge.callHandler("sdk.joinRoom", [options.toJson()], ([value]) {
-      try {
+      var error = WhiteException.parseValueError(value);
+      if (error == null) {
         room._initRoomState(jsonDecode(value));
         completer.complete(room);
-      } catch (e) {
-        completer.completeError(e);
+      } else {
+        completer.completeError(error);
       }
     });
     return completer.future;
@@ -269,6 +330,7 @@ class WhiteDisplayer {
 // Sdk Callback
 typedef SdkCreatedCallback = void Function(WhiteSdk whiteSdk);
 typedef SdkOnLoggerCallback = void Function(dynamic value);
+typedef SdkSetupFailCallback = void Function(WhiteException exception);
 
 /// Room Callbacks
 typedef RoomStateChangedCallback = void Function(RoomState newState);
@@ -342,7 +404,7 @@ class WhiteReplay extends WhiteDisplayer {
   }
 
   void _onPlayerStateChanged(String value) {
-    print(value);
+    debugPrint("PlayerStateChanged $value");
     onPlayerStateChanged?.call(ReplayState()..fromJson(jsonDecode(value)));
   }
 
@@ -522,30 +584,32 @@ class WhiteRoom extends WhiteDisplayer {
   }
 
   void _firePhaseChanged(String value) {
-    print("_firePhaseChanged $value");
+    debugPrint("_firePhaseChanged $value");
     phase.value = value;
     onRoomPhaseChanged?.call(value);
   }
 
   void _fireCanUndoStepsUpdate(value) {
-    print(value);
+    debugPrint(value);
     onCanUndoStepsUpdate?.call(value);
   }
 
   void _fireCanRedoStepsUpdate(value) {
-    print(value);
+    debugPrint(value);
     onCanRedoStepsUpdate?.call(value);
   }
 
   void _fireRoomStateChanged(String value) {
     try {
       var data = jsonDecode(value) as Map<String, dynamic>;
+
+      /// todo update state with update(data)
       state.fromJson({}
         ..addAll(state.toJson())
         ..addAll(data));
       onRoomStateChanged?.call(state);
     } catch (e) {
-      print(e);
+      print("fireRoomStateChanged error $e");
     }
   }
 
@@ -738,19 +802,18 @@ class WhiteRoom extends WhiteDisplayer {
   Future<bool> setWritable(bool writable) {
     var completer = Completer<bool>();
     dsBridge.callHandler("room.setWritable", [writable], ([value]) {
-      var jsonMap = jsonDecode(value);
-      if (jsonMap["__error"] != null) {
-        completer.completeError(jsonMap);
-        return;
+      var error = WhiteException.parseValueError(value);
+      if (error == null) {
+        bool isWritable = jsonDecode(value)['isWritable'];
+        int observerId = jsonDecode(value)['observerId'];
+
+        _setWritable(isWritable);
+        _setObserverId(observerId);
+
+        completer.complete(isWritable);
+      } else {
+        completer.completeError(error);
       }
-
-      bool isWritable = jsonDecode(value)['isWritable'];
-      int observerId = jsonDecode(value)['observerId'];
-
-      _setWritable(isWritable);
-      _setObserverId(observerId);
-
-      completer.complete(isWritable);
     });
     return completer.future;
   }
@@ -821,11 +884,11 @@ class WhiteRoom extends WhiteDisplayer {
   Future<bool> setScenePath(String path) {
     var completer = Completer<bool>();
     dsBridge.callHandler("room.setScenePath", [path], ([value]) {
-      var jsonMap = jsonDecode(value);
-      if (jsonMap['__error'] == null) {
+      var error = WhiteException.parseValueError(value);
+      if (error == null) {
         completer.complete(true);
       } else {
-        completer.completeError(jsonMap);
+        completer.completeError(error);
       }
     });
     return completer.future;
@@ -843,11 +906,11 @@ class WhiteRoom extends WhiteDisplayer {
   Future<bool> setSceneIndex(int index) {
     var completer = Completer<bool>();
     dsBridge.callHandler("room.setSceneIndex", [index], ([value]) {
-      var jsonMap = jsonDecode(value);
-      if (jsonMap['__error'] == null) {
+      var error = WhiteException.parseValueError(value);
+      if (error == null) {
         completer.complete(true);
       } else {
-        completer.completeError(jsonMap);
+        completer.completeError(error);
       }
     });
     return completer.future;
