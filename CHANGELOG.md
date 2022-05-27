@@ -1,5 +1,9 @@
 # ChangeLog
 
+## [0.5.1]
+
+* Add `WhiteException` to describe error
+
 ## [0.5.0]
 
 * Update `white-sdk-web` to 2.16.20

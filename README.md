@@ -7,7 +7,7 @@ Add whiteboard_sdk_flutter to your pubspec:
 
 ```yaml
 dependencies:
-  whiteboard_sdk_flutter: ^0.5.0
+  whiteboard_sdk_flutter: ^0.5.1
 ```
 
 ### Android

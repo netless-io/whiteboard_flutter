@@ -26,7 +26,7 @@ class JavaScriptNamespaceInterface {
 abstract class DsBridge {
   // ignore: constant_identifier_names
   static const String BRIDGE_NAME = "__dsbridge";
-  static bool isDebug = false;
+  static bool isDebug = true;
 
   int callID = 0;
   Map<int, OnReturnValue<dynamic>> handlerMap = <int, OnReturnValue<dynamic>>{};
