@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -22,6 +21,7 @@ class DsBridgeWebView extends StatefulWidget {
 
 class DsBridgeWebViewState extends State<DsBridgeWebView> {
   DsBridgeBasic dsBridge = DsBridgeBasic();
+
   late WebViewController _controller;
 
   @override
@@ -62,12 +62,12 @@ class DsBridgeWebViewState extends State<DsBridgeWebView> {
   }
 
   Future<void> _onPageStarted(String url) async {
-    print('WebView Page started loading: $url');
+    debugPrint('WebView Page started loading: $url');
     if (url.endsWith("whiteboardBridge/index.html")) {}
   }
 
   Future<void> _onPageFinished(String url) async {
-    print('WebView Page finished loading: $url');
+    debugPrint('WebView Page finished loading: $url');
     if (url.endsWith("whiteboardBridge/index.html")) {
       await dsBridge.runCompatScript();
       widget.onDSBridgeCreated(dsBridge);
@@ -75,7 +75,7 @@ class DsBridgeWebViewState extends State<DsBridgeWebView> {
   }
 
   void _onWebResourceError(WebResourceError error) {
-    print(error);
+    debugPrint('WebView resource error ${error.toString()}');
   }
 }
 
@@ -95,9 +95,8 @@ class DsBridgeBasic extends DsBridge {
   """;
 
   late WebViewController _controller;
-  JavascriptChannel? _javascriptChannel;
 
-  DsBridgeBasic() : super();
+  JavascriptChannel? _javascriptChannel;
 
   Future<void> initController(WebViewController controller) async {
     _controller = controller;
@@ -109,12 +108,12 @@ class DsBridgeBasic extends DsBridge {
 
   JavascriptChannel get javascriptChannel {
     _javascriptChannel ??= JavascriptChannel(
-        name: DsBridge.BRIDGE_NAME,
-        onMessageReceived: (JavascriptMessage message) {
-          var res = jsonDecode(message.message);
-          javascriptInterface.call(res["method"], res["args"]);
-        },
-      );
+      name: DsBridge.BRIDGE_NAME,
+      onMessageReceived: (JavascriptMessage message) {
+        var res = jsonDecode(message.message);
+        javascriptInterface.call(res["method"], res["args"]);
+      },
+    );
     return _javascriptChannel!;
   }
 
@@ -122,12 +121,6 @@ class DsBridgeBasic extends DsBridge {
   FutureOr<String?> evaluateJavascript(String javascript) {
     try {
       return _controller.runJavascriptReturningResult(javascript);
-    } on MissingPluginException catch (e) {
-      print(e);
-      return null;
-    } on Error catch (e) {
-      print(e);
-      return null;
     } catch (e) {
       print(e);
       return null;

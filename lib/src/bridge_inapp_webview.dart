@@ -21,6 +21,7 @@ class DsBridgeInAppWebView extends StatefulWidget {
 
 class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
   DsBridgeInApp dsBridge = DsBridgeInApp();
+
   late InAppWebViewController _controller;
 
   @override
@@ -28,7 +29,8 @@ class DsBridgeInAppWebViewState extends State<DsBridgeInAppWebView> {
     super.initState();
     if (Platform.isAndroid) {
       AndroidInAppWebViewController.setWebContentsDebuggingEnabled(
-          DsBridge.isDebug);
+        DsBridge.isDebug,
+      );
     }
   }
 
@@ -124,8 +126,6 @@ class DsBridgeInApp extends DsBridge {
 
   late InAppWebViewController _controller;
 
-  DsBridgeInApp() : super();
-
   Future<void> initController(InAppWebViewController controller) async {
     _controller = controller;
     _controller.addJavaScriptHandler(
@@ -147,9 +147,6 @@ class DsBridgeInApp extends DsBridge {
       return _controller
           .evaluateJavascript(source: javascript)
           .then<String?>((value) => value);
-    } on Error catch (e) {
-      print(e);
-      return null;
     } catch (e) {
       print(e);
       return null;

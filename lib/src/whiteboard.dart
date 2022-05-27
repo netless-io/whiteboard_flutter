@@ -1088,10 +1088,12 @@ class WhiteRoom extends WhiteDisplayer {
   Future<String> addApp(WindowAppParams appParam) {
     var completer = Completer<String>();
     dsBridge.callHandler(
-        "room.addApp", [appParam.kind, appParam.options, appParam.attributes], (
-            [value]) {
-      completer.complete(value);
-    });
+      "room.addApp",
+      [appParam.kind, appParam.options, appParam.attributes],
+      ([value]) {
+        completer.complete(value);
+      },
+    );
     return completer.future;
   }
 
