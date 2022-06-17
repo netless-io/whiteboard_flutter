@@ -590,12 +590,12 @@ class WhiteRoom extends WhiteDisplayer {
   }
 
   void _fireCanUndoStepsUpdate(value) {
-    debugPrint(value);
+    debugPrint("_fireCanUndoStepsUpdate $value");
     onCanUndoStepsUpdate?.call(value);
   }
 
   void _fireCanRedoStepsUpdate(value) {
-    debugPrint(value);
+    debugPrint("_fireCanRedoStepsUpdate $value");
     onCanRedoStepsUpdate?.call(value);
   }
 
