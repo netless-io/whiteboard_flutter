@@ -1,5 +1,10 @@
 # ChangeLog
 
+## [0.5.2]
+
+* Fix `WhiteRoom.onCanUndoStepsUpdate`, `WhiteRoom.onCanRedoStepsUpdate` not call.
+
+
 ## [0.5.1]
 
 * Add `WhiteException` to describe error
