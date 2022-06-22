@@ -38,7 +38,7 @@ class DsBridgeWebViewState extends State<DsBridgeWebView> {
       return WebView(
         initialUrl: "about:blank",
         javascriptMode: JavascriptMode.unrestricted,
-        allowsInlineMediaPlayback: false,
+        allowsInlineMediaPlayback: true,
         javascriptChannels: {dsBridge.javascriptChannel},
         initialMediaPlaybackPolicy: AutoMediaPlaybackPolicy.always_allow,
         userAgent:
