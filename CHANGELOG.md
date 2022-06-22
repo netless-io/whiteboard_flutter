@@ -1,9 +1,12 @@
 # ChangeLog
 
+## [0.5.3]
+
+* Fix iOS display video can't be stopped
+
 ## [0.5.2]
 
 * Fix `WhiteRoom.onCanUndoStepsUpdate`, `WhiteRoom.onCanRedoStepsUpdate` not call.
-
 
 ## [0.5.1]
 

@@ -1,1 +1,1 @@
-const String flutterWhiteSdkVersion = "0.5.2";
+const String flutterWhiteSdkVersion = "0.5.3";

@@ -1,6 +1,6 @@
 name: whiteboard_sdk_flutter
 description: A Flutter plugin that support Agora Interactive Whiteboard on Android and iOS.
-version: 0.5.2
+version: 0.5.3
 homepage: https://github.com/netless-io/Whiteboard-Flutter
 repository: https://github.com/netless-io/Whiteboard-Flutter
 
