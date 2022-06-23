@@ -5,7 +5,6 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/widgets.dart';
-import 'package:whiteboard_sdk_flutter/whiteboard_sdk_flutter.dart';
 
 import 'bridge.dart';
 import 'bridge_inapp_webview.dart';
