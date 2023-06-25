@@ -103,7 +103,11 @@ class DsBridgeBasic extends DsBridge {
   }
 
   Future<void> runCompatScript() async {
-    await _controller.runJavascriptReturningResult(_compatDsScript);
+    try {
+      await _controller.runJavascript(_compatDsScript);
+    } catch (e) {
+      print("WebView bridge run compat script error $e");
+    }
   }
 
   JavascriptChannel get javascriptChannel {
@@ -118,11 +122,11 @@ class DsBridgeBasic extends DsBridge {
   }
 
   @override
-  FutureOr<String?> evaluateJavascript(String javascript) {
+  FutureOr<String?> evaluateJavascript(String javascript) async {
     try {
-      return _controller.runJavascriptReturningResult(javascript);
+      return await _controller.runJavascriptReturningResult(javascript);
     } catch (e) {
-      print(e);
+      print("WebView bridge evaluateJavascript cause $e");
       return null;
     }
   }
