@@ -74,6 +74,7 @@ class WindowTestBodySate extends State<WindowTestBody> {
             log: true,
           ),
           onSdkCreated: _onSdkCreated,
+          useBasicWebView: true,
         ),
         Container(
           child: whiteRoom != null

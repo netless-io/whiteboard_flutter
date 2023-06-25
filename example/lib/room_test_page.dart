@@ -67,6 +67,7 @@ class RoomTestBodySate extends State<RoomTestBody> {
             log: true,
           ),
           onSdkCreated: _onSdkCreated,
+          useBasicWebView: true,
         ),
         Container(
           child: whiteRoom != null
