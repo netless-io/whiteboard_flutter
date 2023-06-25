@@ -1,5 +1,8 @@
 # ChangeLog
 
+## [0.5.4]
+* Fix iOS WebView runJavascriptReturningResult return null.
+
 ## [0.5.3]
 
 * Fix iOS display video can't be stopped
